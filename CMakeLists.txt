@@ -93,14 +93,14 @@ smtg_add_vst3plugin(modfmi
         source/ui/envelope_editor.cc
         source/ui/envelope_editor.h
 
-        resource/modfmi.uidesc
+        resource/sidebands.uidesc
         )
 
 #- VSTGUI Wanted ----
 if (SMTG_ADD_VSTGUI)
     target_sources(modfmi
             PRIVATE
-            resource/modfmi.uidesc
+            resource/sidebands.uidesc
             )
     target_link_libraries(modfmi
             PRIVATE
@@ -108,7 +108,7 @@ if (SMTG_ADD_VSTGUI)
             )
     smtg_target_add_plugin_resources(modfmi
             RESOURCES
-            "resource/modfmi.uidesc"
+            "resource/sidebands.uidesc"
             "resource/slider_rail.png"
             "resource/slider_handle.png"
             "resource/switches.png"
