@@ -20,6 +20,8 @@ using namespace Steinberg;
 
 namespace sidebands {
 
+std::unique_ptr<Patch> kPatch;
+
 // static
 Steinberg::FUnknown *SidebandsController::Instantiate(void *) {
   google::InitGoogleLogging("sidebands");
@@ -29,24 +31,28 @@ Steinberg::FUnknown *SidebandsController::Instantiate(void *) {
 }
 
 tresult PLUGIN_API SidebandsController::initialize(FUnknown *context) {
-  //---do not forget to call parent ------
   tresult result = EditControllerEx1::initialize(context);
   if (result != kResultOk) {
-    LOG(INFO) << "EditControllerEx1::initialize fail: " << result;
     return result;
   }
 
-  // Units? someone explain
-  Vst::UnitInfo unitInfo;
-  unitInfo.id = 1;
-  unitInfo.parentUnitId = Vst::kRootUnitId;
-  Vst::Unit *unit = new Vst::Unit(unitInfo);
-  Steinberg::UString(unitInfo.name, USTRINGSIZE(unitInfo.name))
-      .assign(USTRING("Root unit"));
-  unitInfo.programListId = Vst::kNoProgramListId;
-  addUnit(unit);
+  LOG(INFO) << "Creating units...";
+  for (int g = 0; g < kNumGenerators; g++) {
+    Steinberg::Vst::UnitInfo unitInfo;
+    unitInfo.id = MakeUnitID(UNIT_GENERATOR, g);
+    unitInfo.parentUnitId = Steinberg::Vst::kRootUnitId;
+    std::string full_name = absl::StrFormat("Generator Unit %d", g);
+    Steinberg::UString(unitInfo.name, USTRINGSIZE(unitInfo.name))
+        .assign(USTRING(full_name.c_str()));
+    unitInfo.programListId = Steinberg::Vst::kNoProgramListId;
+    Steinberg::Vst::Unit *unit = new Steinberg::Vst::Unit(unitInfo);
+    addUnit(unit);
+  }
 
-  LOG(INFO) << "Adding parameters...";
+  LOG(INFO) << "Instantiating patch...";
+  kPatch = std::make_unique<Patch>();
+
+  LOG(INFO) << "Adding units and parameters from patch...";
   kPatch->AppendParameters(&parameters);
 
   // Universal parameters, not generator specific.
@@ -54,6 +60,7 @@ tresult PLUGIN_API SidebandsController::initialize(FUnknown *context) {
   auto parameter_info = Vst::ParameterInfo{
       .id = TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA),
       .defaultNormalizedValue = 0,
+      .unitId = Vst::kRootUnitId
   };
   Steinberg::UString(parameter_info.title, USTRINGSIZE(parameter_info.title))
       .assign(USTRING(sel_gen_param_name.c_str()));

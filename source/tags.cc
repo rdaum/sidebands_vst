@@ -6,6 +6,14 @@
 
 namespace sidebands {
 
+std::pair<UnitTag, uint16_t> ParseUnitID(Steinberg::Vst::UnitID unit_id) {
+  return {static_cast<UnitTag>(unit_id >> 16), unit_id & 0x0000ffff};
+}
+
+Steinberg::Vst::UnitID MakeUnitID(UnitTag unit_tag, uint16_t unit_id) {
+  return unit_tag << 16 | unit_id;
+}
+
 constexpr const char *kParamNames[]{
     "SELECT", "TOGGLE", "OSC", "ENV_A",         "ENV_AL",  "ENV_D",
     "ENV_S",  "ENV_R",  "LFO", "SELECTED_GEN#", "MOD_TYPE"};

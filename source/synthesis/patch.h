@@ -23,10 +23,12 @@ using Steinberg::Vst::ParameterInfo;
 using Steinberg::Vst::ParamID;
 using Steinberg::Vst::ParamValue;
 using Steinberg::Vst::RangeParameter;
+using Steinberg::Vst::Unit;
 
+using UnitVector = std::vector<IPtr<Unit>>;
 class GeneratorPatch : public Steinberg::FObject {
 public:
-  explicit GeneratorPatch(uint32_t gennum);
+  explicit GeneratorPatch(uint32_t gennum, Steinberg::Vst::UnitID);
 
   void AppendParameters(ParameterContainer *container);
   void BeginParameterChange(ParamID param_id,
@@ -79,7 +81,8 @@ private:
   DeclareParameter(Steinberg::Vst::SampleAccurate::Parameter *param_v,
                    IPtr<RangeParameter> param);
   IPtr<RangeParameter> DeclareParameter(IPtr<RangeParameter> param);
-  void DeclareEnvelopeParameters(TargetTag target, uint32_t gen_num);
+  void DeclareEnvelopeParameters(Steinberg::Vst::UnitID unit_id,
+                                 TargetTag target, uint32_t gen_num);
 
   const uint32_t gennum_;
 
@@ -112,12 +115,14 @@ private:
 class Patch {
 public:
   Patch();
-  std::unique_ptr<GeneratorPatch> generators[kNumGenerators];
+
   void AppendParameters(ParameterContainer *container);
   void BeginParameterChange(ParamID param_id,
                             Steinberg::Vst::IParamValueQueue *p_queue);
   void EndParameterChanges();
   void AdvanceParameterChanges(uint32_t num_samples);
+
+  std::unique_ptr<GeneratorPatch> generators_[kNumGenerators];
 };
 
 } // namespace sidebands

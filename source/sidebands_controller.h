@@ -8,10 +8,10 @@ namespace sidebands {
 class SidebandsController : public Steinberg::Vst::EditControllerEx1,
                             public VSTGUI::VST3EditorDelegate {
 public:
+  static Steinberg::FUnknown *Instantiate(void * /*context*/);
+
   SidebandsController() = default;
   ~SidebandsController() override = default;
-
-  static Steinberg::FUnknown *Instantiate(void * /*context*/);
 
   VSTGUI::CView *createCustomView(VSTGUI::UTF8StringPtr name,
                                   const VSTGUI::UIAttributes &attributes,
@@ -40,6 +40,7 @@ public:
 
   //---Interface---------
   DEFINE_INTERFACES
+  DEF_INTERFACE (IUnitInfo)
   // Here you can add more supported VST3 interfaces
   // DEF_INTERFACE (Vst::IXXX)
   END_DEFINE_INTERFACES(EditController)

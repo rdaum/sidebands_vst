@@ -84,6 +84,7 @@ void DrawbarView::valueChanged(VSTGUI::CControl *control) {
     setDirty(true);
 
     SelectGenerator(edit_controller(), GeneratorFor(tag));
+    edit_controller()->selectUnit(MakeUnitID(UNIT_GENERATOR, GeneratorFor(tag)));
     return;
   }
   edit_controller()->beginEdit(tag);

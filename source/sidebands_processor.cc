@@ -18,8 +18,6 @@ using namespace Steinberg;
 
 namespace sidebands {
 
-std::unique_ptr<Patch> kPatch;
-
 SidebandsProcessor::SidebandsProcessor() {
   setControllerClass(kSidebandsControllerUID);
 }
@@ -31,9 +29,6 @@ tresult PLUGIN_API SidebandsProcessor::initialize(FUnknown *context) {
   if (result != kResultOk) {
     return result;
   }
-
-  LOG(INFO) << "Instantiating patch...";
-  kPatch = std::make_unique<Patch>();
 
   LOG(INFO) << "Configuring buses...";
   addAudioOutput(STR16("Stereo Out"), Steinberg::Vst::SpeakerArr::kStereo);

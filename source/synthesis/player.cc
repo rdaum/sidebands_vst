@@ -18,7 +18,7 @@ bool Player::Perform(Sample32 *in_buffer, Sample32 *out_buffer,
                      size_t frames_per_buffer) {
   memset(out_buffer, 0, frames_per_buffer * sizeof(Sample32));
 
-  auto &g_patches = patch_->generators;
+  auto &g_patches = patch_->generators_;
   std::vector<MixBuffers> mix_buffers(voices_.size());
 
   {

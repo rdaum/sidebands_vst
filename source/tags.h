@@ -8,6 +8,14 @@
 
 namespace sidebands {
 
+enum UnitTag {
+  UNIT_NONE,
+  UNIT_GENERATOR,
+};
+
+std::pair<UnitTag, uint16_t> ParseUnitID(Steinberg::Vst::UnitID unit_id);
+Steinberg::Vst::UnitID MakeUnitID(UnitTag unit_tag, uint16_t unit_id);
+
 enum ParamTag {
   TAG_GENERATOR_SELECT,
   TAG_GENERATOR_TOGGLE,

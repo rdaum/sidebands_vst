@@ -44,7 +44,7 @@ void Voice::NoteOn(SampleRate sample_rate, Patch *patch,
   velocity_ = vel;
 
   std::lock_guard<std::mutex> generators_lock(generators_mutex_);
-  auto &g_patches = patch->generators;
+  auto &g_patches = patch->generators_;
   for (int g_num = 0; g_num < kNumGenerators; g_num++) {
     auto &g = this->generators_[g_num];
     auto &gp = g_patches[g_num];
@@ -55,7 +55,7 @@ void Voice::NoteOn(SampleRate sample_rate, Patch *patch,
 }
 
 void Voice::NoteOff(SampleRate sample_rate, Patch *patch, uint8_t note) {
-  auto &g_patches = patch->generators;
+  auto &g_patches = patch->generators_;
 
   std::lock_guard<std::mutex> generators_lock(generators_mutex_);
   for (int g_num = 0; g_num < kNumGenerators; g_num++) {
@@ -71,7 +71,7 @@ MixBuffers Voice::Perform(SampleRate sample_rate, size_t frames_per_buffer,
                           Patch *patch) {
   if (!Playing())
     return {};
-  auto g_patches = patch->generators;
+  auto g_patches = patch->generators_;
 
   // Copy references to the generators that we need to use, and create a mix
   // buffer for each.

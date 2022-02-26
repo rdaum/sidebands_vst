@@ -5,7 +5,7 @@
 
 #include "public.sdk/source/main/pluginfactory.h"
 
-#define stringPluginName "sidebands"
+#define stringPluginName "Sidebands"
 
 using namespace Steinberg::Vst;
 using namespace sidebands;
@@ -29,8 +29,8 @@ DEF_CLASS2(
     stringPluginName,           // here the Plug-in name (to be changed)
     Vst::kDistributable,        // means that component and controller could be
                                 // distributed on different computers
-    sidebandsVST3Category,      // Subcategory for this Plug-in (to be changed)
-    FULL_VERSION_STR,           // Plug-in version (to be changed)
+    Steinberg::Vst::PlugType::kInstrumentSynth,
+    FULL_VERSION_STR,  // Plug-in version (to be changed)
     kVstVersionString, // the VST 3 SDK version (do not changed this, use
                        // always this define)
     SidebandsProcessor::Instantiate) // function pointer called when this
@@ -43,16 +43,13 @@ DEF_CLASS2(
     kVstComponentControllerClass, // the Controller category (do not changed
                                   // this)
     stringPluginName
-    "Controller",     // controller name (could be the same than component name)
-    0,                // not used here
-    "",               // not used here
-    FULL_VERSION_STR, // Plug-in version (to be changed)
+    "Controller",      // controller name (could be the same as component name)
+    0,                 // not used here
+    "",                // not used here
+    FULL_VERSION_STR,  // Plug-in version (to be changed)
     kVstVersionString, // the VST 3 SDK version (do not changed this, use always
                        // this define)
     SidebandsController::Instantiate) // function pointer called when this
                                       // component should be instantiated
-
-//----for others Plug-ins contained in this factory, put like for the first
-// Plug-in different DEF_CLASS2---
 
 END_FACTORY
