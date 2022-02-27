@@ -8,6 +8,7 @@
 #include "ui/modulator_editor_view.h"
 
 namespace sidebands {
+namespace ui {
 
 class ParameterEditorView;
 class GraphicalEnvelopeEditorView;
@@ -15,8 +16,8 @@ class EnvelopeEditorView : public VSTGUI::CRowColumnView,
                            public ModulatorEditorView {
 public:
   EnvelopeEditorView(const VSTGUI::CRect &size,
-                      Steinberg::Vst::EditController *edit_controller,
-                      TargetTag target);
+                     Steinberg::Vst::EditController *edit_controller,
+                     TargetTag target);
   ~EnvelopeEditorView() override = default;
 
   void SwitchGenerator(int new_generator) override;
@@ -29,4 +30,5 @@ private:
   GraphicalEnvelopeEditorView *envelope_editor_;
 };
 
+}  // namespace ui
 }  // namespace sidebands

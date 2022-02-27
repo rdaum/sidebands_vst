@@ -10,6 +10,7 @@
 using Steinberg::Vst::ParamID;
 
 namespace sidebands {
+namespace ui {
 
 namespace {
 
@@ -94,4 +95,5 @@ VSTGUI::CControl *PatchParameterView::NewToggle(uint16_t generator,
   return control;
 }
 
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

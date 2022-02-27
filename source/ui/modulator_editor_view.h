@@ -7,6 +7,7 @@
 #include "tags.h"
 
 namespace sidebands {
+namespace ui {
 
 // Abstract mixin for modulation source editors (envelopes, LFOs)
 class ModulatorEditorView : public Steinberg::FObject,
@@ -33,4 +34,5 @@ private:
   const TargetTag target_;
 };
 
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

@@ -176,7 +176,7 @@ VSTGUI::CView *SidebandsController::createCustomView(
     VSTGUI::CPoint size;
     attributes.getPointAttribute("size", size);
 
-    return new DrawbarView(VSTGUI::CRect(origin, size), this);
+    return new ui::DrawbarView(VSTGUI::CRect(origin, size), this);
   }
   if (view_name == "GeneratorEditor") {
     VSTGUI::CPoint origin;
@@ -184,7 +184,7 @@ VSTGUI::CView *SidebandsController::createCustomView(
     VSTGUI::CPoint size;
     attributes.getPointAttribute("size", size);
 
-    return new GeneratorEditorView(VSTGUI::CRect(origin, size), this);
+    return new ui::GeneratorEditorView(VSTGUI::CRect(origin, size), this);
   }
 
   return nullptr;

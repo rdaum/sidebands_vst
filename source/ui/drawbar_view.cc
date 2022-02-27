@@ -10,6 +10,7 @@
 using Steinberg::Vst::ParamID;
 
 namespace sidebands {
+namespace ui {
 
 namespace {
 constexpr int kDrawbarWidth = 33;
@@ -84,7 +85,8 @@ void DrawbarView::valueChanged(VSTGUI::CControl *control) {
     setDirty(true);
 
     SelectGenerator(edit_controller(), GeneratorFor(tag));
-    edit_controller()->selectUnit(MakeUnitID(UNIT_GENERATOR, GeneratorFor(tag)));
+    edit_controller()->selectUnit(
+        MakeUnitID(UNIT_GENERATOR, GeneratorFor(tag)));
     return;
   }
   edit_controller()->beginEdit(tag);
@@ -93,4 +95,5 @@ void DrawbarView::valueChanged(VSTGUI::CControl *control) {
   edit_controller()->setParamNormalized(tag, control->getValueNormalized());
 }
 
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

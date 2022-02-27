@@ -7,6 +7,7 @@
 #include "tags.h"
 
 namespace sidebands {
+namespace ui {
 
 // Combination of a slider and numeric text editor and possibly other things.
 // Tied to a single parameter and updating itself in response to parameter
@@ -33,4 +34,5 @@ private:
   Steinberg::Vst::RangeParameter *parameter_;
 };
 
+}  // namespace ui
 } // namespace sidebands

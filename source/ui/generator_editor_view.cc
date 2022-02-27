@@ -16,6 +16,7 @@ using Steinberg::Vst::ParameterInfo;
 using Steinberg::Vst::ParamID;
 
 namespace sidebands {
+namespace ui {
 
 namespace {
 
@@ -145,4 +146,5 @@ void GeneratorEditorView::update(Steinberg::FUnknown *changedUnknown,
   }
 }
 
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

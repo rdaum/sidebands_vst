@@ -4,6 +4,7 @@
 #include "ui/parameter_editor_view.h"
 
 namespace sidebands {
+namespace ui {
 
 LFOEditorView::LFOEditorView(const VSTGUI::CRect &size,
                              Steinberg::Vst::EditController *edit_controller,
@@ -41,4 +42,5 @@ void LFOEditorView::SwitchGenerator(int new_generator) {
   setDirty(true);
 }
 
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

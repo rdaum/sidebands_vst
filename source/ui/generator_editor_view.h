@@ -8,6 +8,7 @@
 #include "ui/patch_param_view.h"
 
 namespace sidebands {
+namespace ui {
 
 class SidebandsController;
 class ParameterEditorView;
@@ -36,4 +37,5 @@ private:
   ModulatorTargetView *k_target_view_;
 };
 
+}  // namespace ui
 } // namespace sidebands

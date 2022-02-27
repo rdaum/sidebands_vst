@@ -7,6 +7,7 @@
 #include "ui/modulator_editor_view.h"
 
 namespace sidebands {
+namespace ui {
 
 class GraphicalEnvelopeEditorView : public VSTGUI::CView,
                                     public VSTGUI::IFocusDrawing,
@@ -64,4 +65,5 @@ private:
   Segment *dragging_ = nullptr;
 };
 
+}  // namespace ui
 } // namespace sidebands

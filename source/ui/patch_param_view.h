@@ -10,6 +10,8 @@ namespace sidebands {
 
 class SidebandsController;
 
+namespace ui {
+
 class PatchParameterView : public VSTGUI::IControlListener,
                            public Steinberg::FObject {
 public:
@@ -26,4 +28,6 @@ protected:
 private:
   SidebandsController *edit_controller_;
 };
-} // namespace sidebands
+
+}  // namespace ui
+}  // namespace sidebands

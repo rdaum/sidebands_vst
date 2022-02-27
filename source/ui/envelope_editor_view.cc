@@ -5,6 +5,7 @@
 #include "ui/parameter_editor_view.h"
 
 namespace sidebands {
+namespace ui {
 
 EnvelopeEditorView::EnvelopeEditorView(
     const VSTGUI::CRect &size, Steinberg::Vst::EditController *edit_controller,
@@ -66,4 +67,5 @@ void EnvelopeEditorView::SwitchGenerator(int new_generator) {
                                              TAG_ENV_R, target()));
 }
 
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

@@ -9,6 +9,7 @@
 #include "ui/modulator_editor_view.h"
 
 namespace sidebands {
+namespace ui {
 
 class EnvelopeEditorView;
 class LFOEditorView;
@@ -32,4 +33,5 @@ private:
   void SwitchViewVisibility();
 };
 
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

@@ -1,6 +1,7 @@
 #include "ui/modulator_editor_view.h"
 
 namespace sidebands {
+namespace ui {
 
 void ModulatorEditorView::valueChanged(VSTGUI::CControl *control) {
   Steinberg::Vst::ParamID tag = control->getTag();
@@ -27,4 +28,5 @@ void ModulatorEditorView::update(Steinberg::FUnknown *changedUnknown,
   }
 }
 
+}  // namespace ui
 }  // namespace sidebands

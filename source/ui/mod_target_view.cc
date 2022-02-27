@@ -5,6 +5,7 @@
 #include "ui/lfo_editor_view.h"
 
 namespace sidebands {
+namespace ui {
 
 ModulatorTargetView::ModulatorTargetView(
     const VSTGUI::CRect &size, Steinberg::Vst::EditController *edit_controller,
@@ -79,4 +80,5 @@ void ModulatorTargetView::SwitchViewVisibility() {
   setDirty(true);
 }
 
-} //  namespace sidebands
+}  // namespace ui
+}  //  namespace sidebands

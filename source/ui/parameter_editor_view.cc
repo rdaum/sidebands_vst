@@ -5,6 +5,7 @@
 #include <pluginterfaces/vst/vsttypes.h>
 
 namespace sidebands {
+namespace ui {
 
 namespace {
 
@@ -123,4 +124,5 @@ void ParameterEditorView::UpdateControlParameters(
   setDirty(true);
 }
 
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

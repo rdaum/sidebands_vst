@@ -5,6 +5,7 @@
 using VSTGUI::CPoint;
 
 namespace sidebands {
+namespace ui {
 
 Steinberg::Vst::ParamValue ValueOf(Steinberg::Vst::RangeParameter *p) {
   return p->toPlain(p->getNormalized());
@@ -206,4 +207,5 @@ void GraphicalEnvelopeEditorView::SwitchGenerator(int new_generator) {
   setDirty(true);
 }
 
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

@@ -10,6 +10,8 @@
 namespace sidebands {
 
 class SidebandsController;
+namespace ui {
+
 class DrawbarView : public VSTGUI::CRowColumnView, public PatchParameterView {
 public:
   explicit DrawbarView(const VSTGUI::CRect &size,
@@ -22,4 +24,5 @@ private:
   VSTGUI::COnOffButton *select_buttons_[kNumGenerators];
 };
 
+}  // namespace ui
 } // namespace sidebands
