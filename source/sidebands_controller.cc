@@ -168,22 +168,15 @@ VSTGUI::CView *SidebandsController::createCustomView(
     const VSTGUI::IUIDescription *description, VSTGUI::VST3Editor *editor) {
 
   const auto &view_name = VSTGUI::UTF8StringView(name);
-  LOG(INFO) << "Custom view:" << view_name;
 
+  VSTGUI::CPoint origin;
+  attributes.getPointAttribute("origin", origin);
+  VSTGUI::CPoint size;
+  attributes.getPointAttribute("size", size);
   if (view_name == "DrawbarEditor") {
-    VSTGUI::CPoint origin;
-    attributes.getPointAttribute("origin", origin);
-    VSTGUI::CPoint size;
-    attributes.getPointAttribute("size", size);
-
     return new ui::DrawbarView(VSTGUI::CRect(origin, size), this);
   }
   if (view_name == "GeneratorEditor") {
-    VSTGUI::CPoint origin;
-    attributes.getPointAttribute("origin", origin);
-    VSTGUI::CPoint size;
-    attributes.getPointAttribute("size", size);
-
     return new ui::GeneratorEditorView(VSTGUI::CRect(origin, size), this);
   }
 

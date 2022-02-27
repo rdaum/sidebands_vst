@@ -132,8 +132,6 @@ GraphicalEnvelopeEditorView::onMouseMoved(CPoint &where,
   if (dragging_ && dragging_->type == Segment::Type::RATE) {
     float change_x = where.x - dragging_->end_point.x;
     float change_r = change_x / dragging_->width;
-    LOG(INFO) << "Change diff_x: " << change_x << " diff_r: " << change_r
-              << " nval: " << (dragging_->param->getNormalized() * change_r);
     dragging_->param->setNormalized(
         std::max(dragging_->param->getNormalized() * change_r, 0.01));
     UpdateSegments();

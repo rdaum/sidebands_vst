@@ -73,8 +73,6 @@ DrawbarView::DrawbarView(const VSTGUI::CRect &size,
 void DrawbarView::valueChanged(VSTGUI::CControl *control) {
   ParamID tag = control->getTag();
   ParamTag param = ParamFor(tag);
-  LOG(INFO) << "Value changed: " << TagStr(tag) << " == " << control->getValue()
-            << " old value: " << control->getOldValue();
   if (param == TAG_GENERATOR_SELECT) {
     // Turn off other select buttons.
     for (auto *button : select_buttons_) {
