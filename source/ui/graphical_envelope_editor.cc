@@ -1,4 +1,4 @@
-#include "ui/envelope_editor.h"
+#include "ui/graphical_envelope_editor.h"
 
 #include <glog/logging.h>
 
@@ -10,25 +10,24 @@ Steinberg::Vst::ParamValue ValueOf(Steinberg::Vst::RangeParameter *p) {
   return p->toPlain(p->getNormalized());
 }
 
-EnvelopeEditorView::EnvelopeEditorView(
+GraphicalEnvelopeEditorView::GraphicalEnvelopeEditorView(
     const VSTGUI::CRect &size, VSTGUI::IControlListener *listener,
     Steinberg::Vst::EditController *edit_controller, int selected_generator,
     TargetTag target)
-    : VSTGUI::CView(size), edit_controller_(edit_controller),
-      selected_generator_(selected_generator), target_(target) {
+    : VSTGUI::CView(size), ModulatorEditorView(edit_controller, target) {
 
   SwitchGenerator(selected_generator);
 }
 
-void EnvelopeEditorView::update(Steinberg::FUnknown *unknown,
-                                Steinberg::int32 int_32) {
-  LOG(INFO) << "Update: " << int_32;
+void GraphicalEnvelopeEditorView::update(Steinberg::FUnknown *unknown,
+                                         Steinberg::int32 int_32) {
+  ModulatorEditorView::update(unknown, int_32);
   FObject::update(unknown, int_32);
   UpdateSegments();
   setDirty(true);
 }
 
-void EnvelopeEditorView::UpdateSegments() {
+void GraphicalEnvelopeEditorView::UpdateSegments() {
   segments_ = {{a_, Segment::Type::RATE, 0, 1, ValueOf(a_)},
                {d_, Segment::Type::RATE, 1, ValueOf(s_), ValueOf(d_)},
                {s_, Segment::Type::LEVEL, ValueOf(s_), ValueOf(s_),
@@ -68,17 +67,17 @@ void EnvelopeEditorView::UpdateSegments() {
   }
 }
 
-void EnvelopeEditorView::draw(VSTGUI::CDrawContext *pContext) {
+void GraphicalEnvelopeEditorView::draw(VSTGUI::CDrawContext *pContext) {
   return drawRect(pContext, getViewSize());
 }
 
-void EnvelopeEditorView::setDirty(bool val) {
+void GraphicalEnvelopeEditorView::setDirty(bool val) {
   CView::setDirty(val);
   UpdateSegments();
 }
 
-void EnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
-                                  const VSTGUI::CRect &dirtyRect) {
+void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
+                                           const VSTGUI::CRect &dirtyRect) {
   if (dirtyRect.getWidth() <= 0 || dirtyRect.getHeight() <= 0 ||
       context == nullptr)
     return;
@@ -107,8 +106,8 @@ void EnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
 }
 
 VSTGUI::CMouseEventResult
-EnvelopeEditorView::onMouseDown(CPoint &where,
-                                const VSTGUI::CButtonState &buttons) {
+GraphicalEnvelopeEditorView::onMouseDown(CPoint &where,
+                                         const VSTGUI::CButtonState &buttons) {
   if (buttons.isLeftButton() && !dragging_)
     for (auto &s : segments_) {
       if (s.drag_box.pointInside(where)) {
@@ -124,8 +123,8 @@ EnvelopeEditorView::onMouseDown(CPoint &where,
 }
 
 VSTGUI::CMouseEventResult
-EnvelopeEditorView::onMouseMoved(CPoint &where,
-                                 const VSTGUI::CButtonState &buttons) {
+GraphicalEnvelopeEditorView::onMouseMoved(CPoint &where,
+                                          const VSTGUI::CButtonState &buttons) {
   if (!dragging_ || !buttons.isLeftButton())
     return VSTGUI::kMouseEventNotHandled;
 
@@ -154,8 +153,8 @@ EnvelopeEditorView::onMouseMoved(CPoint &where,
 }
 
 VSTGUI::CMouseEventResult
-EnvelopeEditorView::onMouseUp(CPoint &where,
-                              const VSTGUI::CButtonState &buttons) {
+GraphicalEnvelopeEditorView::onMouseUp(CPoint &where,
+                                       const VSTGUI::CButtonState &buttons) {
   if (buttons.isLeftButton() && dragging_) {
     dragging_ = nullptr;
     getFrame()->setCursor(VSTGUI::kCursorDefault);
@@ -165,9 +164,9 @@ EnvelopeEditorView::onMouseUp(CPoint &where,
   return VSTGUI::kMouseEventNotHandled;
 }
 
-bool EnvelopeEditorView::drawFocusOnTop() { return false; }
+bool GraphicalEnvelopeEditorView::drawFocusOnTop() { return false; }
 
-bool EnvelopeEditorView::getFocusPath(VSTGUI::CGraphicsPath &outPath) {
+bool GraphicalEnvelopeEditorView::getFocusPath(VSTGUI::CGraphicsPath &outPath) {
   if (wantsFocus()) {
     VSTGUI::CCoord focusWidth = getFrame()->getFocusWidth();
     VSTGUI::CRect r(getVisibleViewSize());
@@ -180,7 +179,7 @@ bool EnvelopeEditorView::getFocusPath(VSTGUI::CGraphicsPath &outPath) {
   return true;
 }
 
-void EnvelopeEditorView::SwitchGenerator(int new_generator) {
+void GraphicalEnvelopeEditorView::SwitchGenerator(int new_generator) {
   if (a_)
     a_->removeDependent(this);
   if (d_)
@@ -190,10 +189,14 @@ void EnvelopeEditorView::SwitchGenerator(int new_generator) {
   if (r_)
     r_->removeDependent(this);
 
-  a_ = FindRangedParameter(edit_controller_, new_generator, TAG_ENV_A, target_);
-  d_ = FindRangedParameter(edit_controller_, new_generator, TAG_ENV_D, target_);
-  s_ = FindRangedParameter(edit_controller_, new_generator, TAG_ENV_S, target_);
-  r_ = FindRangedParameter(edit_controller_, new_generator, TAG_ENV_R, target_);
+  a_ = FindRangedParameter(edit_controller(), new_generator, TAG_ENV_A,
+                           target());
+  d_ = FindRangedParameter(edit_controller(), new_generator, TAG_ENV_D,
+                           target());
+  s_ = FindRangedParameter(edit_controller(), new_generator, TAG_ENV_S,
+                           target());
+  r_ = FindRangedParameter(edit_controller(), new_generator, TAG_ENV_R,
+                           target());
   a_->addDependent(this);
   d_->addDependent(this);
   s_->addDependent(this);

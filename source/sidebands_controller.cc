@@ -87,9 +87,9 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
   setParamNormalized(TagFor(0, TAG_OSC, TARGET_A), 0.5);
   for (int i = 0; i < kNumGenerators; i++) {
     setParamNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_A),
-                       1.0 / GeneratorPatch::kNumModTypes);
+                       double(GeneratorPatch::ModType::ENVELOPE) / (GeneratorPatch::kNumModTypes -1));
     setParamNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_K),
-                       1.0 / GeneratorPatch::kNumModTypes);
+                       double(GeneratorPatch::ModType::ENVELOPE) / (GeneratorPatch::kNumModTypes -1));
     setParamNormalized(TagFor(i, TAG_OSC, TARGET_C),
                        float(1 + i) / kNumGenerators);
     setParamNormalized(TagFor(i, TAG_OSC, TARGET_K), 0.5);
@@ -108,6 +108,10 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
     setParamNormalized(TagFor(i, TAG_ENV_D, TARGET_K), 0.25);
     setParamNormalized(TagFor(i, TAG_ENV_S, TARGET_K), 0.25);
     setParamNormalized(TagFor(i, TAG_ENV_R, TARGET_K), 0.3);
+
+    setParamNormalized(TagFor(i, TAG_LFO_FREQ, TARGET_K), 0.01);
+    setParamNormalized(TagFor(i, TAG_LFO_AMP, TARGET_K), 0.5);
+    setParamNormalized(TagFor(i, TAG_LFO_TYPE, TARGET_K), 0);
   }
   setParamNormalized(TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA), 0);
 

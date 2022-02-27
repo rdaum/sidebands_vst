@@ -7,7 +7,7 @@
 
 #include "constants.h"
 #include "sidebands_controller.h"
-#include "ui/envelope_editor.h"
+#include "ui/graphical_envelope_editor.h"
 #include "ui/mod_target_view.h"
 #include "ui/parameter_editor_view.h"
 

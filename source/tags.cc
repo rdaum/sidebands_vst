@@ -15,8 +15,9 @@ Steinberg::Vst::UnitID MakeUnitID(UnitTag unit_tag, uint16_t unit_id) {
 }
 
 constexpr const char *kParamNames[]{
-    "SELECT", "TOGGLE", "OSC", "ENV_A",         "ENV_AL",  "ENV_D",
-    "ENV_S",  "ENV_R",  "LFO", "SELECTED_GEN#", "MOD_TYPE"};
+    "SELECT",   "TOGGLE", "OSC",           "ENV_A",    "ENV_AL",
+    "ENV_D",    "ENV_S",  "ENV_R",         "LFO_FREQ", "LFO_AMP",
+    "LFO_TYPE", "LFO",    "SELECTED_GEN#", "MOD_TYPE"};
 
 std::string TagStr(Steinberg::Vst::ParamID tag) {
   std::string gen = std::to_string(GeneratorFor(tag));

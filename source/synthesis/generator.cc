@@ -1,6 +1,7 @@
-#include "generator.h"
 #include "constants.h"
-#include "oscillator.h"
+#include "synthesis/generator.h"
+#include "synthesis/oscillator.h"
+#include "synthesis/lfo.h"
 
 #include <cmath>
 #include <execution>
@@ -21,8 +22,7 @@ void Generator::ConfigureModulators(const GeneratorPatch &patch) {
       modulators_[target] = std::make_unique<EnvelopeGenerator>();
       break;
     case GeneratorPatch::ModType::LFO:
-      // TODO impl.
-      modulators_[target].reset();
+      modulators_[target] = std::make_unique<LFO>();
       break;
     }
   }
@@ -85,7 +85,7 @@ void Generator::NoteOn(
   ConfigureModulators(patch);
 
   for (auto dest : kModulationTargets) {
-    auto modulator = ModulatorFor(dest);
+    auto *modulator = ModulatorFor(dest);
     if (modulator) {
       modulator->On(sample_rate, patch.ModulationParams(dest).value());
     }
@@ -95,7 +95,7 @@ void Generator::NoteOn(
 void Generator::NoteOff(SampleRate sample_rate, const GeneratorPatch &patch,
                         uint8_t note) {
   for (auto dest : kModulationTargets) {
-    auto modulator = ModulatorFor(dest);
+    auto *modulator = ModulatorFor(dest);
     if (modulator) {
       modulator->Release(sample_rate, patch.ModulationParams(dest).value());
     }
@@ -109,7 +109,7 @@ bool Generator::Playing() const {
 
 void Generator::Reset() {
   for (auto dest : kModulationTargets) {
-    auto modulator = ModulatorFor(dest);
+    auto *modulator = ModulatorFor(dest);
     if (modulator) {
       modulator->Reset();
     }

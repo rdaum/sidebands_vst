@@ -56,9 +56,12 @@ public:
     ParamValue R_R; // release rate
   };
   enum class LFOType { SIN, COS };
+  static constexpr LFOType kLFOTypes[] { LFOType::SIN, LFOType::COS };
+  static constexpr int kNumLFOTypes = sizeof(kLFOTypes) / sizeof(LFOType);
+
   struct LFOValues {
     LFOType type;
-    ParamValue rate;
+    ParamValue frequency;
     ParamValue amplitude;
 
     // TODO wave type, for now just sine
@@ -68,6 +71,7 @@ public:
   enum class ModType { NONE, ENVELOPE, LFO };
   static constexpr ModType kModTypes[]{ModType::NONE, ModType::ENVELOPE,
                                        ModType::LFO};
+
   static constexpr int kNumModTypes = sizeof(kModTypes) / sizeof(ModType);
 
   std::optional<ModulationParameters>
@@ -101,6 +105,13 @@ private:
     IPtr<RangeParameter> r_r_;
   };
   EnvelopeParameters envelope_parameters_[NUM_TARGETS];
+
+  struct LFOParameters {
+    IPtr<RangeParameter> frequency_;
+    IPtr<RangeParameter> function_;
+    IPtr<RangeParameter> amplitude_;
+  };
+  LFOParameters lfo_parameters_[NUM_TARGETS];
 
   struct PDesc {
     Steinberg::Vst::SampleAccurate::Parameter *sa_param;

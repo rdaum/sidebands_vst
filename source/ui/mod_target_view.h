@@ -6,38 +6,30 @@
 #include "constants.h"
 #include "tags.h"
 #include "ui/patch_param_view.h"
+#include "ui/modulator_editor_view.h"
 
 namespace sidebands {
 
-class ParameterEditorView;
 class EnvelopeEditorView;
+class LFOEditorView;
 class ModulatorTargetView : public VSTGUI::CRowColumnView,
-                            Steinberg::FObject,
-                            VSTGUI::IControlListener {
+                            ModulatorEditorView {
 public:
   ModulatorTargetView(const VSTGUI::CRect &size,
                       Steinberg::Vst::EditController *edit_controller,
                       TargetTag target);
   ~ModulatorTargetView() override = default;
 
-  void SwitchGenerator(int new_generator);
-
-  // IControlListener overrides
-  void valueChanged(VSTGUI::CControl *control) override;
-
-  // IDependent overrides
-  void update(FUnknown *unknown, Steinberg::int32 int_32) override;
+  void SwitchGenerator(int new_generator) override;
 
 private:
-  Steinberg::Vst::EditController *edit_controller_;
-  const TargetTag target_;
+  void valueChanged(VSTGUI::CControl *control) override;
 
-  ParameterEditorView *a_slider_;
-  ParameterEditorView *d_slider_;
-  ParameterEditorView *s_slider_;
-  ParameterEditorView *r_slider_;
-
-  EnvelopeEditorView *envelope_editor_;
+private:
+  VSTGUI::COptionMenu *mod_source_selector_;
+  EnvelopeEditorView *envelope_editor_view_;
+  LFOEditorView *lfo_editor_view_;
+  void SwitchViewVisibility();
 };
 
 } // namespace sidebands

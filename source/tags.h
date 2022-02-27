@@ -25,7 +25,9 @@ enum ParamTag {
   TAG_ENV_D,
   TAG_ENV_S,
   TAG_ENV_R,
-  TAG_LFO,
+  TAG_LFO_FREQ,
+  TAG_LFO_AMP,
+  TAG_LFO_TYPE,
   TAG_SELECTED_GENERATOR, // valid only with "0" for generator
   TAG_MOD_TYPE,
   TAG_NUM_TAGS

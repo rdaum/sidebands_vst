@@ -12,27 +12,24 @@ namespace sidebands {
 
 using Steinberg::Vst::ParameterInfo;
 
-IPtr<RangeParameter> BooleanParameter(
-    Steinberg::Vst::UnitID unit_id,
-    const std::string &name, ParamTag tag,
+IPtr<RangeParameter> BooleanParameter(Steinberg::Vst::UnitID unit_id,
+                                      const std::string &name, ParamTag tag,
                                       TargetTag sp, uint32_t gen_num) {
   auto info = ParameterInfo{
       .id = TagFor(gen_num, tag, sp),
       .stepCount = 1,
       .defaultNormalizedValue = 0,
-      .unitId =  unit_id,
+      .unitId = unit_id,
   };
   std::string full_name = absl::StrFormat("Gen %d %s", gen_num, name);
   Steinberg::UString(info.title, USTRINGSIZE(info.title))
       .assign(USTRING(full_name.c_str()));
 
-  // TODO: change to IndexedParameter, means modifying pdesc
   return new RangeParameter(info, 0, 1);
 }
 
-IPtr<RangeParameter> ModTypeParameter(
-    Steinberg::Vst::UnitID unit_id,
-    TargetTag target, uint32_t gen_num) {
+IPtr<RangeParameter> ModTypeParameter(Steinberg::Vst::UnitID unit_id,
+                                      TargetTag target, uint32_t gen_num) {
   std::string full_name =
       absl::StrFormat("Gen %d Mod Type %s", gen_num, kTargetNames[target]);
 
@@ -40,17 +37,16 @@ IPtr<RangeParameter> ModTypeParameter(
       .id = TagFor(gen_num, TAG_MOD_TYPE, target),
       .stepCount = 1,
       .defaultNormalizedValue = 0,
-      .unitId =  unit_id,
+      .unitId = unit_id,
   };
   Steinberg::UString(info.title, USTRINGSIZE(info.title))
       .assign(USTRING(full_name.c_str()));
 
-  return new RangeParameter(info, 0, GeneratorPatch::kNumModTypes);
+  return new RangeParameter(info, 0, GeneratorPatch::kNumModTypes - 1);
 }
 
-IPtr<RangeParameter> OscillatorParameter(
-    Steinberg::Vst::UnitID unit_id,
-    const std::string &name, TargetTag sp,
+IPtr<RangeParameter> OscillatorParameter(Steinberg::Vst::UnitID unit_id,
+                                         const std::string &name, TargetTag sp,
                                          uint32_t gen_num, ParamValue min,
                                          ParamValue max) {
   std::string full_name =
@@ -60,7 +56,7 @@ IPtr<RangeParameter> OscillatorParameter(
       .id = TagFor(gen_num, TAG_OSC, sp),
       .stepCount = 0,
       .defaultNormalizedValue = 0,
-      .unitId =  unit_id,
+      .unitId = unit_id,
   };
   Steinberg::UString(info.title, USTRINGSIZE(info.title))
       .assign(USTRING(full_name.c_str()));
@@ -68,9 +64,8 @@ IPtr<RangeParameter> OscillatorParameter(
   return new RangeParameter(info, min, max);
 }
 
-IPtr<RangeParameter> LFOParameter(
-    Steinberg::Vst::UnitID unit_id,
-    const std::string &name, ParamTag tag,
+IPtr<RangeParameter> LFOParameter(Steinberg::Vst::UnitID unit_id,
+                                  const std::string &name, ParamTag tag,
                                   TargetTag sp, uint32_t gen_num,
                                   ParamValue min, ParamValue max) {
   std::string full_name = absl::StrFormat("Gen %d LFO %s", gen_num, name);
@@ -79,7 +74,7 @@ IPtr<RangeParameter> LFOParameter(
       .id = TagFor(gen_num, tag, sp),
       .stepCount = 0,
       .defaultNormalizedValue = 0,
-      .unitId =  unit_id,
+      .unitId = unit_id,
   };
   Steinberg::UString(info.title, USTRINGSIZE(info.title))
       .assign(USTRING(full_name.c_str()));
@@ -87,9 +82,8 @@ IPtr<RangeParameter> LFOParameter(
   return new RangeParameter(info, min, max);
 }
 
-IPtr<RangeParameter> EnvelopeParameter(
-    Steinberg::Vst::UnitID unit_id,
-    const std::string &name, ParamTag tag,
+IPtr<RangeParameter> EnvelopeParameter(Steinberg::Vst::UnitID unit_id,
+                                       const std::string &name, ParamTag tag,
                                        TargetTag sp, uint32_t gen_num,
                                        ParamValue min, ParamValue max) {
   std::string full_name = absl::StrFormat("Gen %d Envelope %s", gen_num, name);
@@ -98,7 +92,7 @@ IPtr<RangeParameter> EnvelopeParameter(
       .id = TagFor(gen_num, tag, sp),
       .stepCount = 0,
       .defaultNormalizedValue = 0,
-      .unitId =  unit_id,
+      .unitId = unit_id,
   };
   Steinberg::UString(info.title, USTRINGSIZE(info.title))
       .assign(USTRING(full_name.c_str()));
@@ -106,20 +100,21 @@ IPtr<RangeParameter> EnvelopeParameter(
   return new RangeParameter(info, min, max);
 }
 
-void GeneratorPatch::DeclareEnvelopeParameters(    Steinberg::Vst::UnitID unit_id,TargetTag target,
+void GeneratorPatch::DeclareEnvelopeParameters(Steinberg::Vst::UnitID unit_id,
+                                               TargetTag target,
                                                uint32_t gen_num) {
   std::string env_name = kTargetNames[target];
   GeneratorPatch::EnvelopeParameters params;
-  params.a_r_ = DeclareParameter(
-      EnvelopeParameter(unit_id, env_name + " A", TAG_ENV_A, target, gen_num, 0, 5));
-  params.a_l_ = DeclareParameter(
-      EnvelopeParameter(unit_id, env_name + " AL", TAG_ENV_AL, target, gen_num, 0, 1));
-  params.d_r_ = DeclareParameter(
-      EnvelopeParameter(unit_id, env_name + " D", TAG_ENV_D, target, gen_num, 0, 5));
-  params.s_l_ = DeclareParameter(
-      EnvelopeParameter(unit_id, env_name + " S", TAG_ENV_S, target, gen_num, 0, 1));
-  params.r_r_ = DeclareParameter(
-      EnvelopeParameter(unit_id, env_name + " R", TAG_ENV_R, target, gen_num, 0, 5));
+  params.a_r_ = DeclareParameter(EnvelopeParameter(
+      unit_id, env_name + " A", TAG_ENV_A, target, gen_num, 0, 5));
+  params.a_l_ = DeclareParameter(EnvelopeParameter(
+      unit_id, env_name + " AL", TAG_ENV_AL, target, gen_num, 0, 1));
+  params.d_r_ = DeclareParameter(EnvelopeParameter(
+      unit_id, env_name + " D", TAG_ENV_D, target, gen_num, 0, 5));
+  params.s_l_ = DeclareParameter(EnvelopeParameter(
+      unit_id, env_name + " S", TAG_ENV_S, target, gen_num, 0, 1));
+  params.r_r_ = DeclareParameter(EnvelopeParameter(
+      unit_id, env_name + " R", TAG_ENV_R, target, gen_num, 0, 5));
 
   envelope_parameters_[target] = std::move(params);
 }
@@ -164,20 +159,32 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
       r_(TagFor(gennum_, TAG_OSC, TARGET_R), 1),
       s_(TagFor(gennum_, TAG_OSC, TARGET_S), 0) {
 
-  on_ = DeclareParameter(
-      BooleanParameter(unit_id, "Toggle", TAG_GENERATOR_TOGGLE, TARGET_NA, gennum_));
+  on_ = DeclareParameter(BooleanParameter(
+      unit_id, "Toggle", TAG_GENERATOR_TOGGLE, TARGET_NA, gennum_));
 
-  DeclareParameter(
-      &c_, OscillatorParameter(unit_id, "C", TARGET_C, gennum_, 0, kNumGenerators));
-  DeclareParameter(&a_, OscillatorParameter(unit_id, "A", TARGET_A, gennum_, 0, 1));
-  DeclareParameter(&m_, OscillatorParameter(unit_id, "M", TARGET_M, gennum_, 0, 8));
-  DeclareParameter(&k_, OscillatorParameter(unit_id, "K", TARGET_K, gennum_, 0, 8));
-  DeclareParameter(&r_, OscillatorParameter(unit_id, "R", TARGET_R, gennum_, 0, 1));
-  DeclareParameter(&s_, OscillatorParameter(unit_id, "S", TARGET_S, gennum_, -1, 1));
+  DeclareParameter(&c_, OscillatorParameter(unit_id, "C", TARGET_C, gennum_, 0,
+                                            kNumGenerators));
+  DeclareParameter(&a_,
+                   OscillatorParameter(unit_id, "A", TARGET_A, gennum_, 0, 1));
+  DeclareParameter(&m_,
+                   OscillatorParameter(unit_id, "M", TARGET_M, gennum_, 0, 8));
+  DeclareParameter(&k_,
+                   OscillatorParameter(unit_id, "K", TARGET_K, gennum_, 0, 8));
+  DeclareParameter(&r_,
+                   OscillatorParameter(unit_id, "R", TARGET_R, gennum_, 0, 1));
+  DeclareParameter(&s_,
+                   OscillatorParameter(unit_id, "S", TARGET_S, gennum_, -1, 1));
 
   for (auto &target : kModulationTargets) {
-    mod_type_[target] = DeclareParameter(ModTypeParameter(unit_id, target, gennum_));
+    mod_type_[target] =
+        DeclareParameter(ModTypeParameter(unit_id, target, gennum_));
     DeclareEnvelopeParameters(unit_id, target, gennum_);
+    lfo_parameters_[target].amplitude_ =
+        DeclareParameter(LFOParameter(unit_id, "Amp", TAG_LFO_AMP, target, gennum_, 0, 1.0));
+    lfo_parameters_[target].frequency_ =
+        DeclareParameter(LFOParameter(unit_id, "Freq", TAG_LFO_FREQ, target, gennum_, 0, 20));
+    lfo_parameters_[target].function_ = DeclareParameter(LFOParameter(
+        unit_id, "Func", TAG_LFO_TYPE, target, gennum_, 0, kNumLFOTypes - 1));
   }
 }
 
@@ -320,14 +327,30 @@ ParamValue GeneratorPatch::s() const {
 
 std::optional<GeneratorPatch::ModulationParameters>
 GeneratorPatch::ModulationParams(TargetTag destination) const {
-  auto &target_env = envelope_parameters_[destination];
-  return EnvelopeValues{
-      .A_R = target_env.a_r_->toPlain(target_env.a_r_->getNormalized()),
-      .A_L = target_env.a_l_->toPlain(target_env.a_l_->getNormalized()),
-      .D_R = target_env.d_r_->toPlain(target_env.d_r_->getNormalized()),
-      .S_L = target_env.s_l_->toPlain(target_env.s_l_->getNormalized()),
-      .R_R = target_env.r_r_->toPlain(target_env.r_r_->getNormalized()),
-  };
+  if (ModTypeFor(destination) == ModType::ENVELOPE) {
+    auto &target_env = envelope_parameters_[destination];
+    return EnvelopeValues{
+        .A_R = target_env.a_r_->toPlain(target_env.a_r_->getNormalized()),
+        .A_L = target_env.a_l_->toPlain(target_env.a_l_->getNormalized()),
+        .D_R = target_env.d_r_->toPlain(target_env.d_r_->getNormalized()),
+        .S_L = target_env.s_l_->toPlain(target_env.s_l_->getNormalized()),
+        .R_R = target_env.r_r_->toPlain(target_env.r_r_->getNormalized()),
+    };
+  }
+
+  if (ModTypeFor(destination) == ModType::LFO) {
+    auto &target_lfo = lfo_parameters_[destination];
+    return LFOValues{
+        .type = kLFOTypes[static_cast<int>(
+            target_lfo.function_->getNormalized() * kNumLFOTypes)],
+        .frequency = target_lfo.frequency_->toPlain(
+            target_lfo.frequency_->getNormalized()),
+        .amplitude = target_lfo.amplitude_->toPlain(
+            target_lfo.amplitude_->getNormalized()),
+    };
+  }
+
+  return std::nullopt;
 }
 
 GeneratorPatch::ModType

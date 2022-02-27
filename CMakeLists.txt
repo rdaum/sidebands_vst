@@ -84,14 +84,20 @@ smtg_add_vst3plugin(modfmi
         source/ui/patch_param_view.cc
         source/ui/drawbar_view.h
         source/ui/drawbar_view.cc
+        source/ui/modulator_editor_view.h
+        source/ui/modulator_editor_view.cc
+        source/ui/envelope_editor_view.h
+        source/ui/envelope_editor_view.cc
+        source/ui/lfo_editor_view.cc
+        source/ui/lfo_editor_view.h
         source/ui/generator_editor_view.h
         source/ui/generator_editor_view.cc
         source/ui/parameter_editor_view.h
         source/ui/parameter_editor_view.cc
         source/ui/mod_target_view.cc
         source/ui/mod_target_view.h
-        source/ui/envelope_editor.cc
-        source/ui/envelope_editor.h
+        source/ui/graphical_envelope_editor.cc
+        source/ui/graphical_envelope_editor.h
 
         resource/sidebands.uidesc
         )

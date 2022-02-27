@@ -11,7 +11,7 @@ namespace sidebands {
 
 class SidebandsController;
 class ParameterEditorView;
-class EnvelopeEditorView;
+class GraphicalEnvelopeEditorView;
 class ModulatorTargetView;
 class GeneratorEditorView : public VSTGUI::CScrollView, Steinberg::FObject {
 public:

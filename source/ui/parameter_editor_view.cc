@@ -95,7 +95,6 @@ void ParameterEditorView::update(Steinberg::FUnknown *unknown,
     return;
 
   // Make sure all values are updated.
-  LOG(INFO) << "Updating to " << changed_param->getNormalized();
   for (auto *control : controls_) {
     control->setValueNormalized(changed_param->getNormalized());
     control->setDirty(true);
