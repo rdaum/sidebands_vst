@@ -11,23 +11,6 @@ namespace sidebands {
 
 Generator::Generator() {}
 
-void Generator::ConfigureModulators(const GeneratorPatch &patch) {
-  for (const auto &target : kModulationTargets) {
-    auto mod_type = patch.ModTypeFor(target);
-    switch (mod_type) {
-    case GeneratorPatch::ModType::NONE:
-      modulators_[target].reset();
-      break;
-    case GeneratorPatch::ModType::ENVELOPE:
-      modulators_[target] = std::make_unique<EnvelopeGenerator>();
-      break;
-    case GeneratorPatch::ModType::LFO:
-      modulators_[target] = std::make_unique<LFO>();
-      break;
-    }
-  }
-}
-
 double Produce(SampleRate sample_rate, GeneratorPatch &patch,
                TargetTag destination, std::function<double()> value_getter,
                IModulationSource *mod_source) {
@@ -41,10 +24,10 @@ double Produce(SampleRate sample_rate, GeneratorPatch &patch,
 
 std::function<double()> Generator::ProducerFor(SampleRate sample_rate,
                                                GeneratorPatch &gp,
-                                               TargetTag dest) const {
+                                               TargetTag dest) {
   return [sample_rate, &gp, dest, this]() {
     return Produce(sample_rate, gp, dest, gp.ParameterGetterFor(dest),
-                   ModulatorFor(dest));
+                   ModulatorFor(gp, dest));
   };
 }
 
@@ -85,7 +68,7 @@ void Generator::NoteOn(
   ConfigureModulators(patch);
 
   for (auto dest : kModulationTargets) {
-    auto *modulator = ModulatorFor(dest);
+    auto *modulator = ModulatorFor(patch, dest);
     if (modulator) {
       modulator->On(sample_rate, patch.ModulationParams(dest).value());
     }
@@ -95,7 +78,7 @@ void Generator::NoteOn(
 void Generator::NoteOff(SampleRate sample_rate, const GeneratorPatch &patch,
                         uint8_t note) {
   for (auto dest : kModulationTargets) {
-    auto *modulator = ModulatorFor(dest);
+    auto *modulator = ModulatorFor(patch, dest);
     if (modulator) {
       modulator->Release(sample_rate, patch.ModulationParams(dest).value());
     }
@@ -108,16 +91,36 @@ bool Generator::Playing() const {
 }
 
 void Generator::Reset() {
-  for (auto dest : kModulationTargets) {
-    auto *modulator = ModulatorFor(dest);
-    if (modulator) {
-      modulator->Reset();
+  for (auto &mod : modulators_) {
+    if (mod) mod->Reset();
+  }
+}
+
+
+void Generator::ConfigureModulators(const GeneratorPatch &patch) {
+  for (const auto &target : kModulationTargets) {
+    auto mod_type = patch.ModTypeFor(target);
+    switch (mod_type) {
+    case GeneratorPatch::ModType::NONE:
+      modulators_[target].reset();
+      break;
+    case GeneratorPatch::ModType::ENVELOPE:
+      modulators_[target] = std::make_unique<EnvelopeGenerator>();
+      break;
+    case GeneratorPatch::ModType::LFO:
+      modulators_[target] = std::make_unique<LFO>();
+      break;
     }
   }
 }
 
-IModulationSource *Generator::ModulatorFor(TargetTag dest) const {
-  return modulators_[dest].get();
+IModulationSource *Generator::ModulatorFor(const GeneratorPatch &patch, TargetTag dest) {
+  auto *mod = modulators_[dest].get();
+  if (mod && mod->mod_type() != patch.ModTypeFor(dest)) {
+    ConfigureModulators(patch);
+    mod =  modulators_[dest].get();
+  }
+  return mod;
 }
 
 } // namespace sidebands

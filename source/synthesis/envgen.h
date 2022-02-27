@@ -40,6 +40,7 @@ public:
   NextSample(SampleRate sample_rate,
              const GeneratorPatch::ModulationParameters &parameters) override;
   bool Playing() const override { return stage_ != ENVELOPE_STAGE_OFF; }
+  GeneratorPatch::ModType mod_type() const override;
 
 private:
   void EnterStage(SampleRate sample_rate, EnvelopeStage new_stage,

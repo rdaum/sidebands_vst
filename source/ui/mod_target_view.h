@@ -27,9 +27,9 @@ private:
   void valueChanged(VSTGUI::CControl *control) override;
 
 private:
-  VSTGUI::COptionMenu *mod_source_selector_;
-  EnvelopeEditorView *envelope_editor_view_;
-  LFOEditorView *lfo_editor_view_;
+  VSTGUI::COptionMenu *mod_source_selector_ = nullptr;
+  Steinberg::IPtr<EnvelopeEditorView> envelope_editor_view_;
+  Steinberg::IPtr<LFOEditorView> lfo_editor_view_;
   void SwitchViewVisibility();
 };
 

@@ -39,6 +39,8 @@ ModulatorTargetView::ModulatorTargetView(
   lfo_editor_view_ = new LFOEditorView(
       VSTGUI::CRect(0, 0, getWidth(), getHeight()), edit_controller, target);
 
+  addView(envelope_editor_view_);
+  addView(lfo_editor_view_);
   SwitchViewVisibility();
 }
 
@@ -50,9 +52,24 @@ void ModulatorTargetView::valueChanged(VSTGUI::CControl *control) {
 }
 
 void ModulatorTargetView::SwitchGenerator(int new_generator) {
+  SwitchViewVisibility();
   envelope_editor_view_->SwitchGenerator(new_generator);
   lfo_editor_view_->SwitchGenerator(new_generator);
-  SwitchViewVisibility();
+  if (mod_source_selector_) {
+    Steinberg::Vst::ParamID old_tag = mod_source_selector_->getTag();
+    auto *old_param_obj = edit_controller()->getParameterObject(old_tag);
+    if (!old_param_obj) {
+      LOG(ERROR) << "Missing parameter for tag: " << TagStr(old_tag);
+      return;
+    }
+
+    Steinberg::Vst::ParamID new_tag =
+        TagFor(new_generator, TAG_MOD_TYPE, target());
+    auto *new_param_obj = edit_controller()->getParameterObject(new_tag);
+    mod_source_selector_->setTag(new_tag);
+    mod_source_selector_->setValueNormalized(new_param_obj->getNormalized());
+    mod_source_selector_->setDirty(true);
+  }
   setDirty(true);
 }
 
@@ -62,23 +79,29 @@ void ModulatorTargetView::SwitchViewVisibility() {
   auto mod_type = GeneratorPatch::kModTypes[int(
       mod_type_v * (GeneratorPatch::kNumModTypes - 1))];
 
-  if (lfo_editor_view_->getParentView() == this &&
-      mod_type != GeneratorPatch::ModType::LFO)
-    removeView(lfo_editor_view_);
-
-  if (envelope_editor_view_->getParentView() == this &&
-      mod_type != GeneratorPatch::ModType::ENVELOPE)
-    removeView(envelope_editor_view_);
-
-  if (mod_type == GeneratorPatch::ModType::ENVELOPE) {
-    addView(envelope_editor_view_);
-  } else if (mod_type == GeneratorPatch::ModType::LFO) {
-    addView(lfo_editor_view_);
+  if (mod_type != GeneratorPatch::ModType::LFO) {
+    lfo_editor_view_->setVisible(false);
+    lfo_editor_view_->setViewSize(VSTGUI::CRect(0, 0, 0, 0));
   }
 
+  if (mod_type != GeneratorPatch::ModType::ENVELOPE) {
+    envelope_editor_view_->setVisible(false);
+    envelope_editor_view_->setViewSize(VSTGUI::CRect(0, 0, 0, 0));
+  }
 
+  if (mod_type == GeneratorPatch::ModType::LFO) {
+    lfo_editor_view_->setVisible(true);
+    lfo_editor_view_->setViewSize(getViewSize());
+  }
+
+  if (mod_type == GeneratorPatch::ModType::ENVELOPE) {
+    envelope_editor_view_->setVisible(true);
+    envelope_editor_view_->setViewSize(getViewSize());
+  }
+
+  layoutViews();
   setDirty(true);
 }
 
-}  // namespace ui
-}  //  namespace sidebands
+} // namespace ui
+} //  namespace sidebands

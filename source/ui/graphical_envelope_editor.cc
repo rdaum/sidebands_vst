@@ -141,7 +141,6 @@ GraphicalEnvelopeEditorView::onMouseMoved(CPoint &where,
 
   if (dragging_ && dragging_->type == Segment::Type::LEVEL) {
     float change_n = 1.0 - (where.y / getHeight());
-    LOG(INFO) << "Change level: " << change_n;
     dragging_->param->setNormalized(change_n);
     UpdateSegments();
     setDirty(true);

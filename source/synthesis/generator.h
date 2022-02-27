@@ -35,11 +35,10 @@ public:
 
 private:
   void ConfigureModulators(const GeneratorPatch &patch);
-
-  IModulationSource *ModulatorFor(TargetTag dest) const;
+  IModulationSource *ModulatorFor(const GeneratorPatch &patch, TargetTag dest) ;
 
   std::function<double()> ProducerFor(SampleRate sample_rate,
-                                      GeneratorPatch &gp, TargetTag dest) const;
+                                      GeneratorPatch &gp, TargetTag dest);
 
   std::unique_ptr<IModulationSource> modulators_[NUM_TARGETS];
   Oscillator o_;

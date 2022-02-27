@@ -100,4 +100,8 @@ void EnvelopeGenerator::Reset() {
   stage_ = ENVELOPE_STAGE_OFF;
 }
 
+GeneratorPatch::ModType EnvelopeGenerator::mod_type() const {
+  return GeneratorPatch::ModType::ENVELOPE;
+}
+
 } // namespace sidebands

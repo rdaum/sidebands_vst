@@ -21,6 +21,7 @@ public:
   NextSample(SampleRate sample_rate,
              const GeneratorPatch::ModulationParameters &parameters) = 0;
   virtual bool Playing() const = 0;
+  virtual GeneratorPatch::ModType mod_type() const = 0;
 };
 
 } // namespace sidebands

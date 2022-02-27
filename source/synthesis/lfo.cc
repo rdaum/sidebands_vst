@@ -35,4 +35,8 @@ LFO::NextSample(SampleRate sample_rate,
 
 bool LFO::Playing() const { return playing_; }
 
+GeneratorPatch::ModType LFO::mod_type() const {
+  return GeneratorPatch::ModType::LFO;
+}
+
 } // namespace sidebands
