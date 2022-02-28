@@ -70,7 +70,6 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
       Vst::Event event;
       input_events->getEvent(i, event);
       switch (event.type) {
-
       case Vst::Event::kNoteOnEvent:
         player_->NoteOn(std::chrono::high_resolution_clock::now(),
                         event.noteOn.noteId, event.noteOn.velocity,

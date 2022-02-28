@@ -80,6 +80,8 @@ smtg_add_vst3plugin(modfmi
         source/synthesis/voice.cc
         source/synthesis/modulation_source.h
 
+        source/ui/analysis_view.h
+        source/ui/analysis_view.cc
         source/ui/patch_param_view.h
         source/ui/patch_param_view.cc
         source/ui/drawbar_view.h
@@ -98,6 +100,8 @@ smtg_add_vst3plugin(modfmi
         source/ui/mod_target_view.h
         source/ui/graphical_envelope_editor.cc
         source/ui/graphical_envelope_editor.h
+        source/ui/waveform_view.cc
+        source/ui/waveform_view.h
 
         resource/sidebands.uidesc
         )

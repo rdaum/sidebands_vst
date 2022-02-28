@@ -57,7 +57,6 @@ void Generator::Perform(SampleRate sample_rate, GeneratorPatch &patch,
   std::generate(level_m.begin(), level_m.begin() + frames_per_buffer,
                 ProducerFor(sample_rate, velocity_, patch, TARGET_M));
 
-
   o_.Perform(frames_per_buffer, sample_rate, out_buffer, base_freq,
              level_a.data(), level_c.data(), level_m.data(), level_r.data(),
              level_s.data(), level_k.data());

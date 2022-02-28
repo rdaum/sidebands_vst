@@ -22,7 +22,7 @@ ParamValue EnvelopeGenerator::NextSample(
     ParamValue velocity,
     const GeneratorPatch::ModulationParameters &parameters) {
   if (stage_ == ENVELOPE_STAGE_OFF)
-    return 0.0f;
+    return current_level_;
 
   const GeneratorPatch::EnvelopeValues &ev =
       std::get<GeneratorPatch::EnvelopeValues>(parameters);

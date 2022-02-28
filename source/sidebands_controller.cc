@@ -1,7 +1,6 @@
 #include "sidebands_controller.h"
 
 #include "base/source/fstreamer.h"
-#include <Windows.h>
 #include <absl/strings/str_format.h>
 #include <glog/logging.h>
 #include <pluginterfaces/base/ustring.h>
@@ -15,6 +14,7 @@
 #include "tags.h"
 #include "ui/drawbar_view.h"
 #include "ui/generator_editor_view.h"
+#include "ui/analysis_view.h"
 
 using namespace Steinberg;
 
@@ -149,6 +149,9 @@ tresult PLUGIN_API SidebandsController::setParamNormalized(
   // called by host to update your parameters
   tresult result = EditControllerEx1::setParamNormalized(tag, value);
   CHECK_EQ(result, kResultTrue) << "Unable to set: " << TagStr(tag);
+  if (analysis_view_) {
+    analysis_view_->setDirty(true);
+  }
   return result;
 }
 
@@ -181,6 +184,10 @@ VSTGUI::CView *SidebandsController::createCustomView(
   }
   if (view_name == "GeneratorEditor") {
     return new ui::GeneratorEditorView(VSTGUI::CRect(origin, size), this);
+  }
+  if (view_name == "AnalysisView") {
+    analysis_view_ = new ui::AnalysisView(VSTGUI::CRect(origin, size));
+    return analysis_view_;
   }
 
   return nullptr;

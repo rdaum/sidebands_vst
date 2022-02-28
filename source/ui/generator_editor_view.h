@@ -14,6 +14,7 @@ class SidebandsController;
 class ParameterEditorView;
 class GraphicalEnvelopeEditorView;
 class ModulatorTargetView;
+class WaveformView;
 class GeneratorEditorView : public VSTGUI::CScrollView, Steinberg::FObject {
 public:
   GeneratorEditorView(const VSTGUI::CRect &size,
@@ -32,6 +33,7 @@ private:
   ParameterEditorView *c_slider_;
   ParameterEditorView *m_slider_;
   ParameterEditorView *k_slider_;
+  WaveformView *waveform_view_;
 
   ModulatorTargetView *a_target_view_;
   ModulatorTargetView *k_target_view_;

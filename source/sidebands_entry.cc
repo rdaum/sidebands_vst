@@ -29,7 +29,7 @@ DEF_CLASS2(
     stringPluginName,           // here the Plug-in name (to be changed)
     Vst::kDistributable,        // means that component and controller could be
                                 // distributed on different computers
-    Steinberg::Vst::PlugType::kInstrumentSynth,
+    sidebandsVST3Category,
     FULL_VERSION_STR,  // Plug-in version (to be changed)
     kVstVersionString, // the VST 3 SDK version (do not changed this, use
                        // always this define)

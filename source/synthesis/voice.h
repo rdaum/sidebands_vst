@@ -54,7 +54,7 @@ private:
   std::chrono::high_resolution_clock::time_point on_time_;
   uint8_t note_;
   ParamValue velocity_;
-  ParamValue base_freq_;
+  ParamValue note_frequency_;
 };
 
 } // namespace sidebands

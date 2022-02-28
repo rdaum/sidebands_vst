@@ -7,9 +7,9 @@
 
 #include "constants.h"
 #include "sidebands_controller.h"
-#include "ui/graphical_envelope_editor.h"
 #include "ui/mod_target_view.h"
 #include "ui/parameter_editor_view.h"
+#include "ui/waveform_view.h"
 
 using Steinberg::Vst::Parameter;
 using Steinberg::Vst::ParameterInfo;
@@ -48,7 +48,6 @@ GeneratorEditorView::GeneratorEditorView(
       absl::StrFormat("#%d", selected_generator).c_str());
 
   VSTGUI::CRect column_size{0, 0, 40, modulator_rows->getHeight()};
-
   c_slider_ = new ParameterEditorView(column_size,
                                       FindRangedParameter(edit_controller,
                                                           selected_generator,
@@ -69,6 +68,7 @@ GeneratorEditorView::GeneratorEditorView(
       VSTGUI::CRect(0, 0, modulator_rows->getWidth() - c_slider_->getWidth(),
                     kModRowHeight),
       edit_controller, TARGET_A);
+
   k_target_view_ = new ModulatorTargetView(
       VSTGUI::CRect(0, 0,
                     modulator_rows->getWidth() - m_slider_->getWidth() -
@@ -76,23 +76,39 @@ GeneratorEditorView::GeneratorEditorView(
                     kModRowHeight),
       edit_controller, TARGET_K);
 
+  waveform_view_ = new WaveformView(
+      VSTGUI::CRect(0, 0,
+                    getWidth() - k_slider_->getWidth() - c_slider_->getWidth() -
+                        m_slider_->getWidth(),
+                    kModRowHeight),
+      {VSTGUI::CColor(0, 0, 100)}, {selected_generator});
+  modulator_rows->addView(selected_label_);
+  auto *osc_columns =
+      new VSTGUI::CRowColumnView(VSTGUI::CRect(0, 0, modulator_rows->getWidth(),
+                                               waveform_view_->getHeight()),
+                                 VSTGUI::CRowColumnView::kColumnStyle);
+
+  osc_columns->setBackgroundColor(kBgGrey);
+  modulator_rows->addView(osc_columns);
+
+  osc_columns->addView(c_slider_);
+  osc_columns->addView(m_slider_);
+  osc_columns->addView(k_slider_);
+  osc_columns->addView(waveform_view_);
+
   auto *a_columns =
       new VSTGUI::CRowColumnView(VSTGUI::CRect(0, 0, modulator_rows->getWidth(),
                                                a_target_view_->getHeight()),
                                  VSTGUI::CRowColumnView::kColumnStyle);
 
-  modulator_rows->addView(selected_label_);
-
-  a_columns->addView(c_slider_);
   a_columns->addView(a_target_view_);
+
   modulator_rows->addView(a_columns);
 
   auto *k_columns =
       new VSTGUI::CRowColumnView(VSTGUI::CRect(0, 0, modulator_rows->getWidth(),
                                                k_target_view_->getHeight()),
                                  VSTGUI::CRowColumnView::kColumnStyle);
-  k_columns->addView(k_slider_);
-  k_columns->addView(m_slider_);
   k_columns->addView(k_target_view_);
   modulator_rows->addView(k_columns);
   addView(modulator_rows);
@@ -112,6 +128,7 @@ void GeneratorEditorView::valueChanged(VSTGUI::CControl *control) {
   edit_controller_->setParamNormalized(tag, control->getValueNormalized());
 
   CScrollView::valueChanged(control);
+  setDirty(true);
 }
 
 void GeneratorEditorView::update(Steinberg::FUnknown *changedUnknown,
@@ -128,6 +145,7 @@ void GeneratorEditorView::update(Steinberg::FUnknown *changedUnknown,
 
       k_target_view_->SwitchGenerator(new_generator);
       a_target_view_->SwitchGenerator(new_generator);
+      waveform_view_->SetGenerators({new_generator});
 
       c_slider_->UpdateControlParameters(
           edit_controller_, FindRangedParameter(edit_controller_, new_generator,
@@ -146,5 +164,5 @@ void GeneratorEditorView::update(Steinberg::FUnknown *changedUnknown,
   }
 }
 
-}  // namespace ui
-}  // namespace sidebands
+} // namespace ui
+} // namespace sidebands

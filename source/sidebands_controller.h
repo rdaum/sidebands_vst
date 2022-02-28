@@ -45,6 +45,9 @@ public:
   // DEF_INTERFACE (Vst::IXXX)
   END_DEFINE_INTERFACES(EditController)
   DELEGATE_REFCOUNT(EditController)
+
+private:
+  VSTGUI::CView *analysis_view_ = nullptr;
 };
 
 //------------------------------------------------------------------------

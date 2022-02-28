@@ -25,10 +25,9 @@ using Steinberg::Vst::ParamValue;
 using Steinberg::Vst::RangeParameter;
 using Steinberg::Vst::Unit;
 
-using UnitVector = std::vector<IPtr<Unit>>;
 class GeneratorPatch : public Steinberg::FObject {
 public:
-  explicit GeneratorPatch(uint32_t gennum, Steinberg::Vst::UnitID);
+  GeneratorPatch(uint32_t gennum, Steinberg::Vst::UnitID);
 
   void AppendParameters(ParameterContainer *container);
   void BeginParameterChange(ParamID param_id,
@@ -126,6 +125,7 @@ private:
   std::unordered_map<ParamKey, std::unique_ptr<PDesc>, ParamKey::Hash>
       parameters_;
 };
+
 
 class Patch {
 public:

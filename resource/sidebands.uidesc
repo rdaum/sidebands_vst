@@ -1,195 +1,212 @@
 {
-	"vstgui-ui-description": {
-		"version": "1",
-		"bitmaps": {
-			"background": {
-				"path": "background.png"
-			},
-			"switches": {
-				"path": "switches.png"
-			},
-			"slider_background": {
-				"path": "slider_rail.png"
-			},
-			"slider_handle": {
-				"path": "slider_handle.png"
-			},
-			"knob": {
-				"path": "knob2.png"
-			},
-			"select": {
-				"path": "select.png"
-			},
-			"on-off": {
-				"path": "on-off.png"
-			},
-			"toggle": {
-				"path": "toggle.png"
-			}
-		},
-		"fonts": {},
-		"colors": {
-			"background-grey": "#dbdbdbff"
-		},
-		"control-tags": {},
-		"custom": {
-			"FocusDrawing": {},
-			"VST3Editor": {
-				"Path": "C:\\Users\\ryand\\modfmi\\resource\\modfmi.uidesc"
-			},
-			"UIGridController": {
-				"Grids": "1x 1,5x 5,10x 10,12x 12,15x 15"
-			},
-			"UITemplateController": {
-				"SelectedTemplate": "view"
-			},
-			"UIEditController": {
-				"EditViewScale": "1",
-				"EditorSize": "0, 0, 1244, 898",
-				"SplitViewSize_0_0": "0.8509174311926605005496071498782839626074",
-				"SplitViewSize_0_1": "0.1261467889908256811981601686056819744408",
-				"SplitViewSize_1_0": "0.4885321100917431325072470826853532344103",
-				"SplitViewSize_1_1": "0.5068807339449541427001122428919188678265",
-				"SplitViewSize_2_0": "0.8553054662379421246853894444939214736223",
-				"SplitViewSize_2_1": "0.1406752411575562800027938692437601275742",
-				"TabSwitchValue": "0",
-				"Version": "1"
-			},
-			"UIAttributesController": {},
-			"UIViewCreatorDataSource": {
-				"SelectedRow": "22"
-			},
-			"UITagsDataSource": {
-				"SelectedRow": "-1"
-			},
-			"UIColorsDataSource": {
-				"SelectedRow": "-1"
-			}
-		},
-		"templates": {
-			"view": {
-				"attributes": {
-					"background-color": "background-grey",
-					"background-color-draw-style": "filled and stroked",
-					"class": "CViewContainer",
-					"mouse-enabled": "true",
-					"opacity": "0.5",
-					"origin": "0, 0",
-					"size": "650, 1024",
-					"transparent": "false",
-					"wants-focus": "false"
-				},
-				"children": {
-					"CTextLabel": {
-						"attributes": {
-							"back-color": "None",
-							"background-offset": "0, 0",
-							"class": "CTextLabel",
-							"default-value": "0.5",
-							"font": "~ NormalFontBig",
-							"font-antialias": "true",
-							"font-color": "~ WhiteCColor",
-							"frame-color": "None",
-							"frame-width": "1",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "10, 10",
-							"round-rect-radius": "6",
-							"shadow-color": "~ RedCColor",
-							"size": "130, 30",
-							"style-3D-in": "false",
-							"style-3D-out": "false",
-							"style-no-draw": "false",
-							"style-no-frame": "false",
-							"style-no-text": "false",
-							"style-round-rect": "false",
-							"style-shadow-text": "false",
-							"text-alignment": "center",
-							"text-inset": "0, 0",
-							"text-rotation": "0",
-							"text-shadow-offset": "1, 1",
-							"title": "Daum Audio Works",
-							"transparent": "false",
-							"value-precision": "2",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"CTextLabel": {
-						"attributes": {
-							"back-color": "None",
-							"background-offset": "0, 0",
-							"class": "CTextLabel",
-							"default-value": "0.5",
-							"font": "~ NormalFontBig",
-							"font-antialias": "true",
-							"font-color": "~ WhiteCColor",
-							"frame-color": "None",
-							"frame-width": "1",
-							"max-value": "1",
-							"min-value": "0",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "510, 10",
-							"round-rect-radius": "6",
-							"shadow-color": "~ RedCColor",
-							"size": "130, 30",
-							"style-3D-in": "false",
-							"style-3D-out": "false",
-							"style-no-draw": "false",
-							"style-no-frame": "false",
-							"style-no-text": "false",
-							"style-round-rect": "false",
-							"style-shadow-text": "false",
-							"text-alignment": "center",
-							"text-inset": "0, 0",
-							"text-rotation": "0",
-							"text-shadow-offset": "1, 1",
-							"title": "Sidebands",
-							"transparent": "false",
-							"value-precision": "2",
-							"wants-focus": "false",
-							"wheel-inc-value": "0.1"
-						}
-					},
-					"UIViewSwitchContainer": {
-						"attributes": {
-							"animation-style": "fade",
-							"animation-time": "120",
-							"animation-timing-function": "linear",
-							"background-color": "None",
-							"background-color-draw-style": "filled and stroked",
-							"class": "UIViewSwitchContainer",
-							"custom-view-name": "DrawbarEditor",
-							"mouse-enabled": "true",
-							"opacity": "1",
-							"origin": "10, 40",
-							"size": "600, 305",
-							"transparent": "false",
-							"wants-focus": "false"
-						}
-					},
-					"UIViewSwitchContainer": {
-						"attributes": {
-							"animation-style": "fade",
-							"animation-time": "120",
-							"animation-timing-function": "linear",
-							"background-color": "None",
-							"background-color-draw-style": "filled and stroked",
-							"class": "UIViewSwitchContainer",
-							"custom-view-name": "GeneratorEditor",
-							"mouse-enabled": "true",
-							"opacity": "0",
-							"origin": "10, 360",
-							"size": "600, 600",
-							"transparent": "false",
-							"wants-focus": "false"
-						}
-					}
-				}
-			}
-		}
-	}
+  "vstgui-ui-description": {
+    "version": "1",
+    "bitmaps": {
+      "background": {
+        "path": "background.png"
+      },
+      "switches": {
+        "path": "switches.png"
+      },
+      "slider_background": {
+        "path": "slider_rail.png"
+      },
+      "slider_handle": {
+        "path": "slider_handle.png"
+      },
+      "knob": {
+        "path": "knob2.png"
+      },
+      "select": {
+        "path": "select.png"
+      },
+      "on-off": {
+        "path": "on-off.png"
+      },
+      "toggle": {
+        "path": "toggle.png"
+      }
+    },
+    "fonts": {},
+    "colors": {
+      "background-grey": "#dbdbdbff"
+    },
+    "control-tags": {},
+    "custom": {
+      "FocusDrawing": {},
+      "VST3Editor": {
+        "Path": "C:\\Users\\ryand\\modfmi\\resource\\modfmi.uidesc"
+      },
+      "UIGridController": {
+        "Grids": "1x 1,5x 5,10x 10,12x 12,15x 15"
+      },
+      "UITemplateController": {
+        "SelectedTemplate": "view"
+      },
+      "UIEditController": {
+        "EditViewScale": "1",
+        "EditorSize": "0, 0, 1244, 898",
+        "SplitViewSize_0_0": "0.8509174311926605005496071498782839626074",
+        "SplitViewSize_0_1": "0.1261467889908256811981601686056819744408",
+        "SplitViewSize_1_0": "0.4885321100917431325072470826853532344103",
+        "SplitViewSize_1_1": "0.5068807339449541427001122428919188678265",
+        "SplitViewSize_2_0": "0.8553054662379421246853894444939214736223",
+        "SplitViewSize_2_1": "0.1406752411575562800027938692437601275742",
+        "TabSwitchValue": "0",
+        "Version": "1"
+      },
+      "UIAttributesController": {},
+      "UIViewCreatorDataSource": {
+        "SelectedRow": "22"
+      },
+      "UITagsDataSource": {
+        "SelectedRow": "-1"
+      },
+      "UIColorsDataSource": {
+        "SelectedRow": "-1"
+      }
+    },
+    "templates": {
+      "view": {
+        "attributes": {
+          "background-color": "background-grey",
+          "background-color-draw-style": "filled and stroked",
+          "class": "CViewContainer",
+          "mouse-enabled": "true",
+          "opacity": "0.5",
+          "origin": "0, 0",
+          "size": "1240, 1250",
+          "transparent": "false",
+          "wants-focus": "false"
+        },
+        "children": {
+          "CTextLabel": {
+            "attributes": {
+              "back-color": "None",
+              "background-offset": "0, 0",
+              "class": "CTextLabel",
+              "default-value": "0.5",
+              "font": "~ NormalFontBig",
+              "font-antialias": "true",
+              "font-color": "~ WhiteCColor",
+              "frame-color": "None",
+              "frame-width": "1",
+              "max-value": "1",
+              "min-value": "0",
+              "mouse-enabled": "true",
+              "opacity": "1",
+              "origin": "10, 10",
+              "round-rect-radius": "6",
+              "shadow-color": "~ RedCColor",
+              "size": "130, 30",
+              "style-3D-in": "false",
+              "style-3D-out": "false",
+              "style-no-draw": "false",
+              "style-no-frame": "false",
+              "style-no-text": "false",
+              "style-round-rect": "false",
+              "style-shadow-text": "false",
+              "text-alignment": "center",
+              "text-inset": "0, 0",
+              "text-rotation": "0",
+              "text-shadow-offset": "1, 1",
+              "title": "Daum Audio Works",
+              "transparent": "false",
+              "value-precision": "2",
+              "wants-focus": "false",
+              "wheel-inc-value": "0.1"
+            }
+          },
+          "CTextLabel": {
+            "attributes": {
+              "back-color": "None",
+              "background-offset": "0, 0",
+              "class": "CTextLabel",
+              "default-value": "0.5",
+              "font": "~ NormalFontBig",
+              "font-antialias": "true",
+              "font-color": "~ WhiteCColor",
+              "frame-color": "None",
+              "frame-width": "1",
+              "max-value": "1",
+              "min-value": "0",
+              "mouse-enabled": "true",
+              "opacity": "1",
+              "origin": "510, 10",
+              "round-rect-radius": "6",
+              "shadow-color": "~ RedCColor",
+              "size": "130, 30",
+              "style-3D-in": "false",
+              "style-3D-out": "false",
+              "style-no-draw": "false",
+              "style-no-frame": "false",
+              "style-no-text": "false",
+              "style-round-rect": "false",
+              "style-shadow-text": "false",
+              "text-alignment": "center",
+              "text-inset": "0, 0",
+              "text-rotation": "0",
+              "text-shadow-offset": "1, 1",
+              "title": "Sidebands",
+              "transparent": "false",
+              "value-precision": "2",
+              "wants-focus": "false",
+              "wheel-inc-value": "0.1"
+            }
+          },
+          "UIViewSwitchContainer": {
+            "attributes": {
+              "animation-style": "fade",
+              "animation-time": "120",
+              "animation-timing-function": "linear",
+              "background-color": "None",
+              "background-color-draw-style": "filled and stroked",
+              "class": "UIViewSwitchContainer",
+              "custom-view-name": "DrawbarEditor",
+              "mouse-enabled": "true",
+              "opacity": "1",
+              "origin": "20, 40",
+              "size": "600, 305",
+              "transparent": "false",
+              "wants-focus": "false"
+            }
+          },
+          "UIViewSwitchContainer": {
+            "attributes": {
+              "animation-style": "fade",
+              "animation-time": "120",
+              "animation-timing-function": "linear",
+              "background-color": "None",
+              "background-color-draw-style": "filled and stroked",
+              "class": "UIViewSwitchContainer",
+              "custom-view-name": "GeneratorEditor",
+              "mouse-enabled": "true",
+              "opacity": "0",
+              "origin": "20, 360",
+              "size": "600, 800",
+              "transparent": "false",
+              "wants-focus": "false"
+            }
+          },
+          "UIViewSwitchContainer": {
+            "attributes": {
+              "animation-style": "fade",
+              "animation-time": "120",
+              "animation-timing-function": "linear",
+              "background-color": "None",
+              "background-color-draw-style": "filled and stroked",
+              "class": "UIViewSwitchContainer",
+              "custom-view-name": "AnalysisView",
+              "mouse-enabled": "true",
+              "opacity": "1",
+              "origin": "640, 40",
+              "size": "580, 305",
+              "transparent": "false",
+              "wants-focus": "false"
+            }
+          }
+        }
+      }
+    }
+  }
 }

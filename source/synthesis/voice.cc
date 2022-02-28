@@ -16,7 +16,7 @@ ParamValue NoteToFreq(ParamValue note) {
 
 } // namespace
 
-Voice::Voice() : base_freq_(0), note_(0), velocity_(0) {
+Voice::Voice() : note_frequency_(0), note_(0), velocity_(0) {
   for (int x = 0; x < kNumGenerators; x++) {
     generators_[x] = std::make_unique<Generator>();
   }
@@ -39,7 +39,7 @@ void Voice::NoteOn(SampleRate sample_rate, Patch *patch,
 
   note_ = note;
   on_time_ = start_time;
-  base_freq_ = base_freq;
+  note_frequency_ = base_freq;
   velocity_ = velocity;
 
   std::lock_guard<std::mutex> generators_lock(generators_mutex_);
@@ -93,7 +93,7 @@ MixBuffers Voice::Perform(SampleRate sample_rate, size_t frames_per_buffer,
                   this](const std::pair<GeneratorPatch *, Generator *> &gpair) {
                    MixBuffer mix_buffer(frames_per_buffer);
                    gpair.second->Perform(sample_rate, *gpair.first,
-                                         mix_buffer.data(), base_freq_,
+                                         mix_buffer.data(), note_frequency_,
                                          frames_per_buffer);
                    return mix_buffer;
                  });
