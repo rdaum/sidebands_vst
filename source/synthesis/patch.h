@@ -65,8 +65,7 @@ public:
     LFOType type;
     ParamValue frequency;
     ParamValue amplitude;
-
-    // TODO wave type, for now just sine
+    ParamValue velocity_sensitivty;
   };
   using ModulationParameters = std::variant<EnvelopeValues, LFOValues>;
 
@@ -114,6 +113,7 @@ private:
     IPtr<RangeParameter> frequency_;
     IPtr<RangeParameter> function_;
     IPtr<RangeParameter> amplitude_;
+    IPtr<RangeParameter> vel_sense_;
   };
   LFOParameters lfo_parameters_[NUM_TARGETS];
 

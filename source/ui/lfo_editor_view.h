@@ -24,6 +24,7 @@ public:
 private:
   ParameterEditorView *frequency_slider_;
   ParameterEditorView *amplitude_slider_;
+  ParameterEditorView *vel_sens_slider_;
 };
 
 }  // namespace ui

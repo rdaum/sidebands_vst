@@ -27,8 +27,14 @@ LFOEditorView::LFOEditorView(const VSTGUI::CRect &size,
       FindRangedParameter(edit_controller, selected_generator, TAG_LFO_AMP,
                           target),
       this, "Amp");
+  vel_sens_slider_ = new ParameterEditorView(
+      column_size,
+      FindRangedParameter(edit_controller, selected_generator, TAG_LFO_VS,
+                          target),
+      this, "VS");
   addView(frequency_slider_);
   addView(amplitude_slider_);
+  addView(vel_sens_slider_);
 }
 
 void LFOEditorView::SwitchGenerator(int new_generator) {
@@ -39,8 +45,12 @@ void LFOEditorView::SwitchGenerator(int new_generator) {
   amplitude_slider_->UpdateControlParameters(
       edit_controller(), FindRangedParameter(edit_controller(), new_generator,
                                              TAG_LFO_AMP, target()));
+
+  vel_sens_slider_->UpdateControlParameters(
+      edit_controller(), FindRangedParameter(edit_controller(), new_generator,
+                                             TAG_LFO_VS, target()));
   setDirty(true);
 }
 
-}  // namespace ui
-}  // namespace sidebands
+} // namespace ui
+} // namespace sidebands

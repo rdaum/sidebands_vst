@@ -193,9 +193,9 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
                    OscillatorParameter(unit_id, "R", TARGET_R, gennum_, 0, 1));
   DeclareParameter(&s_,
                    OscillatorParameter(unit_id, "S", TARGET_S, gennum_, -1, 1));
-  DeclareParameter(&portamento_,
-                   OscillatorParameter(unit_id, "Port", TARGET_PORTAMENTO, gennum_, 0, 1));
-
+  DeclareParameter(
+      &portamento_,
+      OscillatorParameter(unit_id, "Port", TARGET_PORTAMENTO, gennum_, 0, 1));
 
   for (auto &target : kModulationTargets) {
     mod_type_[target] =
@@ -207,6 +207,8 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
         LFOParameter(unit_id, "Freq", TAG_LFO_FREQ, target, gennum_, 0, 20));
     lfo_parameters_[target].function_ = DeclareParameter(LFOParameter(
         unit_id, "Func", TAG_LFO_TYPE, target, gennum_, 0, kNumLFOTypes - 1));
+    lfo_parameters_[target].vel_sense_ = DeclareParameter(LFOParameter(
+        unit_id, "VelSens", TAG_LFO_VS, target, gennum_, 0, kNumLFOTypes - 1));
   }
 }
 
@@ -362,7 +364,8 @@ GeneratorPatch::ModulationParams(TargetTag destination) const {
         .D_R = target_env.d_r_->toPlain(target_env.d_r_->getNormalized()),
         .S_L = target_env.s_l_->toPlain(target_env.s_l_->getNormalized()),
         .R_R = target_env.r_r_->toPlain(target_env.r_r_->getNormalized()),
-        .VS = target_env.vel_sense_->toPlain(target_env.vel_sense_->getNormalized()),
+        .VS = target_env.vel_sense_->toPlain(
+            target_env.vel_sense_->getNormalized()),
     };
   }
 
@@ -375,6 +378,8 @@ GeneratorPatch::ModulationParams(TargetTag destination) const {
             target_lfo.frequency_->getNormalized()),
         .amplitude = target_lfo.amplitude_->toPlain(
             target_lfo.amplitude_->getNormalized()),
+        .velocity_sensitivty = target_lfo.vel_sense_->toPlain(
+            target_lfo.vel_sense_->getNormalized()),
     };
   }
 
