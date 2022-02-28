@@ -52,11 +52,7 @@ bool Player::Perform(Sample32 *in_buffer, Sample32 *out_buffer,
 }
 
 void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
-                    int32_t note_id, uint8_t velocity, uint8_t note) {
-  // A note with no velocity is not a note at all.
-  if (!velocity)
-    return;
-
+                    int32_t note_id, ParamValue velocity, uint8_t note) {
   std::lock_guard<std::mutex> player_lock(voices_mutex_);
 
   Voice *v = NewVoice(note_id);

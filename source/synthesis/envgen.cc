@@ -15,27 +15,34 @@ constexpr const char *kStageLabels[]{"OFF", "ATTACK", "DECAY", "SUSTAIN",
 // originally based on
 // http://www.martin-finke.de/blog/articles/audio-plugins-011-envelopes/
 // TODO: too much branching in loops, need to be able to set levels (not just
-// rates), more stages, velocity & aftertouch
+// rates), more stages, aftertouch
 
 ParamValue EnvelopeGenerator::NextSample(
     SampleRate sample_rate,
+    ParamValue velocity,
     const GeneratorPatch::ModulationParameters &parameters) {
   if (stage_ == ENVELOPE_STAGE_OFF)
     return 0.0f;
 
+  const GeneratorPatch::EnvelopeValues &ev =
+      std::get<GeneratorPatch::EnvelopeValues>(parameters);
+
+  // Vel sense of 1 means respond fully to velocity, 0 not velocity sensitive.
+  // Inbetween we scale.
+  auto velocity_scale = (ev.VS * velocity)+(1-ev.VS);
+  
   if (stage_ == ENVELOPE_STAGE_SUSTAIN)
-    return current_level_;
+    return current_level_ * velocity_scale;
 
   if (current_sample_index_ >= next_stage_sample_index_) {
     auto next_stage =
         static_cast<EnvelopeStage>((stage_ + 1) % kNumEnvelopeStages);
-    EnterStage(sample_rate, next_stage,
-               std::get<GeneratorPatch::EnvelopeValues>(parameters));
+    EnterStage(sample_rate, next_stage, ev);
   }
 
   current_level_ *= coefficient_;
   current_sample_index_++;
-  return current_level_;
+  return current_level_ * velocity_scale;
 }
 
 void EnvelopeGenerator::EnterStage(

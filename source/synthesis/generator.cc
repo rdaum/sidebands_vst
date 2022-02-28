@@ -11,22 +11,24 @@ namespace sidebands {
 
 Generator::Generator() {}
 
-double Produce(SampleRate sample_rate, GeneratorPatch &patch,
+double Produce(SampleRate sample_rate, ParamValue velocity,
+               GeneratorPatch &patch,
                TargetTag destination, std::function<double()> value_getter,
                IModulationSource *mod_source) {
   auto value = value_getter();
   auto mod = patch.ModulationParams(destination);
   if (mod.has_value() && mod_source) {
-    value *= mod_source->NextSample(sample_rate, mod.value());
+    value *= mod_source->NextSample(sample_rate, velocity,mod.value());
   }
   return value;
 }
 
 std::function<double()> Generator::ProducerFor(SampleRate sample_rate,
+                                               ParamValue velocity,
                                                GeneratorPatch &gp,
                                                TargetTag dest) {
-  return [sample_rate, &gp, dest, this]() {
-    return Produce(sample_rate, gp, dest, gp.ParameterGetterFor(dest),
+  return [sample_rate, &gp, dest, this, velocity]() {
+    return Produce(sample_rate, velocity, gp, dest, gp.ParameterGetterFor(dest),
                    ModulatorFor(gp, dest));
   };
 }
@@ -43,17 +45,18 @@ void Generator::Perform(SampleRate sample_rate, GeneratorPatch &patch,
   std::vector<Steinberg::Vst::ParamValue> level_m(frames_per_buffer);
 
   std::generate(level_a.begin(), level_a.begin() + frames_per_buffer,
-                ProducerFor(sample_rate, patch, TARGET_A));
+                ProducerFor(sample_rate, velocity_, patch, TARGET_A));
   std::generate(level_k.begin(), level_k.begin() + frames_per_buffer,
-                ProducerFor(sample_rate, patch, TARGET_K));
+                ProducerFor(sample_rate, velocity_, patch, TARGET_K));
   std::generate(level_c.begin(), level_c.begin() + frames_per_buffer,
-                ProducerFor(sample_rate, patch, TARGET_C));
+                ProducerFor(sample_rate, velocity_, patch, TARGET_C));
   std::generate(level_r.begin(), level_r.begin() + frames_per_buffer,
-                ProducerFor(sample_rate, patch, TARGET_R));
+                ProducerFor(sample_rate, velocity_, patch, TARGET_R));
   std::generate(level_s.begin(), level_s.begin() + frames_per_buffer,
-                ProducerFor(sample_rate, patch, TARGET_S));
+                ProducerFor(sample_rate, velocity_, patch, TARGET_S));
   std::generate(level_m.begin(), level_m.begin() + frames_per_buffer,
-                ProducerFor(sample_rate, patch, TARGET_M));
+                ProducerFor(sample_rate, velocity_, patch, TARGET_M));
+
 
   o_.Perform(frames_per_buffer, sample_rate, out_buffer, base_freq,
              level_a.data(), level_c.data(), level_m.data(), level_r.data(),
@@ -62,15 +65,16 @@ void Generator::Perform(SampleRate sample_rate, GeneratorPatch &patch,
 
 void Generator::NoteOn(
     SampleRate sample_rate, const GeneratorPatch &patch,
-    std::chrono::high_resolution_clock::time_point start_time, uint8_t velocity,
+    std::chrono::high_resolution_clock::time_point start_time, ParamValue velocity,
     uint8_t note) {
 
   ConfigureModulators(patch);
 
+  velocity_ = velocity;
   for (auto dest : kModulationTargets) {
     auto *modulator = ModulatorFor(patch, dest);
     if (modulator) {
-      modulator->On(sample_rate, patch.ModulationParams(dest).value());
+      modulator->On(sample_rate,  patch.ModulationParams(dest).value());
     }
   }
 }

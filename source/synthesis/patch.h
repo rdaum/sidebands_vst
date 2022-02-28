@@ -47,6 +47,7 @@ public:
   ParamValue k() const;
   ParamValue r() const;
   ParamValue s() const;
+  ParamValue portamento() const;
 
   struct EnvelopeValues {
     ParamValue A_R; // attack rate
@@ -54,9 +55,10 @@ public:
     ParamValue D_R; // decay rate
     ParamValue S_L; // sustain level
     ParamValue R_R; // release rate
+    ParamValue VS;  // velocity sensitivity
   };
   enum class LFOType { SIN, COS };
-  static constexpr LFOType kLFOTypes[] { LFOType::SIN, LFOType::COS };
+  static constexpr LFOType kLFOTypes[]{LFOType::SIN, LFOType::COS};
   static constexpr int kNumLFOTypes = sizeof(kLFOTypes) / sizeof(LFOType);
 
   struct LFOValues {
@@ -93,7 +95,8 @@ private:
   mutable std::mutex patch_mutex_;
 
   IPtr<RangeParameter> on_;
-  Steinberg::Vst::SampleAccurate::Parameter c_, a_, m_, k_, r_, s_;
+  Steinberg::Vst::SampleAccurate::Parameter c_, a_, m_, k_, r_, s_,
+      portamento_;
 
   IPtr<RangeParameter> mod_type_[NUM_TARGETS];
 
@@ -103,6 +106,7 @@ private:
     IPtr<RangeParameter> d_r_;
     IPtr<RangeParameter> s_l_;
     IPtr<RangeParameter> r_r_;
+    IPtr<RangeParameter> vel_sense_;
   };
   EnvelopeParameters envelope_parameters_[NUM_TARGETS];
 

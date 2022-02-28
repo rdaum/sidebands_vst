@@ -27,6 +27,7 @@ private:
   ParameterEditorView *d_slider_;
   ParameterEditorView *s_slider_;
   ParameterEditorView *r_slider_;
+  ParameterEditorView *vs_slider_;
   GraphicalEnvelopeEditorView *envelope_editor_;
 };
 

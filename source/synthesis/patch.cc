@@ -28,6 +28,24 @@ IPtr<RangeParameter> BooleanParameter(Steinberg::Vst::UnitID unit_id,
   return new RangeParameter(info, 0, 1);
 }
 
+IPtr<RangeParameter> GenericParameter(Steinberg::Vst::UnitID unit_id,
+                                      const std::string &name, ParamTag tag,
+                                      TargetTag sp, uint32_t gen_num,
+                                      ParamValue min, ParamValue max) {
+  std::string full_name = absl::StrFormat("Gen %d %s", gen_num, name);
+
+  auto info = ParameterInfo{
+      .id = TagFor(gen_num, tag, sp),
+      .stepCount = 0,
+      .defaultNormalizedValue = 0,
+      .unitId = unit_id,
+  };
+  Steinberg::UString(info.title, USTRINGSIZE(info.title))
+      .assign(USTRING(full_name.c_str()));
+
+  return new RangeParameter(info, min, max);
+}
+
 IPtr<RangeParameter> ModTypeParameter(Steinberg::Vst::UnitID unit_id,
                                       TargetTag target, uint32_t gen_num) {
   std::string full_name =
@@ -115,7 +133,8 @@ void GeneratorPatch::DeclareEnvelopeParameters(Steinberg::Vst::UnitID unit_id,
       unit_id, env_name + " S", TAG_ENV_S, target, gen_num, 0, 1));
   params.r_r_ = DeclareParameter(EnvelopeParameter(
       unit_id, env_name + " R", TAG_ENV_R, target, gen_num, 0, 5));
-
+  params.vel_sense_ = DeclareParameter(EnvelopeParameter(
+      unit_id, env_name + " VS", TAG_ENV_VS, target, gen_num, 0, 1));
   envelope_parameters_[target] = std::move(params);
 }
 
@@ -174,15 +193,18 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
                    OscillatorParameter(unit_id, "R", TARGET_R, gennum_, 0, 1));
   DeclareParameter(&s_,
                    OscillatorParameter(unit_id, "S", TARGET_S, gennum_, -1, 1));
+  DeclareParameter(&portamento_,
+                   OscillatorParameter(unit_id, "Port", TARGET_PORTAMENTO, gennum_, 0, 1));
+
 
   for (auto &target : kModulationTargets) {
     mod_type_[target] =
         DeclareParameter(ModTypeParameter(unit_id, target, gennum_));
     DeclareEnvelopeParameters(unit_id, target, gennum_);
-    lfo_parameters_[target].amplitude_ =
-        DeclareParameter(LFOParameter(unit_id, "Amp", TAG_LFO_AMP, target, gennum_, 0, 1.0));
-    lfo_parameters_[target].frequency_ =
-        DeclareParameter(LFOParameter(unit_id, "Freq", TAG_LFO_FREQ, target, gennum_, 0, 20));
+    lfo_parameters_[target].amplitude_ = DeclareParameter(
+        LFOParameter(unit_id, "Amp", TAG_LFO_AMP, target, gennum_, 0, 1.0));
+    lfo_parameters_[target].frequency_ = DeclareParameter(
+        LFOParameter(unit_id, "Freq", TAG_LFO_FREQ, target, gennum_, 0, 20));
     lfo_parameters_[target].function_ = DeclareParameter(LFOParameter(
         unit_id, "Func", TAG_LFO_TYPE, target, gennum_, 0, kNumLFOTypes - 1));
   }
@@ -325,6 +347,11 @@ ParamValue GeneratorPatch::s() const {
   return s_.getValue();
 }
 
+ParamValue GeneratorPatch::portamento() const {
+  std::lock_guard<std::mutex> params_lock(patch_mutex_);
+  return portamento_.getValue();
+}
+
 std::optional<GeneratorPatch::ModulationParameters>
 GeneratorPatch::ModulationParams(TargetTag destination) const {
   if (ModTypeFor(destination) == ModType::ENVELOPE) {
@@ -335,6 +362,7 @@ GeneratorPatch::ModulationParams(TargetTag destination) const {
         .D_R = target_env.d_r_->toPlain(target_env.d_r_->getNormalized()),
         .S_L = target_env.s_l_->toPlain(target_env.s_l_->getNormalized()),
         .R_R = target_env.r_r_->toPlain(target_env.r_r_->getNormalized()),
+        .VS = target_env.vel_sense_->toPlain(target_env.vel_sense_->getNormalized()),
     };
   }
 

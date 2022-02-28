@@ -14,6 +14,7 @@ public:
   void Reset() override;
   ParamValue
   NextSample(SampleRate sample_rate,
+             ParamValue velocity,
              const GeneratorPatch::ModulationParameters &parameters) override;
   bool Playing() const override;
   GeneratorPatch::ModType mod_type() const override;

@@ -25,10 +25,11 @@ enum ParamTag {
   TAG_ENV_D,
   TAG_ENV_S,
   TAG_ENV_R,
+  TAG_ENV_VS,
   TAG_LFO_FREQ,
   TAG_LFO_AMP,
   TAG_LFO_TYPE,
-  TAG_SELECTED_GENERATOR, // valid only with "0" for generator
+  TAG_SELECTED_GENERATOR, // valid only with "0" for generator and TARGET_NA
   TAG_MOD_TYPE,
   TAG_NUM_TAGS
 };
@@ -41,10 +42,12 @@ enum TargetTag {
   TARGET_K,
   TARGET_R,
   TARGET_S,
+  TARGET_PORTAMENTO,
   NUM_TARGETS
 };
 
-constexpr const char *kTargetNames[]{"NONE", "C", "A", "M", "K", "R", "S"};
+constexpr const char *kTargetNames[]{"NONE", "C", "A", "M", "K", "R", "S",
+ "PORTAMENTO"};
 
 constexpr const TargetTag kModulationTargets[]{
     TARGET_C, TARGET_A, TARGET_M, TARGET_K, TARGET_R, TARGET_S,

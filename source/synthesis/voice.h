@@ -31,7 +31,7 @@ public:
   // Trigger a note-on even for each generator in the voice.
   void NoteOn(SampleRate sample_rate, Patch *patch,
               std::chrono::high_resolution_clock::time_point start_time,
-              uint8_t velocity, uint8_t note);
+              ParamValue velocity, uint8_t note);
 
   // Trigger a note-release for each generator in the voice.
   void NoteOff(SampleRate sample_rate, Patch *patch, uint8_t note);

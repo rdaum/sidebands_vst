@@ -22,6 +22,7 @@ void LFO::Reset() {
 
 ParamValue
 LFO::NextSample(SampleRate sample_rate,
+                ParamValue velocity,
                 const GeneratorPatch::ModulationParameters &parameters) {
   auto &lfo_values = std::get<GeneratorPatch::LFOValues>(parameters);
   phase_ += 2.0 * std::numbers::pi * lfo_values.frequency / sample_rate;

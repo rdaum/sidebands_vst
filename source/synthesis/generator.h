@@ -25,7 +25,7 @@ public:
 
   void NoteOn(SampleRate sample_rate, const GeneratorPatch &patch,
               std::chrono::high_resolution_clock::time_point start_time,
-              uint8_t velocity, uint8_t note);
+              ParamValue velocity, uint8_t note);
 
   void NoteOff(SampleRate sample_rate, const GeneratorPatch &patch,
                uint8_t note);
@@ -37,10 +37,11 @@ private:
   void ConfigureModulators(const GeneratorPatch &patch);
   IModulationSource *ModulatorFor(const GeneratorPatch &patch, TargetTag dest) ;
 
-  std::function<double()> ProducerFor(SampleRate sample_rate,
+  std::function<double()> ProducerFor(SampleRate sample_rate, ParamValue velocity,
                                       GeneratorPatch &gp, TargetTag dest);
 
   std::unique_ptr<IModulationSource> modulators_[NUM_TARGETS];
+  ParamValue velocity_ = 0;
   Oscillator o_;
 };
 

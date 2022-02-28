@@ -38,6 +38,11 @@ EnvelopeEditorView::EnvelopeEditorView(
                                                           selected_generator,
                                                           TAG_ENV_R, target),
                                       this, "R");
+  vs_slider_ = new ParameterEditorView(column_size,
+                                       FindRangedParameter(edit_controller,
+                                                           selected_generator,
+                                                           TAG_ENV_VS, target),
+                                       this, "VS");
 
   envelope_editor_ = new GraphicalEnvelopeEditorView(
       {0, 0, 400, getHeight()}, this, edit_controller, selected_generator,
@@ -47,6 +52,7 @@ EnvelopeEditorView::EnvelopeEditorView(
   addView(d_slider_);
   addView(s_slider_);
   addView(r_slider_);
+  addView(vs_slider_);
   addView(envelope_editor_);
 }
 
@@ -65,7 +71,10 @@ void EnvelopeEditorView::SwitchGenerator(int new_generator) {
   r_slider_->UpdateControlParameters(
       edit_controller(), FindRangedParameter(edit_controller(), new_generator,
                                              TAG_ENV_R, target()));
+  vs_slider_->UpdateControlParameters(
+      edit_controller(), FindRangedParameter(edit_controller(), new_generator,
+                                             TAG_ENV_VS, target()));
 }
 
-}  // namespace ui
-}  // namespace sidebands
+} // namespace ui
+} // namespace sidebands

@@ -19,6 +19,7 @@ public:
   virtual void Reset() = 0;
   virtual ParamValue
   NextSample(SampleRate sample_rate,
+             ParamValue velocity,
              const GeneratorPatch::ModulationParameters &parameters) = 0;
   virtual bool Playing() const = 0;
   virtual GeneratorPatch::ModType mod_type() const = 0;
