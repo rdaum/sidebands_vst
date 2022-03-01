@@ -7,7 +7,8 @@
 namespace sidebands {
 namespace ui {
 
-WaveformView::WaveformView(const VSTGUI::CRect &size, const std::vector<VSTGUI::CColor> colours,
+WaveformView::WaveformView(const VSTGUI::CRect &size,
+                           const std::vector<VSTGUI::CColor> colours,
                            const std::vector<int> &generators)
     : VSTGUI::CView(size), colours_(colours), generators_(generators) {}
 
@@ -27,13 +28,13 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
 
   Oscillator o;
   auto buffer_size = size_t(getWidth());
-  for (int i = 0; i < generators_.size(); i++) {
-    auto &gp = kPatch->generators_[i];
-    if (!gp->on()) continue;
+  for (int gen_num = 0; gen_num < generators_.size(); gen_num++) {
+    auto &gp = kPatch->generators_[gen_num];
+    if (!gp->on())
+      continue;
     std::vector<std::complex<double>> buffer(buffer_size);
     std::vector<double> a(buffer_size), c(buffer_size), m(buffer_size),
         r(buffer_size), s(buffer_size), k(buffer_size /**/);
-
 
     std::fill(a.begin(), a.end(), gp->a());
     std::fill(c.begin(), c.end(), gp->c());
@@ -41,7 +42,7 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
     std::fill(r.begin(), r.end(), gp->r());
     std::fill(s.begin(), s.end(), gp->s());
     std::fill(k.begin(), k.end(), gp->k());
-    o.Perform(buffer_size, 48000, buffer.data(), 110, a.data(), c.data(),
+    o.Perform(buffer_size, 48000, buffer.data(), 440, a.data(), c.data(),
               m.data(), r.data(), s.data(), k.data());
 
 
@@ -51,19 +52,16 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
     double mid = getHeight() / 2;
     path->beginSubpath(
         VSTGUI::CPoint(0, mid + (buffer[0].real() * getHeight())));
-    for (int i = 0; i < buffer_size; i++)
+    for (int p = 0; p < buffer_size; p++)
       path->addLine(
-          VSTGUI::CPoint(double(i), mid + (buffer[i].real() * (getHeight()))));
+          VSTGUI::CPoint(double(p), mid + (buffer[p].real() * getHeight())));
 
-
-    context->setFillColor(colours_[i]);
-    context->setFrameColor(colours_[i]);
+    context->setFillColor(colours_[gen_num]);
+    context->setFrameColor(colours_[gen_num]);
     context->setLineStyle(VSTGUI::kLineSolid);
     context->setLineWidth(2);
     context->setDrawMode(VSTGUI::kAntiAliasing | VSTGUI::kNonIntegralMode);
-
     context->drawGraphicsPath(path, VSTGUI::CDrawContext::kPathStroked);
-
   }
   setDirty(false);
 }

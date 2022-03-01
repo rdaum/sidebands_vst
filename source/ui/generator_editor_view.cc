@@ -9,6 +9,7 @@
 #include "sidebands_controller.h"
 #include "ui/mod_target_view.h"
 #include "ui/parameter_editor_view.h"
+#include "ui/spectrum_view.h"
 #include "ui/waveform_view.h"
 
 using Steinberg::Vst::Parameter;
@@ -64,6 +65,17 @@ GeneratorEditorView::GeneratorEditorView(
                                                           selected_generator,
                                                           TAG_OSC, TARGET_K),
                                       this, "K");
+  r_slider_ = new ParameterEditorView(column_size,
+                                      FindRangedParameter(edit_controller,
+                                                          selected_generator,
+                                                          TAG_OSC, TARGET_R),
+                                      this, "R");
+  s_slider_ = new ParameterEditorView(column_size,
+                                      FindRangedParameter(edit_controller,
+                                                          selected_generator,
+                                                          TAG_OSC, TARGET_S),
+                                      this, "S");
+
   a_target_view_ = new ModulatorTargetView(
       VSTGUI::CRect(0, 0, modulator_rows->getWidth() - c_slider_->getWidth(),
                     kModRowHeight),
@@ -76,16 +88,27 @@ GeneratorEditorView::GeneratorEditorView(
                     kModRowHeight),
       edit_controller, TARGET_K);
 
-  waveform_view_ = new WaveformView(
+  auto *analysis_area = new VSTGUI::CRowColumnView(
       VSTGUI::CRect(0, 0,
                     getWidth() - k_slider_->getWidth() - c_slider_->getWidth() -
                         m_slider_->getWidth(),
                     kModRowHeight),
+      VSTGUI::CRowColumnView::kRowStyle);
+
+  waveform_view_ = new WaveformView(
+      VSTGUI::CRect(0, 0, analysis_area->getWidth(), kModRowHeight / 2),
       {VSTGUI::CColor(0, 0, 100)}, {selected_generator});
+
+  spectrum_view_ = new SpectrumView(
+      VSTGUI::CRect(0, 0, analysis_area->getWidth(), kModRowHeight / 2),
+      {VSTGUI::CColor(0, 0, 100)}, {selected_generator});
+  analysis_area->addView(waveform_view_);
+  analysis_area->addView(spectrum_view_);
+
   modulator_rows->addView(selected_label_);
   auto *osc_columns =
       new VSTGUI::CRowColumnView(VSTGUI::CRect(0, 0, modulator_rows->getWidth(),
-                                               waveform_view_->getHeight()),
+                                               analysis_area->getHeight()),
                                  VSTGUI::CRowColumnView::kColumnStyle);
 
   osc_columns->setBackgroundColor(kBgGrey);
@@ -94,7 +117,9 @@ GeneratorEditorView::GeneratorEditorView(
   osc_columns->addView(c_slider_);
   osc_columns->addView(m_slider_);
   osc_columns->addView(k_slider_);
-  osc_columns->addView(waveform_view_);
+  osc_columns->addView(r_slider_);
+  osc_columns->addView(s_slider_);
+  osc_columns->addView(analysis_area);
 
   auto *a_columns =
       new VSTGUI::CRowColumnView(VSTGUI::CRect(0, 0, modulator_rows->getWidth(),
@@ -156,6 +181,14 @@ void GeneratorEditorView::update(Steinberg::FUnknown *changedUnknown,
       k_slider_->UpdateControlParameters(
           edit_controller_, FindRangedParameter(edit_controller_, new_generator,
                                                 TAG_OSC, TARGET_K));
+
+      r_slider_->UpdateControlParameters(
+          edit_controller_, FindRangedParameter(edit_controller_, new_generator,
+                                                TAG_OSC, TARGET_R));
+
+      s_slider_->UpdateControlParameters(
+          edit_controller_, FindRangedParameter(edit_controller_, new_generator,
+                                                TAG_OSC, TARGET_S));
       selected_label_->setText(absl::StrFormat("#%d", new_generator).c_str());
       setDirty(true);
 

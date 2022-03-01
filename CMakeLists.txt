@@ -47,10 +47,11 @@ FetchContent_MakeAvailable(abseil)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast ")
 
+
 # VST3 SDK setup
 set(SMTG_VSTGUI_ROOT "${vst3sdk_SOURCE_DIR}")
 smtg_enable_vst3_sdk()
-smtg_add_vst3plugin(modfmi
+smtg_add_vst3plugin(sidebands
         source/constants.h
         source/globals.h
         source/tags.h
@@ -100,6 +101,8 @@ smtg_add_vst3plugin(modfmi
         source/ui/mod_target_view.h
         source/ui/graphical_envelope_editor.cc
         source/ui/graphical_envelope_editor.h
+        source/ui/spectrum_view.cc
+        source/ui/spectrum_view.h
         source/ui/waveform_view.cc
         source/ui/waveform_view.h
 
@@ -108,15 +111,15 @@ smtg_add_vst3plugin(modfmi
 
 #- VSTGUI Wanted ----
 if (SMTG_ADD_VSTGUI)
-    target_sources(modfmi
+    target_sources(sidebands
             PRIVATE
             resource/sidebands.uidesc
             )
-    target_link_libraries(modfmi
+    target_link_libraries(sidebands
             PRIVATE
             vstgui_support
             )
-    smtg_target_add_plugin_resources(modfmi
+    smtg_target_add_plugin_resources(sidebands
             RESOURCES
             "resource/sidebands.uidesc"
             "resource/slider_rail.png"
@@ -130,37 +133,37 @@ if (SMTG_ADD_VSTGUI)
 endif (SMTG_ADD_VSTGUI)
 # -------------------
 
-smtg_target_add_plugin_snapshots(modfmi
+smtg_target_add_plugin_snapshots(sidebands
         RESOURCES
         resource/7A5DD92AB0615F028293F8308139D3CE_snapshot.png
         resource/7A5DD92AB0615F028293F8308139D3CE_snapshot_2.0x.png
         )
 
-target_link_libraries(modfmi
+target_link_libraries(sidebands
         PRIVATE
         sdk
         glog
         absl::statusor
         )
-target_include_directories(modfmi PRIVATE source)
+target_include_directories(sidebands PRIVATE source)
 if (SMTG_MAC)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.12)
-    smtg_target_set_bundle(modfmi
-            BUNDLE_IDENTIFIER com.thimbleware.modfmi
+    smtg_target_set_bundle(sidebands
+            BUNDLE_IDENTIFIER com.thimbleware.sidebands
             INFOPLIST "${CMAKE_CURRENT_LIST_DIR}/resource/Info.plist" PREPROCESS
             )
-    smtg_target_set_debug_executable(modfmi
+    smtg_target_set_debug_executable(sidebands
             "/Applications/VST3PluginTestHost.app"
             "--pluginfolder;$(BUILT_PRODUCTS_DIR)"
             )
 elseif (SMTG_WIN)
-    target_sources(modfmi PRIVATE
+    target_sources(sidebands PRIVATE
             resource/win32resource.rc
             )
     if (MSVC)
-        set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT modfmi)
+        set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT sidebands)
 
-        smtg_target_set_debug_executable(modfmi
+        smtg_target_set_debug_executable(sidebands
                 "$(ProgramW6432)/Steinberg/VST3PluginTestHost/VST3PluginTestHost.exe"
                 "--pluginfolder \"$(OutDir)/\""
                 )

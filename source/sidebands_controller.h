@@ -17,6 +17,9 @@ public:
                                   const VSTGUI::UIAttributes &attributes,
                                   const VSTGUI::IUIDescription *description,
                                   VSTGUI::VST3Editor *editor) override;
+
+  Steinberg::tresult setParamPlain(Steinberg::Vst::ParamID tag, Steinberg::Vst::ParamValue value);
+
   // IPluginBase overrides
   Steinberg::tresult PLUGIN_API
   initialize(Steinberg::FUnknown *context) override;

@@ -94,8 +94,8 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
                        float(1 + i) / kNumGenerators);
     setParamNormalized(TagFor(i, TAG_OSC, TARGET_K), 0.5);
     setParamNormalized(TagFor(i, TAG_OSC, TARGET_M), 0.5);
-    setParamNormalized(TagFor(i, TAG_OSC, TARGET_S), 0);
-    setParamNormalized(TagFor(i, TAG_OSC, TARGET_R), 1);
+    setParamPlain(TagFor(i, TAG_OSC, TARGET_R), 1);
+    setParamPlain(TagFor(i, TAG_OSC, TARGET_S), -1);
 
     setParamNormalized(TagFor(i, TAG_ENV_A, TARGET_A), 0.05);
     setParamNormalized(TagFor(i, TAG_ENV_AL, TARGET_A), 1);
@@ -153,6 +153,11 @@ tresult PLUGIN_API SidebandsController::setParamNormalized(
     analysis_view_->setDirty(true);
   }
   return result;
+}
+
+Steinberg::tresult SidebandsController::setParamPlain(Vst::ParamID tag, Vst::ParamValue value) {
+  auto *param = getParameterObject(tag);
+  return param->setNormalized(param->toNormalized(value));
 }
 
 tresult PLUGIN_API SidebandsController::getParamStringByValue(
