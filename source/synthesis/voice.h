@@ -15,7 +15,7 @@ namespace sidebands {
 using Steinberg::Vst::ParamValue;
 using Steinberg::Vst::SampleRate;
 
-using MixBuffer = std::valarray<std::complex<double>>;
+using MixBuffer = std::valarray<double>;
 using MixBuffers = std::vector<std::unique_ptr<MixBuffer>>;
 
 struct Patch;

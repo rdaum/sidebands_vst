@@ -5,8 +5,8 @@
 
 namespace sidebands {
 
-using OscBuffer = std::valarray<std::complex<double>>;
-using OscParam = std::valarray<std::complex<double>>;
+using OscBuffer = std::valarray<double>;
+using OscParam = std::valarray<double>;
 
 using VDArray = std::valarray<double>;
 

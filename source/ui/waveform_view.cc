@@ -34,28 +34,30 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
       continue;
     OscBuffer buffer(buffer_size);
 
-    Oscillator::OscParam a(gp->a(), buffer_size);
-    Oscillator::OscParam c(gp->c(), buffer_size);
-    Oscillator::OscParam m(gp->m(), buffer_size);
-    Oscillator::OscParam r(gp->r(), buffer_size);
-    Oscillator::OscParam s(gp->s(), buffer_size);
-    Oscillator::OscParam k(std::complex<double>(0,gp->k()), buffer_size);
-    Oscillator::OscParam freq(84, buffer_size);
-    o.Perform(48000, buffer, freq,  c,  m, r, s, k);
+    OscParam c(gp->c(), buffer_size);
+    OscParam m(gp->m(), buffer_size);
+    OscParam r(gp->r(), buffer_size);
+    OscParam s(gp->s(), buffer_size);
+    OscParam k(gp->k(), buffer_size);
+    OscParam freq(440, buffer_size);
+    o.Perform(48000, buffer, freq, c, m, r, s, k);
+    buffer *= 0.9;
 
-    std::valarray<double> realized(buffer_size);
-    for (int i = 0; i < buffer_size; i++) {
-      realized[i] = buffer[i].real();
+    auto max_point = buffer.max();
+    auto scale_factor = 1.0;
+    if (max_point > 1) {
+      scale_factor = 1 / max_point;
+      LOG(INFO) << "Max point: " << max_point << " scale factor: " << scale_factor;
     }
     auto path = VSTGUI::owned(context->createGraphicsPath());
     if (path == nullptr)
       return;
     double mid = getHeight() / 2;
     path->beginSubpath(
-        VSTGUI::CPoint(0, mid + (realized[0] * getHeight() / 2)));
+        VSTGUI::CPoint(0, mid + (buffer[0] * scale_factor * getHeight() / 2)));
     for (int p = 0; p < buffer_size; p++)
-      path->addLine(
-          VSTGUI::CPoint(double(p), mid + (realized[p] * getHeight() / 2)));
+      path->addLine(VSTGUI::CPoint(
+          double(p), mid + (buffer[p] * scale_factor * getHeight() / 2)));
 
     context->setFillColor(colours_[gen_num]);
     context->setFrameColor(colours_[gen_num]);
@@ -63,6 +65,14 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
     context->setLineWidth(2);
     context->setDrawMode(VSTGUI::kAntiAliasing | VSTGUI::kNonIntegralMode);
     context->drawGraphicsPath(path, VSTGUI::CDrawContext::kPathStroked);
+
+    double top_ref = 0.9;
+    double bottom_ref = -0.9;
+
+    double top_ref_line_y = mid + ( top_ref * scale_factor * (getHeight() / 2));
+    double bottom_ref_line_y = mid + (bottom_ref * scale_factor * (getHeight() / 2));
+    context->drawLine({0, top_ref_line_y}, {getWidth(), top_ref_line_y});
+    context->drawLine({0, bottom_ref_line_y}, {getWidth(), bottom_ref_line_y});
   }
   setDirty(false);
 }

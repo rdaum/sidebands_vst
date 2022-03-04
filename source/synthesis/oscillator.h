@@ -14,9 +14,6 @@ using Steinberg::Vst::ParamValue;
 
 class Oscillator {
 public:
-  using OscBuffer = std::valarray<std::complex<double>>;
-  using OscParam = std::valarray<std::complex<double>>;
-
   void Perform(uint32_t sample_rate, OscBuffer &buffer, OscParam &note_freq,
                OscParam &C, OscParam &M, OscParam &R, OscParam &S,
                OscParam &K);

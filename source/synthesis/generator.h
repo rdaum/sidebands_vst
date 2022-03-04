@@ -20,7 +20,7 @@ public:
   virtual ~Generator() = default;
 
   void Perform(SampleRate sample_rate, GeneratorPatch &patch,
-               std::valarray<std::complex<double>> &out_buffer,
+               OscBuffer &out_buffer,
                Steinberg::Vst::ParamValue base_freq);
 
   void NoteOn(SampleRate sample_rate, const GeneratorPatch &patch,

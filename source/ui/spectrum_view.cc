@@ -15,6 +15,12 @@ using CArray = std::valarray<Complex>;
 
 namespace {
 
+void ConvertToCArray(const OscBuffer &scalar, CArray &carray) {
+  for (int i = 0; i < scalar.size(); i++) {
+    carray[i] = scalar[i];
+  }
+}
+
 // Cooley–Tukey FFT (in-place, divide-and-conquer)
 // Higher memory requirements and redundancy although more intuitive
 void FFT(CArray &x) {
@@ -116,17 +122,19 @@ void SpectrumView::drawRect(VSTGUI::CDrawContext *context,
     auto &gp = kPatch->generators_[gen];
     if (!gp->on())
       continue;
-    OscBuffer fft_buffer(buffer_size);
+    OscBuffer osc_buffer(buffer_size);
 
-    Oscillator::OscParam a(gp->a(), buffer_size);
-    Oscillator::OscParam c(gp->c(), buffer_size);
-    Oscillator::OscParam m(gp->m(), buffer_size);
-    Oscillator::OscParam r(gp->r(), buffer_size);
-    Oscillator::OscParam s(gp->s(), buffer_size);
-    Oscillator::OscParam k(gp->k(), buffer_size);
-    Oscillator::OscParam freq(2048, buffer_size);
-    o.Perform(65536, fft_buffer, freq, c, m, r, s, k);
+    OscParam a(gp->a(), buffer_size);
+    OscParam c(gp->c(), buffer_size);
+    OscParam m(gp->m(), buffer_size);
+    OscParam r(gp->r(), buffer_size);
+    OscParam s(gp->s(), buffer_size);
+    OscParam k(gp->k(), buffer_size);
+    OscParam freq(2048, buffer_size);
+    o.Perform(65536, osc_buffer, freq, c, m, r, s, k);
 
+    CArray fft_buffer(osc_buffer.size());
+    ConvertToCArray(osc_buffer, fft_buffer);
     HanningWindow(fft_buffer);
     FFT(fft_buffer);
 

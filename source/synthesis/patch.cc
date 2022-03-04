@@ -188,7 +188,7 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
   DeclareParameter(&m_,
                    OscillatorParameter(unit_id, "M", TARGET_M, gennum_, 0, 8));
   DeclareParameter(&k_,
-                   OscillatorParameter(unit_id, "K", TARGET_K, gennum_, 0, 8));
+                   OscillatorParameter(unit_id, "K", TARGET_K, gennum_, 0, 10));
   DeclareParameter(&r_,
                    OscillatorParameter(unit_id, "R", TARGET_R, gennum_, 0, 1));
   DeclareParameter(&s_,

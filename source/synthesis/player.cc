@@ -44,7 +44,7 @@ bool Player::Perform(Sample32 *in_buffer, Sample32 *out_buffer,
     }
 
     for (int i = 0; i < frames_per_buffer; i++) {
-      out_buffer[i] = mixdown_buffer[i].real();
+      out_buffer[i] = mixdown_buffer[i];
     }
   }
   return true;

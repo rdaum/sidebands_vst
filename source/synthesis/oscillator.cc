@@ -5,10 +5,9 @@
 
 namespace sidebands {
 
-
 void Oscillator::Perform(uint32_t sample_rate, OscBuffer &buffer,
-                         OscParam &note_freq, OscParam &C,
-                         OscParam &M, OscParam &R, OscParam &S, OscParam &K) {
+                         OscParam &note_freq, OscParam &C, OscParam &M,
+                         OscParam &R, OscParam &S, OscParam &K) {
   auto buffer_size = buffer.size();
 
   // Accumulate the time multiplier based on current phase.
@@ -21,15 +20,13 @@ void Oscillator::Perform(uint32_t sample_rate, OscBuffer &buffer,
   auto freq = note_freq * C;
   auto omega_c = freq * std::numbers::pi * 2.0;
   auto omega_m = (M * freq) * std::numbers::pi * 2.0;
-  auto omega_c_t = omega_c *  T;
+  auto omega_c_t = omega_c * T;
   auto omega_m_t = omega_m * T;
-
-  // modified
-//  buffer = exp(K * cos(omega_m_t)) * cos(omega_c_t);
 
   // modified with S/R
   buffer =
-      exp(R * K * cos(omega_m_t)) * cos(omega_c_t + S * K * sin(omega_m_t));
+      (exp(R * K * cos(omega_m_t)) * cos(omega_c_t + S * K * sin(omega_m_t))) /
+      exp(K) /* normalize for K by dividing out exp of K */;
 }
 
 } // namespace sidebands

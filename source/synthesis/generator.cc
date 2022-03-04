@@ -44,16 +44,16 @@ std::function<double()> Generator::ProducerFor(SampleRate sample_rate,
 }
 
 void Generator::Perform(SampleRate sample_rate, GeneratorPatch &patch,
-                        std::valarray<std::complex<double>> &out_buffer,
+                        OscBuffer &out_buffer,
                         Steinberg::Vst::ParamValue base_freq) {
   auto frames_per_buffer = out_buffer.size();
-  Oscillator::OscParam A(frames_per_buffer);
-  Oscillator::OscParam K(frames_per_buffer);
-  Oscillator::OscParam C(frames_per_buffer);
-  Oscillator::OscParam R(frames_per_buffer);
-  Oscillator::OscParam S(frames_per_buffer);
-  Oscillator::OscParam M(frames_per_buffer);
-  Oscillator::OscParam freq(base_freq, frames_per_buffer);
+  OscParam A(frames_per_buffer);
+  OscParam K(frames_per_buffer);
+  OscParam C(frames_per_buffer);
+  OscParam R(frames_per_buffer);
+  OscParam S(frames_per_buffer);
+  OscParam M(frames_per_buffer);
+  OscParam freq(base_freq, frames_per_buffer);
 
   std::generate(std::begin(A), std::end(A),
                 ProducerFor(sample_rate, velocity_, patch, TARGET_A));
