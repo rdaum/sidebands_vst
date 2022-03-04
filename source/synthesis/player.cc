@@ -7,7 +7,8 @@
 #include <mutex>
 
 #include "constants.h"
-#include "oscillator.h"
+#include "synthesis/dsp.h"
+#include "synthesis/oscillator.h"
 
 namespace sidebands {
 
@@ -36,12 +37,10 @@ bool Player::Perform(Sample32 *in_buffer, Sample32 *out_buffer,
 
   // Mix down.
   if (!mix_buffers.empty()) {
-    MixBuffer mixdown_buffer(frames_per_buffer, 0.0f);
+    MixBuffer mixdown_buffer(0.0f, frames_per_buffer);
     for (auto &voice_mix_buffers : mix_buffers) {
-      for (int i = 0; i < frames_per_buffer; i++) {
-        for (auto &mix_buffer : voice_mix_buffers)
-          mixdown_buffer[i] += mix_buffer[i];
-      }
+      for (auto &voice_mix_buffer : voice_mix_buffers)
+        mixdown_buffer += *voice_mix_buffer;
     }
 
     for (int i = 0; i < frames_per_buffer; i++) {

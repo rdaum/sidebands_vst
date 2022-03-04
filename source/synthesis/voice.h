@@ -3,6 +3,7 @@
 #include <chrono>
 #include <complex>
 #include <mutex>
+#include <valarray>
 #include <vector>
 
 #include <pluginterfaces/vst/vsttypes.h>
@@ -14,8 +15,8 @@ namespace sidebands {
 using Steinberg::Vst::ParamValue;
 using Steinberg::Vst::SampleRate;
 
-using MixBuffer = std::vector<std::complex<double>>;
-using MixBuffers = std::vector<MixBuffer>;
+using MixBuffer = std::valarray<std::complex<double>>;
+using MixBuffers = std::vector<std::unique_ptr<MixBuffer>>;
 
 struct Patch;
 class Generator;

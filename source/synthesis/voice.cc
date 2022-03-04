@@ -91,10 +91,9 @@ MixBuffers Voice::Perform(SampleRate sample_rate, size_t frames_per_buffer,
                  generators.end(), mix_buffers.begin(),
                  [frames_per_buffer, sample_rate,
                   this](const std::pair<GeneratorPatch *, Generator *> &gpair) {
-                   MixBuffer mix_buffer(frames_per_buffer);
+                   auto mix_buffer = std::make_unique<MixBuffer>(frames_per_buffer);
                    gpair.second->Perform(sample_rate, *gpair.first,
-                                         mix_buffer.data(), note_frequency_,
-                                         frames_per_buffer);
+                                         *mix_buffer.get(), note_frequency_);
                    return mix_buffer;
                  });
   return mix_buffers;

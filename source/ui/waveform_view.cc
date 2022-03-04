@@ -32,29 +32,30 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
     auto &gp = kPatch->generators_[gen_num];
     if (!gp->on())
       continue;
-    std::vector<std::complex<double>> buffer(buffer_size);
-    std::vector<double> a(buffer_size), c(buffer_size), m(buffer_size),
-        r(buffer_size), s(buffer_size), k(buffer_size /**/);
+    OscBuffer buffer(buffer_size);
 
-    std::fill(a.begin(), a.end(), gp->a());
-    std::fill(c.begin(), c.end(), gp->c());
-    std::fill(m.begin(), m.end(), gp->m());
-    std::fill(r.begin(), r.end(), gp->r());
-    std::fill(s.begin(), s.end(), gp->s());
-    std::fill(k.begin(), k.end(), gp->k());
-    o.Perform(buffer_size, 48000, buffer.data(), 440, a.data(), c.data(),
-              m.data(), r.data(), s.data(), k.data());
+    Oscillator::OscParam a(gp->a(), buffer_size);
+    Oscillator::OscParam c(gp->c(), buffer_size);
+    Oscillator::OscParam m(gp->m(), buffer_size);
+    Oscillator::OscParam r(gp->r(), buffer_size);
+    Oscillator::OscParam s(gp->s(), buffer_size);
+    Oscillator::OscParam k(std::complex<double>(0,gp->k()), buffer_size);
+    Oscillator::OscParam freq(84, buffer_size);
+    o.Perform(48000, buffer, freq,  c,  m, r, s, k);
 
-
+    std::valarray<double> realized(buffer_size);
+    for (int i = 0; i < buffer_size; i++) {
+      realized[i] = buffer[i].real();
+    }
     auto path = VSTGUI::owned(context->createGraphicsPath());
     if (path == nullptr)
       return;
     double mid = getHeight() / 2;
     path->beginSubpath(
-        VSTGUI::CPoint(0, mid + (buffer[0].real() * getHeight())));
+        VSTGUI::CPoint(0, mid + (realized[0] * getHeight() / 2)));
     for (int p = 0; p < buffer_size; p++)
       path->addLine(
-          VSTGUI::CPoint(double(p), mid + (buffer[p].real() * getHeight())));
+          VSTGUI::CPoint(double(p), mid + (realized[p] * getHeight() / 2)));
 
     context->setFillColor(colours_[gen_num]);
     context->setFrameColor(colours_[gen_num]);

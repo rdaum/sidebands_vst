@@ -95,7 +95,7 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
     setParamNormalized(TagFor(i, TAG_OSC, TARGET_K), 0.5);
     setParamNormalized(TagFor(i, TAG_OSC, TARGET_M), 0.5);
     setParamPlain(TagFor(i, TAG_OSC, TARGET_R), 1);
-    setParamPlain(TagFor(i, TAG_OSC, TARGET_S), -1);
+    setParamPlain(TagFor(i, TAG_OSC, TARGET_S), 0);
 
     setParamNormalized(TagFor(i, TAG_ENV_A, TARGET_A), 0.05);
     setParamNormalized(TagFor(i, TAG_ENV_AL, TARGET_A), 1);
