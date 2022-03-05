@@ -24,12 +24,11 @@ ParamValue EnvelopeGenerator::NextSample(
   if (stage_ == ENVELOPE_STAGE_OFF)
     return current_level_;
 
-  const GeneratorPatch::EnvelopeValues &ev =
-      std::get<GeneratorPatch::EnvelopeValues>(parameters);
+  const auto &ev = std::get<GeneratorPatch::EnvelopeValues>(parameters);
 
   // Vel sense of 1 means respond fully to velocity, 0 not velocity sensitive.
   // Inbetween we scale.
-  auto velocity_scale = (ev.VS * velocity)+(1-ev.VS);
+  auto velocity_scale = (ev.VS.getValue() * velocity)+(1-ev.VS.getValue());
   
   if (stage_ == ENVELOPE_STAGE_SUSTAIN)
     return current_level_ * velocity_scale;
@@ -48,8 +47,8 @@ ParamValue EnvelopeGenerator::NextSample(
 void EnvelopeGenerator::EnterStage(
     SampleRate sample_rate, EnvelopeStage new_stage,
     const GeneratorPatch::EnvelopeValues &envelope) {
-  const ParamValue stage_rates_[]{0.0, envelope.A_R, envelope.D_R, envelope.S_L,
-                                  envelope.R_R};
+  const ParamValue stage_rates_[]{0.0, envelope.A_R.getValue(), envelope.D_R.getValue(), envelope.S_L.getValue(),
+                                  envelope.R_R.getValue()};
   stage_ = new_stage;
   current_sample_index_ = 0;
   if (stage_ != ENVELOPE_STAGE_OFF && stage_ != ENVELOPE_STAGE_SUSTAIN) {
@@ -62,10 +61,10 @@ void EnvelopeGenerator::EnterStage(
   case ENVELOPE_STAGE_ATTACK:
     current_level_ = minimum_level_;
     coefficient_ =
-        Coefficient(current_level_, envelope.A_L, next_stage_sample_index_);
+        Coefficient(current_level_, envelope.A_L.getValue(), next_stage_sample_index_);
     break;
   case ENVELOPE_STAGE_DECAY:
-    current_level_ = envelope.A_L;
+    current_level_ = envelope.A_L.getValue();
     coefficient_ = Coefficient(
         current_level_,
         std::fmax(stage_rates_[ENVELOPE_STAGE_SUSTAIN], minimum_level_),

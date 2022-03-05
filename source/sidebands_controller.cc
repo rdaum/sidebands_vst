@@ -153,6 +153,7 @@ tresult PLUGIN_API SidebandsController::setParamNormalized(
   if (analysis_view_) {
     analysis_view_->setDirty(true);
   }
+  LOG(INFO) << "Set: " << TagStr(tag) << " to normalized: " << value;
   return result;
 }
 

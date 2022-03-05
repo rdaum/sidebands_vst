@@ -22,7 +22,9 @@ public:
 
   void SwitchGenerator(int new_generator) override;
 
-private:
+  void valueChanged(VSTGUI::CControl *control) override;
+
+ private:
   ParameterEditorView *a_slider_;
   ParameterEditorView *d_slider_;
   ParameterEditorView *s_slider_;

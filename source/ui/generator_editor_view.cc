@@ -148,9 +148,9 @@ GeneratorEditorView::~GeneratorEditorView() {
 void GeneratorEditorView::valueChanged(VSTGUI::CControl *control) {
   ParamID tag = control->getTag();
   edit_controller_->beginEdit(tag);
-  edit_controller_->performEdit(tag, control->getValue());
+  edit_controller_->performEdit(tag, control->getValueNormalized());
   edit_controller_->endEdit(tag);
-  edit_controller_->setParamNormalized(tag, control->getValueNormalized());
+//  edit_controller_->setParamNormalized(tag, control->getValueNormalized());
 
   CScrollView::valueChanged(control);
   setDirty(true);

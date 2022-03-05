@@ -49,12 +49,12 @@ public:
   ParamValue portamento() const;
 
   struct EnvelopeValues {
-    ParamValue A_R; // attack rate
-    ParamValue A_L; // attack peak level
-    ParamValue D_R; // decay rate
-    ParamValue S_L; // sustain level
-    ParamValue R_R; // release rate
-    ParamValue VS;  // velocity sensitivity
+    Steinberg::Vst::SampleAccurate::Parameter A_R; // attack rate
+    Steinberg::Vst::SampleAccurate::Parameter A_L; // attack peak level
+    Steinberg::Vst::SampleAccurate::Parameter D_R; // decay rate
+    Steinberg::Vst::SampleAccurate::Parameter S_L; // sustain level
+    Steinberg::Vst::SampleAccurate::Parameter R_R; // release rate
+    Steinberg::Vst::SampleAccurate::Parameter VS;  // velocity sensitivity
   };
   enum class LFOType { SIN, COS };
   static constexpr LFOType kLFOTypes[]{LFOType::SIN, LFOType::COS};
@@ -96,17 +96,9 @@ private:
   Steinberg::Vst::SampleAccurate::Parameter c_, a_, m_, k_, r_, s_,
       portamento_;
 
-  IPtr<RangeParameter> mod_type_[NUM_TARGETS];
+  Steinberg::Vst::SampleAccurate::Parameter mod_type_[NUM_TARGETS];
 
-  struct EnvelopeParameters {
-    IPtr<RangeParameter> a_r_;
-    IPtr<RangeParameter> a_l_;
-    IPtr<RangeParameter> d_r_;
-    IPtr<RangeParameter> s_l_;
-    IPtr<RangeParameter> r_r_;
-    IPtr<RangeParameter> vel_sense_;
-  };
-  EnvelopeParameters envelope_parameters_[NUM_TARGETS];
+  EnvelopeValues envelope_parameters_[NUM_TARGETS];
 
   struct LFOParameters {
     IPtr<RangeParameter> frequency_;
