@@ -151,7 +151,7 @@ void SpectrumView::drawRect(VSTGUI::CDrawContext *context,
     path->beginSubpath(VSTGUI::CPoint(-1, db_bins[0] * scale_ratio));
 
     // Scale X axis from the first non-zero point until the nyquist point.
-    VDArray indices(getWidth());
+    OscBuffer indices(getWidth());
     linspace(indices, 0, db_bins.size() / 2, indices.size());
     for (int j = 0; j < getWidth(); j++) {
       path->addLine(VSTGUI::CPoint(

@@ -45,8 +45,39 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(abseil)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /fp:fast ")
+# vectorclass
+FetchContent_Declare(
+        vectorclass
+        GIT_REPOSITORY https://github.com/vectorclass/version2.git
+)
+FetchContent_MakeAvailable(vectorclass)
 
+FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG        release-1.11.0
+)
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
+set(BUILD_GTEST ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  /fp:fast /arch:AVX52 /DINSTRSET=7")
+
+## Utils library
+#add_library(sidebands_util STATIC
+#        source/utilities/vectorbuffer.h
+#        source/utilities/vectorbuffer.cc
+#        )
+#target_include_directories(sidebands_util PRIVATE source/utilities  ${vectorclass_SOURCE_DIR})
+#
+## Testing for utils.
+#add_executable(vectorbuffer_test source/tests/vectorbuffer_test.cc)
+#target_link_libraries(vectorbuffer_test gtest gtest_main sidebands_util)
+#target_include_directories(vectorbuffer_test PRIVATE source/utilities  ${vectorclass_SOURCE_DIR})
+#enable_testing()
+#add_test(NAME vectorbuffer_test
+#         COMMAND vectorbuffer_test)
 
 # VST3 SDK setup
 set(SMTG_VSTGUI_ROOT "${vst3sdk_SOURCE_DIR}")
@@ -65,6 +96,8 @@ smtg_add_vst3plugin(sidebands
         source/sidebands_controller.cc
         source/sidebands_entry.cc
 
+        source/synthesis/dsp.cc
+        source/synthesis/dsp.h
         source/synthesis/envgen.h
         source/synthesis/envgen.cc
         source/synthesis/lfo.h
@@ -143,9 +176,11 @@ target_link_libraries(sidebands
         PRIVATE
         sdk
         glog
+        sidebands_util
         absl::statusor
         )
-target_include_directories(sidebands PRIVATE source)
+target_include_directories(sidebands PRIVATE source ${vectorclass_SOURCE_DIR})
+
 if (SMTG_MAC)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.12)
     smtg_target_set_bundle(sidebands

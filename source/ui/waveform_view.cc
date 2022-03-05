@@ -27,7 +27,7 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
                                                        getViewSize().top));
 
   Oscillator o;
-  auto buffer_size = size_t(getWidth());
+  auto buffer_size = 1024;
   for (int gen_num = 0; gen_num < generators_.size(); gen_num++) {
     auto &gp = kPatch->generators_[gen_num];
     if (!gp->on())
@@ -55,7 +55,7 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
     double mid = getHeight() / 2;
     path->beginSubpath(
         VSTGUI::CPoint(0, mid + (buffer[0] * scale_factor * getHeight() / 2)));
-    for (int p = 0; p < buffer_size; p++)
+    for (int p = 0; p < getWidth(); p++)
       path->addLine(VSTGUI::CPoint(
           double(p), mid + (buffer[p] * scale_factor * getHeight() / 2)));
 

@@ -6,12 +6,29 @@
 namespace sidebands {
 
 using OscBuffer = std::valarray<double>;
-using OscParam = std::valarray<double>;
+using OscParam = OscBuffer;
 
-using VDArray = std::valarray<double>;
+OscBuffer Vcos(const OscBuffer &src);
+OscBuffer Vexp(const OscBuffer &src);
+OscBuffer Vsin(const OscBuffer &src);
 
-void DCBlock(OscBuffer &buffer, const OscParam &index /* between 0.9 and 1 */);
+OscBuffer Vmul(const OscBuffer &l, const OscBuffer &r);
+OscBuffer Vdiv(const OscBuffer &l, const OscBuffer &r);
+OscBuffer Vsub(const OscBuffer &l, const OscBuffer &r);
+OscBuffer Vadd(const OscBuffer &l, const OscBuffer &r);
 
-void linspace(VDArray &linspaced, double start, double end, size_t num);
+void VaddInplace(OscBuffer &l, const OscBuffer &r);
+void VmulInplace(OscBuffer &l, const OscBuffer &r);
+void VdivInplace(OscBuffer &l, const OscBuffer &r);
+void VsubInplace(OscBuffer &l, const OscBuffer &r);
+
+OscBuffer Vmul(const OscBuffer &l, double r);
+OscBuffer Vdiv(const OscBuffer &l, double r);
+OscBuffer Vsub(const OscBuffer &l, double r);
+OscBuffer Vadd(const OscBuffer &l, double r);
+
+void ToFloat(const OscBuffer &src, float *out);
+
+void linspace(OscBuffer &linspaced, double start, double end, size_t num);
 
 }  // namespace sidebands

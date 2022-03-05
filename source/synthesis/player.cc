@@ -40,12 +40,10 @@ bool Player::Perform(Sample32 *in_buffer, Sample32 *out_buffer,
     MixBuffer mixdown_buffer(0.0f, frames_per_buffer);
     for (auto &voice_mix_buffers : mix_buffers) {
       for (auto &voice_mix_buffer : voice_mix_buffers)
-        mixdown_buffer += *voice_mix_buffer;
+        VaddInplace(mixdown_buffer, *voice_mix_buffer);
     }
 
-    for (int i = 0; i < frames_per_buffer; i++) {
-      out_buffer[i] = mixdown_buffer[i];
-    }
+    ToFloat(mixdown_buffer, out_buffer);
   }
   return true;
 }

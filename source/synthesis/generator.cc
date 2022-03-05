@@ -1,10 +1,11 @@
 #include "synthesis/generator.h"
+
 #include "constants.h"
 #include "synthesis/lfo.h"
 #include "synthesis/oscillator.h"
+#include "synthesis/dsp.h"
 
 #include <cmath>
-#include <execution>
 #include <mutex>
 
 namespace sidebands {
@@ -70,7 +71,7 @@ void Generator::Perform(SampleRate sample_rate, GeneratorPatch &patch,
   o_.Perform(sample_rate, out_buffer, freq, C, M, R, S, K);
 
   // Apply envelope.
-  out_buffer *= A;
+  VmulInplace(out_buffer, A);
 }
 
 void Generator::NoteOn(
