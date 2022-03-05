@@ -27,6 +27,9 @@ set(SMTG_RUN_VST_VALIDATOR OFF)
 # Abseil (and probably others) will fail in VST load if shared libs are on.
 set(BUILD_SHARED_LIBS FALSE)
 
+# Abseil link on Linux will fail without this.
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 if (NOT vst3sdk_SOURCE_DIR)
     message(FATAL_ERROR "Path to VST3 SDK is empty!")
 endif ()
@@ -62,7 +65,12 @@ set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  /fp:fast /arch:AVX52 /DINSTRSET=7")
+IF (WIN32)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  /fp:fast /arch:AVX2 /DINSTRSET=7")
+ELSE()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -ffast-math -mavx2 -fabi-version=0")
+    set(PLATFORM_LIBRARIES tbb)
+ENDIF()
 
 ## Utils library
 #add_library(sidebands_util STATIC
@@ -176,9 +184,10 @@ target_link_libraries(sidebands
         PRIVATE
         sdk
         glog
-        sidebands_util
+        absl::strings
         absl::statusor
-        )
+        ${PLATFORM_LIBRARIES}
+)
 target_include_directories(sidebands PRIVATE source ${vectorclass_SOURCE_DIR})
 
 if (SMTG_MAC)

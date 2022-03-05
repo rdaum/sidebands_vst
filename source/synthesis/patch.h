@@ -137,6 +137,8 @@ public:
   void EndParameterChanges();
   void AdvanceParameterChanges(uint32_t num_samples);
 
+  bool ValidParam(ParamID param_id) const;
+
   std::unique_ptr<GeneratorPatch> generators_[kNumGenerators];
 };
 

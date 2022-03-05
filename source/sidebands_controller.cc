@@ -72,6 +72,7 @@ tresult PLUGIN_API SidebandsController::initialize(FUnknown *context) {
 }
 
 tresult PLUGIN_API SidebandsController::terminate() {
+  LOG(INFO) << "Terminating controller";
 
   //---do not forget to call parent ------
   return EditControllerEx1::terminate();

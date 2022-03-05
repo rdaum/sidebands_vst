@@ -57,6 +57,10 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
       auto *pq = data.inputParameterChanges->getParameterData(num_changes);
       if (pq) {
         auto param_id = pq->getParameterId();
+        if (!kPatch->ValidParam(param_id)) {
+          LOG(ERROR) << "Invalid parameter change: " << param_id << ", ignoring";
+          continue;
+        }
         kPatch->BeginParameterChange(param_id, pq);
       }
     }
@@ -116,8 +120,12 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
 tresult PLUGIN_API
 SidebandsProcessor::setupProcessing(Vst::ProcessSetup &newSetup) {
   LOG(INFO) << "Sidebands setupProcessing sampleRate: " << newSetup.sampleRate
-            << " maxSamplesPerBlock: " << newSetup.maxSamplesPerBlock;
+            << " maxSamplesPerBlock: " << newSetup.maxSamplesPerBlock
+            << " patch instance: " << kPatch.get();
+
   player_ = std::make_unique<Player>(kPatch.get(), newSetup.sampleRate);
+
+  LOG(INFO) << "Instantiated player...";
 
   //--- called before any processing ----
   return AudioEffect::setupProcessing(newSetup);
@@ -139,6 +147,8 @@ SidebandsProcessor::canProcessSampleSize(int32 symbolicSampleSize) {
 tresult PLUGIN_API SidebandsProcessor::setState(IBStream *state) {
   // called when we load a preset, the model has to be reloaded
   IBStreamer streamer(state, kLittleEndian);
+
+  LOG(INFO) << "Set state: " << state;
 
   return kResultOk;
 }
