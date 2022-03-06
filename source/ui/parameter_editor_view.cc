@@ -47,13 +47,17 @@ MakeNumericEditor(Steinberg::Vst::RangeParameter *range_parameter,
   edit_control->setMax(range_parameter->getMax());
   edit_control->setMin(range_parameter->getMin());
   edit_control->setValueNormalized(range_parameter->getNormalized());
-  edit_control->setStringToValueFunction([](VSTGUI::UTF8StringPtr txt,
-                                            float &result,
-                                            VSTGUI::CTextEdit *te_control) {
-    const char *txt_end = txt + std::strlen(txt);
-    auto [ptr, ec]{std::from_chars(txt, txt_end, result)};
-    return ec == std::errc();
-  });
+  VSTGUI::CTextEdit::StringToValueFunction str_function =
+      [](VSTGUI::UTF8StringPtr txt, float& result, VSTGUI::CTextEdit* textEdit) -> bool {
+         try {
+           float v = std::stof(txt);
+           result = v;
+           return true;
+         } catch (std::exception e) {
+           return false;
+         }
+      };
+  edit_control->setStringToValueFunction(str_function);
 
   return edit_control;
 }
