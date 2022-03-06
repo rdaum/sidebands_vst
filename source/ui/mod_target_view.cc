@@ -45,7 +45,12 @@ ModulatorTargetView::ModulatorTargetView(
 }
 
 void ModulatorTargetView::valueChanged(VSTGUI::CControl *control) {
-  ModulatorEditorView::valueChanged(control);
+  ParamID tag = control->getTag();
+  edit_controller()->setParamNormalized(tag, control->getValueNormalized());
+  edit_controller()->beginEdit(tag);
+  edit_controller()->performEdit(tag, control->getValueNormalized());
+  edit_controller()->endEdit(tag);
+
   if (control == mod_source_selector_) {
     SwitchViewVisibility();
   }

@@ -31,10 +31,10 @@ public:
 
   // Signal note-on to all voices and generators.
   void NoteOn(std::chrono::high_resolution_clock::time_point start_time,
-              int32_t note_id, ParamValue velocity, uint8_t note);
+              int32_t note_id, ParamValue velocity, int16_t pitch);
 
   // Signal note-off.
-  void NoteOff(int32_t, uint8_t note);
+  void NoteOff(int32_t, int16_t pitch);
 
 private:
   // Allocate a new voice or steal one if necessary.

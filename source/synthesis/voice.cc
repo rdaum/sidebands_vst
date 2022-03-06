@@ -34,7 +34,7 @@ bool Voice::Playing() const {
 
 void Voice::NoteOn(SampleRate sample_rate, Patch *patch,
                    std::chrono::high_resolution_clock::time_point start_time,
-                   ParamValue velocity, uint8_t note) {
+                   ParamValue velocity, int16_t note) {
   ParamValue base_freq = NoteToFreq(note);
 
   note_ = note;
@@ -53,7 +53,7 @@ void Voice::NoteOn(SampleRate sample_rate, Patch *patch,
   }
 }
 
-void Voice::NoteOff(SampleRate sample_rate, Patch *patch, uint8_t note) {
+void Voice::NoteOff(SampleRate sample_rate, Patch *patch, int16_t note) {
   auto &g_patches = patch->generators_;
 
   std::lock_guard<std::mutex> generators_lock(generators_mutex_);

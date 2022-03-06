@@ -49,7 +49,7 @@ bool Player::Perform(Sample32 *in_buffer, Sample32 *out_buffer,
 }
 
 void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
-                    int32_t note_id, ParamValue velocity, uint8_t note) {
+                    int32_t note_id, ParamValue velocity, int16_t pitch) {
   std::lock_guard<std::mutex> player_lock(voices_mutex_);
 
   // If we were sent a note ID of -1, it means the host is not capable of
@@ -59,21 +59,36 @@ void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
   // just use the note # but that means we can't play the same note in sequence
   // while the previous one is releasing.
   // it's just awful, hosts that do this are vile.
-  if (note_id == -1) {
-    note_id = note;
+  if (note_id == -1 || note_id == 0) {
+    if (pitch == 0) {
+      LOG(INFO) << "Invalid note id: " << note_id << " note: " << pitch;
+      return;
+    }
+    LOG(INFO) << "On note id: " << std::hex << note_id << " for note: " << (int)pitch;
+    note_id = pitch;
   }
   Voice *v = NewVoice(note_id);
   assert(v != nullptr);
   // TODO legato, portamento, etc.
-  v->NoteOn(sample_rate_, patch_, start_time, velocity, note);
+  v->NoteOn(sample_rate_, patch_, start_time, velocity, pitch);
 }
 
-void Player::NoteOff(int32_t note_id, uint8_t note) {
+void Player::NoteOff(int32_t note_id, int16_t pitch) {
   std::lock_guard<std::mutex> player_lock(voices_mutex_);
 
   //
   if (note_id == -1 || note_id == 0) {
-    note_id = note;
+    for (auto &v : voices_) {
+      if (v.second.note() == pitch) {
+        LOG(INFO) << "Off note id: " << note_id << " substituted with " << pitch;
+        note_id = pitch;
+        break;
+      }
+    }
+
+    if (note_id == -1 || note_id == 0) {
+      LOG(INFO) << "Could not find note for fake note id : " << note_id << " " << pitch;
+    }
   }
 
   // Find the voice playing this note id and send it a note-off event.
@@ -82,7 +97,7 @@ void Player::NoteOff(int32_t note_id, uint8_t note) {
     LOG(ERROR) << "Unable to find voice for: " << std::hex << note_id;
     return;
   }
-  voice_it->second.NoteOff(sample_rate_, patch_, note);
+  voice_it->second.NoteOff(sample_rate_, patch_, pitch);
 }
 
 Voice *Player::NewVoice(int32_t note_id) {

@@ -32,10 +32,10 @@ public:
   // Trigger a note-on even for each generator in the voice.
   void NoteOn(SampleRate sample_rate, Patch *patch,
               std::chrono::high_resolution_clock::time_point start_time,
-              ParamValue velocity, uint8_t note);
+              ParamValue velocity, int16_t note);
 
   // Trigger a note-release for each generator in the voice.
-  void NoteOff(SampleRate sample_rate, Patch *patch, uint8_t note);
+  void NoteOff(SampleRate sample_rate, Patch *patch, int16_t note);
 
   // Force all off (i.e. for stealing)
   void Reset();
@@ -44,7 +44,7 @@ public:
   // generators are active).
   bool Playing() const;
 
-  uint8_t note() const { return note_; }
+  int16_t note() const { return note_; }
   std::chrono::high_resolution_clock::time_point on_time() const {
     return on_time_;
   }
@@ -53,7 +53,7 @@ private:
   mutable std::mutex generators_mutex_;
   std::unique_ptr<Generator> generators_[kNumGenerators];
   std::chrono::high_resolution_clock::time_point on_time_;
-  uint8_t note_;
+  int16_t note_;
   ParamValue velocity_;
   ParamValue note_frequency_;
 };
