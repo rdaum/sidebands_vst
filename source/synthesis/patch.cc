@@ -151,7 +151,7 @@ Patch::Patch() {
 }
 
 void Patch::AppendParameters(ParameterContainer *container) {
-  for (auto &generator: generators_) {
+  for (auto &generator : generators_) {
     generator->AppendParameters(container);
   }
 }
@@ -179,7 +179,7 @@ bool Patch::ValidParam(ParamID param_id) const {
 }
 
 GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
-    : gennum_(gen), on_(nullptr),
+    : gennum_(gen), on_(true),
       c_(TagFor(gennum_, TAG_OSC, TARGET_C), 1 + gennum_),
       a_(TagFor(gennum_, TAG_OSC, TARGET_A), 0.5),
       m_(TagFor(gennum_, TAG_OSC, TARGET_M), 0),
@@ -187,8 +187,9 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
       r_(TagFor(gennum_, TAG_OSC, TARGET_R), 1),
       s_(TagFor(gennum_, TAG_OSC, TARGET_S), 0) {
 
-  on_ = DeclareParameter(BooleanParameter(
-      unit_id, "Toggle", TAG_GENERATOR_TOGGLE, TARGET_NA, gennum_));
+  DeclareParameter(&on_,
+                   BooleanParameter(unit_id, "Toggle", TAG_GENERATOR_TOGGLE,
+                                    TARGET_NA, gennum_));
 
   DeclareParameter(&c_, OscillatorParameter(unit_id, "C", TARGET_C, gennum_, 0,
                                             kNumGenerators));
@@ -225,9 +226,9 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
   }
 }
 
-IPtr<RangeParameter> GeneratorPatch::DeclareParameter(
-    SampleAccurateValue *value,
-    IPtr<RangeParameter> param) {
+IPtr<RangeParameter>
+GeneratorPatch::DeclareParameter(SampleAccurateValue *value,
+                                 IPtr<RangeParameter> param) {
 
   value->setParamID(param->getInfo().id);
   value->minPlain = param->getMin();
@@ -237,7 +238,7 @@ IPtr<RangeParameter> GeneratorPatch::DeclareParameter(
 
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
   parameters_[param_key] = std::move(
-      std::make_unique<PDesc>(value, PDesc::Type::SAMPLE_ACCURATE, param));
+      std::make_unique<PDesc>(value, param));
 
   return param;
 }
@@ -248,7 +249,7 @@ GeneratorPatch::DeclareParameter(IPtr<RangeParameter> param) {
 
   auto param_key = ParamKeyFor(param->getInfo().id);
   parameters_[param_key] =
-      std::move(std::make_unique<PDesc>(nullptr, PDesc::Type::VALUE, param));
+      std::move(std::make_unique<PDesc>(nullptr, param));
 
   return param;
 }
@@ -256,7 +257,7 @@ GeneratorPatch::DeclareParameter(IPtr<RangeParameter> param) {
 void GeneratorPatch::AppendParameters(ParameterContainer *container) {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
 
-  for (auto &pdesc: parameters_) {
+  for (auto &pdesc : parameters_) {
     if (pdesc.second) {
       auto *param = container->addParameter(pdesc.second->param);
       param->addDependent(this);
@@ -290,34 +291,20 @@ void GeneratorPatch::BeginParameterChange(
   auto &param = parameters_[key];
   if (!param)
     return;
-  switch (param->type) {
-  case PDesc::Type::SAMPLE_ACCURATE:
-    param->sa_value->beginChanges(p_queue);
-    break;
-  }
+  param->sa_value->beginChanges(p_queue);
 }
 
 void GeneratorPatch::EndChanges() {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
   for (auto &pdesc : parameters_) {
-    if (pdesc.second && pdesc.second->type == PDesc::Type::SAMPLE_ACCURATE) {
-      pdesc.second->sa_value->endChanges();
-    }
+    pdesc.second->sa_value->endChanges();
   }
 }
 
 void GeneratorPatch::AdvanceParameterChanges(uint32_t num_samples) {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
   for (auto &pdesc : parameters_) {
-    if (pdesc.second && pdesc.second->type == PDesc::Type::SAMPLE_ACCURATE) {
-      bool has_changes = pdesc.second->sa_value->hasChanges();
-      auto old = pdesc.second->sa_value->getValue();
-      pdesc.second->sa_value->advance(num_samples);
-      if (has_changes) {
-        LOG(INFO) << "Advanced " << TagStr(pdesc.second->param->getInfo().id)
-                  << " to " << pdesc.second->sa_value->getValue() << " from " << old;
-      }
-    }
+    pdesc.second->sa_value->advance(num_samples);
   }
 }
 
@@ -333,15 +320,9 @@ void GeneratorPatch::update(FUnknown *changedUnknown,
     for (auto &param : parameters_) {
       if (param.second && param.second->param &&
           param.second->param->getInfo().id == changed_param->getInfo().id) {
-        switch (param.second->type) {
-        case PDesc::Type::SAMPLE_ACCURATE:
-          ParamValue v = changed_param->toPlain(changed_param->getNormalized());
-          LOG(INFO) << "Changed: " << TagStr(changed_param->getInfo().id)
-                    << " to " << v << "(" << changed_param->getNormalized()
-                    << ")";
-          param.second->sa_value->setValue(v);
-          break;
-        }
+        ParamValue v = changed_param->toPlain(changed_param->getNormalized());
+        param.second->sa_value->setValue(v);
+        break;
       }
     }
   }
@@ -349,7 +330,7 @@ void GeneratorPatch::update(FUnknown *changedUnknown,
 
 bool GeneratorPatch::on() const {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
-  return on_->getNormalized();
+  return on_.getValue();
 }
 
 ParamValue GeneratorPatch::c() const {

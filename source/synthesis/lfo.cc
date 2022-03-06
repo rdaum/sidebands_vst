@@ -31,11 +31,12 @@ LFO::NextSample(SampleRate sample_rate, ParamValue velocity,
 
   auto velocity_scale = (lfo_values.velocity_sensivity.getValue() * velocity) +
                         (1 - lfo_values.velocity_sensivity.getValue());
+  auto amplitude = lfo_values.amplitude.getValue() * velocity_scale;
   return (GeneratorPatch::kLFOTypes[off_t(lfo_values.type.getValue())] ==
                   GeneratorPatch::LFOType::SIN
               ? std::sin(phase_)
               : std::cos(phase_)) *
-         lfo_values.amplitude.getValue() * velocity_scale;
+         amplitude;
 }
 
 bool LFO::Playing() const { return playing_; }

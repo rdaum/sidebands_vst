@@ -59,11 +59,7 @@ void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
   // just use the note # but that means we can't play the same note in sequence
   // while the previous one is releasing.
   // it's just awful, hosts that do this are vile.
-  if (note_id == -1 || note_id == 0) {
-    if (pitch == 0) {
-      LOG(INFO) << "Invalid note id: " << note_id << " note: " << pitch;
-      return;
-    }
+  if (note_id == -1) {
     LOG(INFO) << "On note id: " << std::hex << note_id << " for note: " << (int)pitch;
     note_id = pitch;
   }
@@ -76,8 +72,9 @@ void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
 void Player::NoteOff(int32_t note_id, int16_t pitch) {
   std::lock_guard<std::mutex> player_lock(voices_mutex_);
 
-  //
-  if (note_id == -1 || note_id == 0) {
+  // Handle "-1" note IDs on note off, but also the odd situation when
+  // Carla/JUCE sends a "0" for note-off, which is Wrong(tm).
+  if (note_id == -1 || (note_id == 0 && voices_.find(note_id) == voices_.end())) {
     for (auto &v : voices_) {
       if (v.second.note() == pitch) {
         LOG(INFO) << "Off note id: " << note_id << " substituted with " << pitch;
@@ -87,7 +84,7 @@ void Player::NoteOff(int32_t note_id, int16_t pitch) {
     }
 
     if (note_id == -1 || note_id == 0) {
-      LOG(INFO) << "Could not find note for fake note id : " << note_id << " " << pitch;
+      LOG(ERROR) << "Could not find note for fake note id : " << note_id << " " << pitch;
     }
   }
 

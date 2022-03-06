@@ -92,7 +92,7 @@ private:
 
   mutable std::mutex patch_mutex_;
 
-  IPtr<RangeParameter> on_;
+  SampleAccurateValue on_;
   SampleAccurateValue c_, a_, m_, k_, r_, s_,
       portamento_;
 
@@ -103,8 +103,6 @@ private:
 
   struct PDesc {
     SampleAccurateValue *sa_value;
-    enum class Type { SAMPLE_ACCURATE, VALUE };
-    Type type;
     IPtr<RangeParameter> param;
   };
   std::unordered_map<ParamKey, std::unique_ptr<PDesc>, ParamKey::Hash>
