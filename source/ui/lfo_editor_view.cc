@@ -52,5 +52,14 @@ void LFOEditorView::SwitchGenerator(int new_generator) {
   setDirty(true);
 }
 
+void LFOEditorView::valueChanged(VSTGUI::CControl *control) {
+  ParamID tag = control->getTag();
+  edit_controller()->beginEdit(tag);
+  edit_controller()->performEdit(tag, control->getValueNormalized());
+  edit_controller()->endEdit(tag);
+  //  edit_controller_->setParamNormalized(tag, control->getValueNormalized());
+
+  setDirty(true);
+}
 } // namespace ui
 } // namespace sidebands

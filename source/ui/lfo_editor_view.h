@@ -21,6 +21,9 @@ public:
 
   void SwitchGenerator(int new_generator) override;
 
+  // IDependent overloads
+  void valueChanged(VSTGUI::CControl *control) override;
+
 private:
   ParameterEditorView *frequency_slider_;
   ParameterEditorView *amplitude_slider_;

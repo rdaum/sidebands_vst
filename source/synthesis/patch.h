@@ -61,10 +61,10 @@ public:
   static constexpr int kNumLFOTypes = sizeof(kLFOTypes) / sizeof(LFOType);
 
   struct LFOValues {
-    LFOType type;
-    ParamValue frequency;
-    ParamValue amplitude;
-    ParamValue velocity_sensitivty;
+    Steinberg::Vst::SampleAccurate::Parameter type;
+    Steinberg::Vst::SampleAccurate::Parameter frequency;
+    Steinberg::Vst::SampleAccurate::Parameter amplitude;
+    Steinberg::Vst::SampleAccurate::Parameter velocity_sensivity;
   };
   using ModulationParameters = std::variant<EnvelopeValues, LFOValues>;
 
@@ -99,14 +99,7 @@ private:
   Steinberg::Vst::SampleAccurate::Parameter mod_type_[NUM_TARGETS];
 
   EnvelopeValues envelope_parameters_[NUM_TARGETS];
-
-  struct LFOParameters {
-    IPtr<RangeParameter> frequency_;
-    IPtr<RangeParameter> function_;
-    IPtr<RangeParameter> amplitude_;
-    IPtr<RangeParameter> vel_sense_;
-  };
-  LFOParameters lfo_parameters_[NUM_TARGETS];
+  LFOValues lfo_parameters_[NUM_TARGETS];
 
   struct PDesc {
     Steinberg::Vst::SampleAccurate::Parameter *sa_param;
