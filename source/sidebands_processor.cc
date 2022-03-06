@@ -58,7 +58,8 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
       if (pq) {
         auto param_id = pq->getParameterId();
         if (!kPatch->ValidParam(param_id)) {
-          LOG(ERROR) << "Invalid parameter change: " << param_id << ", ignoring";
+          LOG(ERROR) << "Invalid parameter change: " << param_id
+                     << ", ignoring";
           continue;
         }
         kPatch->BeginParameterChange(param_id, pq);
@@ -81,6 +82,11 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
         break;
       case Vst::Event::kNoteOffEvent:
         player_->NoteOff(event.noteOff.noteId, event.noteOff.pitch);
+        break;
+      case Vst::Event::kLegacyMIDICCOutEvent:
+        VLOG(1) << "Legacy CC control# " << std::hex
+                << (int)event.midiCCOut.controlNumber
+                << " value: " << (int)event.midiCCOut.value;
         break;
       default:
         LOG(INFO) << "Other VST event: " << event.type;

@@ -24,15 +24,18 @@ ParamValue
 LFO::NextSample(SampleRate sample_rate, ParamValue velocity,
                 const GeneratorPatch::ModulationParameters &parameters) {
   auto &lfo_values = std::get<GeneratorPatch::LFOValues>(parameters);
-  phase_ += 2.0 * std::numbers::pi * lfo_values.frequency / sample_rate;
+  phase_ +=
+      2.0 * std::numbers::pi * lfo_values.frequency.getValue() / sample_rate;
   while (phase_ >= 2.0 * std::numbers::pi)
     phase_ -= 2.0 * std::numbers::pi;
 
-  auto velocity_scale = (lfo_values.velocity_sensitivty * velocity) +
-                        (1 - lfo_values.velocity_sensitivty);
-  return (lfo_values.type == GeneratorPatch::LFOType::SIN ? std::sin(phase_)
-                                                          : std::cos(phase_)) *
-         lfo_values.amplitude * velocity_scale;
+  auto velocity_scale = (lfo_values.velocity_sensivity.getValue() * velocity) +
+                        (1 - lfo_values.velocity_sensivity.getValue());
+  return (GeneratorPatch::kLFOTypes[off_t(lfo_values.type.getValue())] ==
+                  GeneratorPatch::LFOType::SIN
+              ? std::sin(phase_)
+              : std::cos(phase_)) *
+         lfo_values.amplitude.getValue() * velocity_scale;
 }
 
 bool LFO::Playing() const { return playing_; }

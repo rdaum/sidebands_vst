@@ -52,6 +52,16 @@ void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
                     int32_t note_id, ParamValue velocity, uint8_t note) {
   std::lock_guard<std::mutex> player_lock(voices_mutex_);
 
+  // If we were sent a note ID of -1, it means the host is not capable of
+  // delivering note ids (and the note-off event will be -1 or 0 to correspond.)
+
+  // In this case we need to produce some form of synthetic note id, so we'll
+  // just use the note # but that means we can't play the same note in sequence
+  // while the previous one is releasing.
+  // it's just awful, hosts that do this are vile.
+  if (note_id == -1) {
+    note_id = note;
+  }
   Voice *v = NewVoice(note_id);
   assert(v != nullptr);
   // TODO legato, portamento, etc.
@@ -60,6 +70,11 @@ void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
 
 void Player::NoteOff(int32_t note_id, uint8_t note) {
   std::lock_guard<std::mutex> player_lock(voices_mutex_);
+
+  //
+  if (note_id == -1 || note_id == 0) {
+    note_id = note;
+  }
 
   // Find the voice playing this note id and send it a note-off event.
   auto voice_it = voices_.find(note_id);
