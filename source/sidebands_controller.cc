@@ -84,9 +84,8 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
     return kResultFalse;
 
   IBStreamer streamer(state, kLittleEndian);
-  setParamNormalized(TagFor(0, TAG_GENERATOR_TOGGLE, TARGET_NA), 1);
-  setParamNormalized(TagFor(0, TAG_OSC, TARGET_A), 0.5);
   for (int i = 0; i < kNumGenerators; i++) {
+    setParamPlain(TagFor(i, TAG_OSC, TARGET_A), 0.25);
     setParamNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_A),
                        double(GeneratorPatch::ModType::ENVELOPE) / (GeneratorPatch::kNumModTypes -1));
     setParamNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_K),
@@ -118,6 +117,7 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
     setParamNormalized(TagFor(i, TAG_LFO_TYPE, TARGET_K), 0);
   }
   setParamNormalized(TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA), 0);
+  setParamNormalized(TagFor(0, TAG_GENERATOR_TOGGLE, TARGET_NA), 1);
 
   return kResultOk;
 }

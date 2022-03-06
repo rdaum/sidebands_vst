@@ -58,10 +58,10 @@ EnvelopeEditorView::EnvelopeEditorView(
 
 void EnvelopeEditorView::valueChanged(VSTGUI::CControl *control) {
   ParamID tag = control->getTag();
+  edit_controller()->setParamNormalized(tag, control->getValueNormalized());
   edit_controller()->beginEdit(tag);
   edit_controller()->performEdit(tag, control->getValueNormalized());
   edit_controller()->endEdit(tag);
-//  edit_controller_->setParamNormalized(tag, control->getValueNormalized());
 
   setDirty(true);
 }

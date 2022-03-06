@@ -7,12 +7,12 @@
 
 #include <pluginterfaces/vst/ivstparameterchanges.h>
 #include <pluginterfaces/vst/vsttypes.h>
-#include <public.sdk/source/vst/utility/sampleaccurate.h>
 #include <public.sdk/source/vst/vstparameters.h>
 #include <vector>
 
 #include "constants.h"
 #include "tags.h"
+#include "sample_accurate_value.h"
 
 namespace sidebands {
 
@@ -49,12 +49,12 @@ public:
   ParamValue portamento() const;
 
   struct EnvelopeValues {
-    Steinberg::Vst::SampleAccurate::Parameter A_R; // attack rate
-    Steinberg::Vst::SampleAccurate::Parameter A_L; // attack peak level
-    Steinberg::Vst::SampleAccurate::Parameter D_R; // decay rate
-    Steinberg::Vst::SampleAccurate::Parameter S_L; // sustain level
-    Steinberg::Vst::SampleAccurate::Parameter R_R; // release rate
-    Steinberg::Vst::SampleAccurate::Parameter VS;  // velocity sensitivity
+    SampleAccurateValue A_R; // attack rate
+    SampleAccurateValue A_L; // attack peak level
+    SampleAccurateValue D_R; // decay rate
+    SampleAccurateValue S_L; // sustain level
+    SampleAccurateValue R_R; // release rate
+    SampleAccurateValue VS;  // velocity sensitivity
   };
   enum class LFOType { SIN, COS };
   static constexpr LFOType kLFOTypes[]{LFOType::SIN, LFOType::COS};
@@ -82,7 +82,7 @@ public:
 
 private:
   IPtr<RangeParameter>
-  DeclareParameter(Steinberg::Vst::SampleAccurate::Parameter *param_v,
+  DeclareParameter(SampleAccurateValue *value,
                    IPtr<RangeParameter> param);
   IPtr<RangeParameter> DeclareParameter(IPtr<RangeParameter> param);
   void DeclareEnvelopeParameters(Steinberg::Vst::UnitID unit_id,
@@ -93,10 +93,10 @@ private:
   mutable std::mutex patch_mutex_;
 
   IPtr<RangeParameter> on_;
-  Steinberg::Vst::SampleAccurate::Parameter c_, a_, m_, k_, r_, s_,
+  SampleAccurateValue c_, a_, m_, k_, r_, s_,
       portamento_;
 
-  Steinberg::Vst::SampleAccurate::Parameter mod_type_[NUM_TARGETS];
+  SampleAccurateValue mod_type_[NUM_TARGETS];
 
   EnvelopeValues envelope_parameters_[NUM_TARGETS];
 
@@ -109,7 +109,7 @@ private:
   LFOParameters lfo_parameters_[NUM_TARGETS];
 
   struct PDesc {
-    Steinberg::Vst::SampleAccurate::Parameter *sa_param;
+    SampleAccurateValue *sa_value;
     enum class Type { SAMPLE_ACCURATE, VALUE };
     Type type;
     IPtr<RangeParameter> param;

@@ -10,18 +10,11 @@
 using namespace Steinberg::Vst;
 using namespace sidebands;
 
-//------------------------------------------------------------------------
-//  VST Plug-in Entry
-//------------------------------------------------------------------------
-// Windows: do not forget to include a .def file in your project to export
-// GetPluginFactory function!
-//------------------------------------------------------------------------
-
 BEGIN_FACTORY_DEF("Daum Audio Works", "https://www.mycompanyname.com",
                   "mailto:info@mycompanyname.com")
 
-//---First Plug-in included in this factory-------
-// its kVstAudioEffectClass component
+// Processor.
+// A kVstAudioEffectClass component
 DEF_CLASS2(
     INLINE_UID_FROM_FUID(kSidebandsProcessorUID),
     PClassInfo::kManyInstances, // cardinality
@@ -36,7 +29,8 @@ DEF_CLASS2(
     SidebandsProcessor::Instantiate) // function pointer called when this
                                      // component should be instantiated
 
-// its kVstComponentControllerClass component
+// Controller
+// A kVstComponentControllerClass component
 DEF_CLASS2(
     INLINE_UID_FROM_FUID(kSidebandsControllerUID),
     PClassInfo::kManyInstances,   // cardinality

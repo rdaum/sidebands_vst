@@ -104,6 +104,7 @@ smtg_add_vst3plugin(sidebands
         source/sidebands_controller.cc
         source/sidebands_entry.cc
 
+        source/synthesis/sample_accurate_value.h
         source/synthesis/dsp.cc
         source/synthesis/dsp.h
         source/synthesis/envgen.h

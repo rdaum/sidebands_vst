@@ -52,7 +52,13 @@ DrawbarView::DrawbarView(const VSTGUI::CRect &size,
         VSTGUI::CRowColumnView::kRowStyle,
         VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2);
     column->setBackgroundColor(kBgGrey);
-    column->addView(NewToggle(drawbar_num, TAG_GENERATOR_TOGGLE, TARGET_NA));
+    toggle_buttons_[drawbar_num] = new VSTGUI::COnOffButton(
+        VSTGUI::CRect(0, 0, column->getWidth(), 15), this,
+        TagFor(drawbar_num, TAG_GENERATOR_TOGGLE, TARGET_NA),
+        new VSTGUI::CBitmap(kToggleSwitch));
+    toggle_buttons_[drawbar_num]->setValue(edit_controller->getParamNormalized(
+        TagFor(drawbar_num, TAG_GENERATOR_TOGGLE, TARGET_NA)));
+    column->addView(toggle_buttons_[drawbar_num]);
     column->addView(new ParameterEditorView(
         VSTGUI::CRect{0, 0, 40, getHeight() - 30},
         FindRangedParameter(edit_controller, drawbar_num, TAG_OSC, TARGET_A),
@@ -87,11 +93,28 @@ void DrawbarView::valueChanged(VSTGUI::CControl *control) {
         MakeUnitID(UNIT_GENERATOR, GeneratorFor(tag)));
     return;
   }
+  edit_controller()->setParamNormalized(tag, control->getValueNormalized());
   edit_controller()->beginEdit(tag);
   edit_controller()->performEdit(tag, control->getValueNormalized());
   edit_controller()->endEdit(tag);
-  edit_controller()->setParamNormalized(tag, control->getValueNormalized());
 }
 
-}  // namespace ui
-}  // namespace sidebands
+void DrawbarView::update(Steinberg::FUnknown *unknown,
+                         Steinberg::int32 message) {
+
+  if (message != IDependent::kChanged)
+    return;
+  Steinberg::Vst::Parameter *changed_param;
+  if (unknown->queryInterface(Steinberg::Vst::Parameter::iid,
+                              (void **)&changed_param) != Steinberg::kResultOk)
+    return;
+
+  LOG(INFO) << "Update: " << TagStr(changed_param->getInfo().id);
+  if (ParamFor(changed_param->getInfo().id) == TAG_GENERATOR_TOGGLE) {
+    auto gen = GeneratorFor(changed_param->getInfo().id);
+    toggle_buttons_[gen]->setValue(changed_param->getNormalized());
+  }
+}
+
+} // namespace ui
+} // namespace sidebands

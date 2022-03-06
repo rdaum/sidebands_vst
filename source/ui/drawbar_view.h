@@ -20,7 +20,11 @@ public:
   // IControlListener overrides
   void valueChanged(VSTGUI::CControl *control) override;
 
+  // IDependent overrides
+  void update(Steinberg::FUnknown *unknown, Steinberg::int32 int_32) override;
+
 private:
+  VSTGUI::COnOffButton *toggle_buttons_[kNumGenerators];
   VSTGUI::COnOffButton *select_buttons_[kNumGenerators];
 };
 

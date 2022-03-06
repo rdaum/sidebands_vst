@@ -28,7 +28,7 @@ ParamValue EnvelopeGenerator::NextSample(
 
   // Vel sense of 1 means respond fully to velocity, 0 not velocity sensitive.
   // Inbetween we scale.
-  auto velocity_scale = (ev.VS.getValue() * velocity)+(1-ev.VS.getValue());
+  auto velocity_scale = (ev.VS.getValue() * velocity)+(1- ev.VS.getValue());
   
   if (stage_ == ENVELOPE_STAGE_SUSTAIN)
     return current_level_ * velocity_scale;
@@ -47,8 +47,8 @@ ParamValue EnvelopeGenerator::NextSample(
 void EnvelopeGenerator::EnterStage(
     SampleRate sample_rate, EnvelopeStage new_stage,
     const GeneratorPatch::EnvelopeValues &envelope) {
-  const ParamValue stage_rates_[]{0.0, envelope.A_R.getValue(), envelope.D_R.getValue(), envelope.S_L.getValue(),
-                                  envelope.R_R.getValue()};
+  const ParamValue stage_rates_[]{0.0, envelope.A_R.getValue(), envelope.D_R.getValue(),
+      envelope.S_L.getValue(), envelope.R_R.getValue()};
   stage_ = new_stage;
   current_sample_index_ = 0;
   if (stage_ != ENVELOPE_STAGE_OFF && stage_ != ENVELOPE_STAGE_SUSTAIN) {

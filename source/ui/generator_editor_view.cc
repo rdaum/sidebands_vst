@@ -146,13 +146,17 @@ GeneratorEditorView::~GeneratorEditorView() {
 }
 
 void GeneratorEditorView::valueChanged(VSTGUI::CControl *control) {
+  // the tag on the scrollbar is the same as our "toggle" tag! don't handle it.
+  if (control == getVerticalScrollbar() || control == getHorizontalScrollbar()) {
+    CScrollView::valueChanged(control);
+    return;
+  }
   ParamID tag = control->getTag();
+  edit_controller_->setParamNormalized(tag, control->getValueNormalized());
   edit_controller_->beginEdit(tag);
   edit_controller_->performEdit(tag, control->getValueNormalized());
   edit_controller_->endEdit(tag);
-//  edit_controller_->setParamNormalized(tag, control->getValueNormalized());
 
-  CScrollView::valueChanged(control);
   setDirty(true);
 }
 

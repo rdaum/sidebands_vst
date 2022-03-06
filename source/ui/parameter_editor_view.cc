@@ -47,13 +47,13 @@ MakeNumericEditor(Steinberg::Vst::RangeParameter *range_parameter,
   edit_control->setMax(range_parameter->getMax());
   edit_control->setMin(range_parameter->getMin());
   edit_control->setValueNormalized(range_parameter->getNormalized());
-//  edit_control->setStringToValueFunction([](VSTGUI::UTF8StringPtr txt,
-//                                            float &result,
-//                                            VSTGUI::CTextEdit *te_control) {
-//    const char *txt_end = txt + std::strlen(txt);
-//    auto [ptr, ec]{std::from_chars(txt, txt_end, result)};
-//    return ec == std::errc();
-//  });
+  edit_control->setStringToValueFunction([](VSTGUI::UTF8StringPtr txt,
+                                            float &result,
+                                            VSTGUI::CTextEdit *te_control) {
+    const char *txt_end = txt + std::strlen(txt);
+    auto [ptr, ec]{std::from_chars(txt, txt_end, result)};
+    return ec == std::errc();
+  });
 
   return edit_control;
 }
@@ -85,6 +85,7 @@ ParameterEditorView::~ParameterEditorView() {
 
 void ParameterEditorView::update(Steinberg::FUnknown *unknown,
                                  Steinberg::int32 message) {
+
   if (message != IDependent::kChanged)
     return;
   Steinberg::Vst::Parameter *changed_param;

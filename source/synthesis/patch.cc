@@ -122,18 +122,24 @@ void GeneratorPatch::DeclareEnvelopeParameters(Steinberg::Vst::UnitID unit_id,
                                                TargetTag target,
                                                uint32_t gen_num) {
   std::string env_name = kTargetNames[target];
-  DeclareParameter(&envelope_parameters_[target].A_R, EnvelopeParameter(
-      unit_id, env_name + " A", TAG_ENV_A, target, gen_num, 0, 5));
-  DeclareParameter(&envelope_parameters_[target].A_L, EnvelopeParameter(
-      unit_id, env_name + " AL", TAG_ENV_AL, target, gen_num, 0, 1));
-  DeclareParameter(&envelope_parameters_[target].D_R, EnvelopeParameter(
-      unit_id, env_name + " D", TAG_ENV_D, target, gen_num, 0, 5));
-  DeclareParameter(&envelope_parameters_[target].S_L, EnvelopeParameter(
-      unit_id, env_name + " S", TAG_ENV_S, target, gen_num, 0, 1));
-  DeclareParameter(&envelope_parameters_[target].A_R, EnvelopeParameter(
-      unit_id, env_name + " R", TAG_ENV_R, target, gen_num, 0, 5));
-  DeclareParameter(&envelope_parameters_[target].VS, EnvelopeParameter(
-      unit_id, env_name + " VS", TAG_ENV_VS, target, gen_num, 0, 1));
+  DeclareParameter(&envelope_parameters_[target].A_R,
+                   EnvelopeParameter(unit_id, env_name + " A", TAG_ENV_A,
+                                     target, gen_num, 0, 5));
+  DeclareParameter(&envelope_parameters_[target].A_L,
+                   EnvelopeParameter(unit_id, env_name + " AL", TAG_ENV_AL,
+                                     target, gen_num, 0, 1));
+  DeclareParameter(&envelope_parameters_[target].D_R,
+                   EnvelopeParameter(unit_id, env_name + " D", TAG_ENV_D,
+                                     target, gen_num, 0, 5));
+  DeclareParameter(&envelope_parameters_[target].S_L,
+                   EnvelopeParameter(unit_id, env_name + " S", TAG_ENV_S,
+                                     target, gen_num, 0, 1));
+  DeclareParameter(&envelope_parameters_[target].R_R,
+                   EnvelopeParameter(unit_id, env_name + " R", TAG_ENV_R,
+                                     target, gen_num, 0, 5));
+  DeclareParameter(&envelope_parameters_[target].VS,
+                   EnvelopeParameter(unit_id, env_name + " VS", TAG_ENV_VS,
+                                     target, gen_num, 0, 1));
 }
 
 Patch::Patch() {
@@ -145,7 +151,7 @@ Patch::Patch() {
 }
 
 void Patch::AppendParameters(ParameterContainer *container) {
-  for (auto &generator: generators_) {
+  for (auto &generator : generators_) {
     generator->AppendParameters(container);
   }
 }
@@ -157,20 +163,19 @@ void Patch::BeginParameterChange(ParamID param_id,
 }
 
 void Patch::EndParameterChanges() {
-  for (auto &item: generators_) {
-    item->EndChanges();
+  for (auto &generator : generators_) {
+    generator->EndChanges();
   }
 }
 
 void Patch::AdvanceParameterChanges(uint32_t num_samples) {
-  for (auto &item: generators_) {
+  for (auto &item : generators_) {
     item->AdvanceParameterChanges(num_samples);
   }
 }
 
 bool Patch::ValidParam(ParamID param_id) const {
-  return GeneratorFor(param_id) < kNumGenerators && ParamFor(param_id) < TAG_NUM_TAGS
-      && TargetTag(param_id) < TAG_NUM_TAGS;
+  return GeneratorFor(param_id) < kNumGenerators;
 }
 
 GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
@@ -201,8 +206,9 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
       &portamento_,
       OscillatorParameter(unit_id, "Port", TARGET_PORTAMENTO, gennum_, 0, 1));
 
-  for (auto &target: kModulationTargets) {
-    DeclareParameter(&mod_type_[target], DeclareParameter(ModTypeParameter(unit_id, target, gennum_)));
+  for (auto &target : kModulationTargets) {
+    DeclareParameter(&mod_type_[target], DeclareParameter(ModTypeParameter(
+                                             unit_id, target, gennum_)));
     DeclareEnvelopeParameters(unit_id, target, gennum_);
     lfo_parameters_[target].amplitude_ = DeclareParameter(
         LFOParameter(unit_id, "Amp", TAG_LFO_AMP, target, gennum_, 0, 1.0));
@@ -216,13 +222,18 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
 }
 
 IPtr<RangeParameter> GeneratorPatch::DeclareParameter(
-    Steinberg::Vst::SampleAccurate::Parameter *param_v,
+    SampleAccurateValue *value,
     IPtr<RangeParameter> param) {
-  std::lock_guard<std::mutex> params_lock(patch_mutex_);
+
+  value->setParamID(param->getInfo().id);
+  value->minPlain = param->getMin();
+  value->maxPlain = param->getMax();
 
   auto param_key = ParamKeyFor(param->getInfo().id);
+
+  std::lock_guard<std::mutex> params_lock(patch_mutex_);
   parameters_[param_key] = std::move(
-      std::make_unique<PDesc>(param_v, PDesc::Type::SAMPLE_ACCURATE, param));
+      std::make_unique<PDesc>(value, PDesc::Type::SAMPLE_ACCURATE, param));
 
   return param;
 }
@@ -241,7 +252,7 @@ GeneratorPatch::DeclareParameter(IPtr<RangeParameter> param) {
 void GeneratorPatch::AppendParameters(ParameterContainer *container) {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
 
-  for (auto &pdesc: parameters_) {
+  for (auto &pdesc : parameters_) {
     if (pdesc.second) {
       auto *param = container->addParameter(pdesc.second->param);
       param->addDependent(this);
@@ -264,6 +275,9 @@ GetLastValue(Steinberg::Vst::IParamValueQueue *p_queue) {
 
 void GeneratorPatch::BeginParameterChange(
     ParamID param_id, Steinberg::Vst::IParamValueQueue *p_queue) {
+  if (!p_queue->getPointCount())
+    return;
+
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
   if (GeneratorFor(param_id) != gennum_)
     return;
@@ -273,43 +287,56 @@ void GeneratorPatch::BeginParameterChange(
   if (!param)
     return;
   switch (param->type) {
-    case PDesc::Type::SAMPLE_ACCURATE:param->sa_param->beginChanges(p_queue);
-      break;
+  case PDesc::Type::SAMPLE_ACCURATE:
+    param->sa_value->beginChanges(p_queue);
+    break;
   }
 }
 
 void GeneratorPatch::EndChanges() {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
-  for (auto &pdesc: parameters_) {
-    if (pdesc.second && pdesc.second->type == PDesc::Type::SAMPLE_ACCURATE)
-      pdesc.second->sa_param->endChanges();
+  for (auto &pdesc : parameters_) {
+    if (pdesc.second && pdesc.second->type == PDesc::Type::SAMPLE_ACCURATE) {
+      pdesc.second->sa_value->endChanges();
+    }
   }
 }
 
 void GeneratorPatch::AdvanceParameterChanges(uint32_t num_samples) {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
-  for (auto &pdesc: parameters_) {
+  for (auto &pdesc : parameters_) {
     if (pdesc.second && pdesc.second->type == PDesc::Type::SAMPLE_ACCURATE) {
-      pdesc.second->sa_param->advance(num_samples);
+      bool has_changes = pdesc.second->sa_value->hasChanges();
+      auto old = pdesc.second->sa_value->getValue();
+      pdesc.second->sa_value->advance(num_samples);
+      if (has_changes) {
+        LOG(INFO) << "Advanced " << TagStr(pdesc.second->param->getInfo().id)
+                  << " to " << pdesc.second->sa_value->getValue() << " from " << old;
+      }
     }
   }
 }
 
+// Reflect changes in the parameter object to inside the sample accurate
+// internal rep of it.
 void GeneratorPatch::update(FUnknown *changedUnknown,
                             Steinberg::int32 message) {
   if (message == IDependent::kChanged) {
     Steinberg::Vst::RangeParameter *changed_param;
-    changedUnknown->queryInterface(Parameter::iid, (void **) &changed_param);
+    changedUnknown->queryInterface(Parameter::iid, (void **)&changed_param);
     std::lock_guard<std::mutex> params_lock(patch_mutex_);
 
-    for (auto &param: parameters_) {
+    for (auto &param : parameters_) {
       if (param.second && param.second->param &&
           param.second->param->getInfo().id == changed_param->getInfo().id) {
         switch (param.second->type) {
-          case PDesc::Type::SAMPLE_ACCURATE:
-            param.second->sa_param->setValue(
-                changed_param->toPlain(changed_param->getNormalized()));
-            break;
+        case PDesc::Type::SAMPLE_ACCURATE:
+          ParamValue v = changed_param->toPlain(changed_param->getNormalized());
+          LOG(INFO) << "Changed: " << TagStr(changed_param->getInfo().id)
+                    << " to " << v << "(" << changed_param->getNormalized()
+                    << ")";
+          param.second->sa_value->setValue(v);
+          break;
         }
       }
     }
@@ -388,15 +415,22 @@ GeneratorPatch::ModTypeFor(TargetTag destination) const {
 std::function<double()>
 GeneratorPatch::ParameterGetterFor(TargetTag dest) const {
   switch (dest) {
-    case TARGET_A:return std::bind(&GeneratorPatch::a, this);
-    case TARGET_K:return std::bind(&GeneratorPatch::k, this);
-    case TARGET_C:return std::bind(&GeneratorPatch::c, this);
-    case TARGET_M:return std::bind(&GeneratorPatch::m, this);
-    case TARGET_R:return std::bind(&GeneratorPatch::r, this);
-    case TARGET_S:return std::bind(&GeneratorPatch::s, this);
-    default:LOG(ERROR) << "Unknown parameter: " << dest;
-      assert(0);
-      return std::bind(&GeneratorPatch::a, this);
+  case TARGET_A:
+    return std::bind(&GeneratorPatch::a, this);
+  case TARGET_K:
+    return std::bind(&GeneratorPatch::k, this);
+  case TARGET_C:
+    return std::bind(&GeneratorPatch::c, this);
+  case TARGET_M:
+    return std::bind(&GeneratorPatch::m, this);
+  case TARGET_R:
+    return std::bind(&GeneratorPatch::r, this);
+  case TARGET_S:
+    return std::bind(&GeneratorPatch::s, this);
+  default:
+    LOG(ERROR) << "Unknown parameter: " << dest;
+    assert(0);
+    return std::bind(&GeneratorPatch::a, this);
   }
 }
 
