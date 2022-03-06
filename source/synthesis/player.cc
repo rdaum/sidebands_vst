@@ -15,13 +15,11 @@ namespace sidebands {
 Player::Player(Patch *patch, SampleRate sample_rate)
     : patch_(patch), sample_rate_(sample_rate) {}
 
-bool Player::Perform(Sample32 *in_buffer, Sample32 *out_buffer,
-                     size_t frames_per_buffer) {
-  memset(out_buffer, 0, frames_per_buffer * sizeof(Sample32));
-
+bool Player::Perform(OscBuffer &mixdown_buffer) {
   auto &g_patches = patch_->generators_;
   std::vector<MixBuffers> mix_buffers(voices_.size());
 
+  auto frames_per_buffer = mixdown_buffer.size();
   {
     std::lock_guard<std::mutex> player_lock(voices_mutex_);
 
@@ -37,13 +35,33 @@ bool Player::Perform(Sample32 *in_buffer, Sample32 *out_buffer,
 
   // Mix down.
   if (!mix_buffers.empty()) {
-    MixBuffer mixdown_buffer(0.0f, frames_per_buffer);
     for (auto &voice_mix_buffers : mix_buffers) {
       for (auto &voice_mix_buffer : voice_mix_buffers)
         VaddInplace(mixdown_buffer, *voice_mix_buffer);
     }
+    return true;
+  }
 
+  return false;
+}
+
+bool Player::Perform32(Sample32 *in_buffer, Sample32 *out_buffer,
+                     size_t frames_per_buffer) {
+  memset(out_buffer, 0, frames_per_buffer * sizeof(Sample32));
+  MixBuffer mixdown_buffer(0.0f, frames_per_buffer);
+  if (Perform(mixdown_buffer)) {
     ToFloat(mixdown_buffer, out_buffer);
+  }
+  return true;
+}
+
+
+bool Player::Perform64(Sample64 *in_buffer, Sample64 *out_buffer,
+                       size_t frames_per_buffer) {
+  memset(out_buffer, 0, frames_per_buffer * sizeof(Sample32));
+  MixBuffer mixdown_buffer(0.0f, frames_per_buffer);
+  if (Perform(mixdown_buffer)) {
+    std::memcpy(out_buffer, &mixdown_buffer[0], frames_per_buffer);
   }
   return true;
 }

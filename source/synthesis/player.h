@@ -16,6 +16,7 @@ namespace sidebands {
 
 using Steinberg::Vst::ParamValue;
 using Steinberg::Vst::Sample32;
+using Steinberg::Vst::Sample64;
 
 // Manages currently playing voices and dispatches note on/noteoff events, and
 // fills and mixes audio buffers from playing voices.
@@ -26,8 +27,10 @@ public:
   Player(Patch *patch, SampleRate sample_rate);
 
   // Fill the audio buffer.
-  bool Perform(Sample32 *in_buffer, Sample32 *out_buffer,
+  bool Perform32(Sample32 *in_buffer, Sample32 *out_buffer,
                size_t frames_per_buffer);
+  bool Perform64(Sample64 *in_buffer, Sample64 *out_buffer,
+                 size_t frames_per_buffer);
 
   // Signal note-on to all voices and generators.
   void NoteOn(std::chrono::high_resolution_clock::time_point start_time,
@@ -39,6 +42,7 @@ public:
 private:
   // Allocate a new voice or steal one if necessary.
   Voice *NewVoice(int32_t note_id);
+  bool Perform(OscBuffer &buffer);
 
   const SampleRate sample_rate_;
   Patch *patch_; // Current patch.

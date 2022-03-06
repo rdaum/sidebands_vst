@@ -106,14 +106,32 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
 
     // For now just the same thing on all channels. We'll eventually develop
     // stereo functionality.
-    std::vector<Vst::Sample32> output_buffer(data.numSamples, 0.0);
-    player_->Perform(nullptr, output_buffer.data(), data.numSamples);
-    for (auto channel = 0; channel < outputs[0].numChannels; ++channel) {
-      for (auto sample_index = 0; sample_index < data.numSamples;
-           ++sample_index) {
-        outputs[0].channelBuffers32[channel][sample_index] =
-            output_buffer[sample_index];
+    if (data.symbolicSampleSize ==
+        Steinberg::Vst::SymbolicSampleSizes::kSample32) {
+      std::vector<Vst::Sample32> output_buffer(data.numSamples, 0.0);
+      player_->Perform32(nullptr, output_buffer.data(), data.numSamples);
+      for (auto channel = 0; channel < outputs[0].numChannels; ++channel) {
+        for (auto sample_index = 0; sample_index < data.numSamples;
+             ++sample_index) {
+          outputs[0].channelBuffers32[channel][sample_index] =
+              output_buffer[sample_index];
+        }
       }
+      return;
+    }
+
+    if (data.symbolicSampleSize ==
+        Steinberg::Vst::SymbolicSampleSizes::kSample64) {
+      std::vector<Vst::Sample64> output_buffer(data.numSamples, 0.0);
+      player_->Perform64(nullptr, output_buffer.data(), data.numSamples);
+      for (auto channel = 0; channel < outputs[0].numChannels; ++channel) {
+        for (auto sample_index = 0; sample_index < data.numSamples;
+             ++sample_index) {
+          outputs[0].channelBuffers64[channel][sample_index] =
+              output_buffer[sample_index];
+        }
+      }
+      return;
     }
   };
   slicer.process<Steinberg::Vst::kSample32>(data, processing_fn);
@@ -139,13 +157,11 @@ SidebandsProcessor::setupProcessing(Vst::ProcessSetup &newSetup) {
 
 tresult PLUGIN_API
 SidebandsProcessor::canProcessSampleSize(int32 symbolicSampleSize) {
-  // by default kSample32 is supported
   if (symbolicSampleSize == Vst::kSample32)
     return kResultTrue;
 
-  // disable the following comment if your processing support kSample64
-  /* if (symbolicSampleSize == Vst::kSample64)
-          return kResultTrue; */
+  if (symbolicSampleSize == Vst::kSample64)
+    return kResultTrue;
 
   return kResultFalse;
 }

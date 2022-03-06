@@ -53,7 +53,7 @@ MakeNumericEditor(Steinberg::Vst::RangeParameter *range_parameter,
            float v = std::stof(txt);
            result = v;
            return true;
-         } catch (std::exception e) {
+         } catch (const std::exception &e) {
            return false;
          }
       };
