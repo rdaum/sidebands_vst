@@ -1,7 +1,6 @@
 #pragma once
 
 #include <glog/logging.h>
-#include <public.sdk/source/vst/vsteditcontroller.h>
 #include <public.sdk/source/vst/vstparameters.h>
 
 #include <cstdint>
@@ -36,6 +35,12 @@ enum ParamTag {
   TAG_NUM_TAGS
 };
 
+
+constexpr const char *kParamNames[]{
+    "SELECT",  "TOGGLE", "OSC",      "ENV_A",         "ENV_AL",
+    "ENV_D",   "ENV_S",  "ENV_R",    "ENV_VS",        "LFO_FREQ",
+    "LFO_AMP", "LFO_VS", "LFO_TYPE", "SELECTED_GEN#", "MOD_TYPE"};
+
 enum TargetTag {
   TARGET_NA,
   TARGET_C,
@@ -58,15 +63,15 @@ constexpr const TargetTag kModulationTargets[]{
 // Composed of both param and subparam, key for patch param lookup
 struct ParamKey {
   ParamTag p_tag;
-  TargetTag s_tag;
+  TargetTag target;
 
   bool operator==(const ParamKey &k) const {
-    return k.p_tag == p_tag && k.s_tag == s_tag;
+    return k.p_tag == p_tag && k.target == target;
   }
 
   struct Hash {
     size_t operator()(const ParamKey &k) const {
-      return std::hash<ParamTag>()(k.p_tag) ^ std::hash<TargetTag>()(k.s_tag);
+      return std::hash<ParamTag>()(k.p_tag) ^ std::hash<TargetTag>()(k.target);
     }
   };
 };
@@ -80,12 +85,5 @@ std::string TagStr(Steinberg::Vst::ParamID tag);
 Steinberg::Vst::ParamID TagFor(uint8_t generator, ParamTag param,
                                TargetTag target);
 
-Steinberg::Vst::RangeParameter *FindRangedParameter(
-    Steinberg::Vst::EditController *edit_controller, uint16_t generator,
-    const ParamTag &param, const TargetTag &sp);
-
-void SelectGenerator(Steinberg::Vst::IEditController *edit_controller,
-                     int generator_number);
-int SelectedGenerator(Steinberg::Vst::IEditController *edit_controller);
 
 }  // namespace sidebands

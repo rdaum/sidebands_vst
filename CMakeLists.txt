@@ -96,57 +96,60 @@ smtg_add_vst3plugin(sidebands
         source/tags.h
         source/tags.cc
         source/version.h
-
         source/sidebands_cids.h
-        source/sidebands_processor.h
-        source/sidebands_processor.cc
-        source/sidebands_controller.h
-        source/sidebands_controller.cc
         source/sidebands_entry.cc
 
-        source/synthesis/sample_accurate_value.h
-        source/synthesis/dsp.cc
-        source/synthesis/dsp.h
-        source/synthesis/envgen.h
-        source/synthesis/envgen.cc
-        source/synthesis/lfo.h
-        source/synthesis/lfo.cc
-        source/synthesis/patch.h
-        source/synthesis/patch.cc
-        source/synthesis/oscillator.h
-        source/synthesis/oscillator.cc
-        source/synthesis/generator.h
-        source/synthesis/generator.cc
-        source/synthesis/player.h
-        source/synthesis/player.cc
-        source/synthesis/voice.h
-        source/synthesis/voice.cc
-        source/synthesis/modulation_source.h
+        source/processor/sidebands_processor.h
+        source/processor/sidebands_processor.cc
+        source/processor/sample_accurate_value.h
+        source/processor/patch_processor.h
+        source/processor/patch_processor.cc
+        
+        source/processor/synthesis/dsp.cc
+        source/processor/synthesis/dsp.h
+        source/processor/synthesis/envgen.h
+        source/processor/synthesis/envgen.cc
+        source/processor/synthesis/lfo.h
+        source/processor/synthesis/lfo.cc
+        source/processor/synthesis/oscillator.h
+        source/processor/synthesis/oscillator.cc
+        source/processor/synthesis/generator.h
+        source/processor/synthesis/generator.cc
+        source/processor/synthesis/player.h
+        source/processor/synthesis/player.cc
+        source/processor/synthesis/voice.h
+        source/processor/synthesis/voice.cc
+        source/processor/synthesis/modulation_source.h
 
-        source/ui/analysis_view.h
-        source/ui/analysis_view.cc
-        source/ui/patch_param_view.h
-        source/ui/patch_param_view.cc
-        source/ui/drawbar_view.h
-        source/ui/drawbar_view.cc
-        source/ui/modulator_editor_view.h
-        source/ui/modulator_editor_view.cc
-        source/ui/envelope_editor_view.h
-        source/ui/envelope_editor_view.cc
-        source/ui/lfo_editor_view.cc
-        source/ui/lfo_editor_view.h
-        source/ui/generator_editor_view.h
-        source/ui/generator_editor_view.cc
-        source/ui/parameter_editor_view.h
-        source/ui/parameter_editor_view.cc
-        source/ui/mod_target_view.cc
-        source/ui/mod_target_view.h
-        source/ui/graphical_envelope_editor.cc
-        source/ui/graphical_envelope_editor.h
-        source/ui/spectrum_view.cc
-        source/ui/spectrum_view.h
-        source/ui/waveform_view.cc
-        source/ui/waveform_view.h
+        source/controller/sidebands_controller.h
+        source/controller/sidebands_controller.cc
+        source/controller/patch_controller.h
+        source/controller/patch_controller.cc
+
+        source/controller/ui/analysis_view.h
+        source/controller/ui/analysis_view.cc
+        source/controller/ui/patch_param_view.h
+        source/controller/ui/patch_param_view.cc
+        source/controller/ui/drawbar_view.h
+        source/controller/ui/drawbar_view.cc
+        source/controller/ui/modulator_editor_view.h
+        source/controller/ui/modulator_editor_view.cc
+        source/controller/ui/envelope_editor_view.h
+        source/controller/ui/envelope_editor_view.cc
+        source/controller/ui/lfo_editor_view.cc
+        source/controller/ui/lfo_editor_view.h
+        source/controller/ui/generator_editor_view.h
+        source/controller/ui/generator_editor_view.cc
+        source/controller/ui/parameter_editor_view.h
+        source/controller/ui/parameter_editor_view.cc
+        source/controller/ui/mod_target_view.cc
+        source/controller/ui/mod_target_view.h
+        source/controller/ui/graphical_envelope_editor.cc
+        source/controller/ui/graphical_envelope_editor.h
+        source/controller/ui/spectrum_view.cc
+        source/controller/ui/spectrum_view.h
+        source/controller/ui/waveform_view.cc
+        source/controller/ui/waveform_view.h
 
         resource/sidebands.uidesc
         )

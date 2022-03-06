@@ -14,4 +14,13 @@ constexpr size_t kSampleAccurateChunkSizeSamples = 128;
 
 constexpr VSTGUI::CColor kBgGrey(219, 219, 219);
 
-}  // namespace sidebands
+enum class LFOType { SIN, COS };
+static constexpr LFOType kLFOTypes[]{LFOType::SIN, LFOType::COS};
+static constexpr int kNumLFOTypes = sizeof(kLFOTypes) / sizeof(LFOType);
+
+enum class ModType { NONE, ENVELOPE, LFO };
+static constexpr ModType kModTypes[]{ModType::NONE, ModType::ENVELOPE,
+                                     ModType::LFO};
+static constexpr int kNumModTypes = sizeof(kModTypes) / sizeof(ModType);
+
+} // namespace sidebands

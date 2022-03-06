@@ -1,7 +1,8 @@
 #include "public.sdk/source/main/pluginfactory.h"
+
 #include "sidebands_cids.h"
-#include "sidebands_controller.h"
-#include "sidebands_processor.h"
+#include "controller/sidebands_controller.h"
+#include "processor/sidebands_processor.h"
 #include "version.h"
 
 #define stringPluginName "Sidebands"
