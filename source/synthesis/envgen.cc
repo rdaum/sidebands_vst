@@ -18,20 +18,17 @@ constexpr const char *kStageLabels[]{"OFF", "ATTACK", "DECAY", "SUSTAIN",
 // rates), more stages, aftertouch
 
 ParamValue EnvelopeGenerator::NextSample(
-    SampleRate sample_rate,
-    ParamValue velocity,
+    SampleRate sample_rate, ParamValue velocity,
     const GeneratorPatch::ModulationParameters &parameters) {
-  if (stage_ == ENVELOPE_STAGE_OFF)
-    return current_level_;
+  if (stage_ == ENVELOPE_STAGE_OFF) return current_level_;
 
   const auto &ev = std::get<GeneratorPatch::EnvelopeValues>(parameters);
 
   // Vel sense of 1 means respond fully to velocity, 0 not velocity sensitive.
   // Inbetween we scale.
-  auto velocity_scale = (ev.VS.getValue() * velocity)+(1- ev.VS.getValue());
-  
-  if (stage_ == ENVELOPE_STAGE_SUSTAIN)
-    return current_level_ * velocity_scale;
+  auto velocity_scale = (ev.VS.getValue() * velocity) + (1 - ev.VS.getValue());
+
+  if (stage_ == ENVELOPE_STAGE_SUSTAIN) return current_level_ * velocity_scale;
 
   if (current_sample_index_ >= next_stage_sample_index_) {
     auto next_stage =
@@ -47,7 +44,8 @@ ParamValue EnvelopeGenerator::NextSample(
 void EnvelopeGenerator::EnterStage(
     SampleRate sample_rate, EnvelopeStage new_stage,
     const GeneratorPatch::EnvelopeValues &envelope) {
-  const ParamValue stage_rates_[]{0.0, envelope.A_R.getValue(), envelope.D_R.getValue(),
+  const ParamValue stage_rates_[]{
+      0.0, envelope.A_R.getValue(), envelope.D_R.getValue(),
       envelope.S_L.getValue(), envelope.R_R.getValue()};
   stage_ = new_stage;
   current_sample_index_ = 0;
@@ -55,33 +53,33 @@ void EnvelopeGenerator::EnterStage(
     next_stage_sample_index_ = stage_rates_[stage_] * sample_rate;
   }
   switch (new_stage) {
-  case ENVELOPE_STAGE_OFF:
-    Reset();
-    break;
-  case ENVELOPE_STAGE_ATTACK:
-    current_level_ = minimum_level_;
-    coefficient_ =
-        Coefficient(current_level_, envelope.A_L.getValue(), next_stage_sample_index_);
-    break;
-  case ENVELOPE_STAGE_DECAY:
-    current_level_ = envelope.A_L.getValue();
-    coefficient_ = Coefficient(
-        current_level_,
-        std::fmax(stage_rates_[ENVELOPE_STAGE_SUSTAIN], minimum_level_),
-        next_stage_sample_index_);
-    break;
-  case ENVELOPE_STAGE_SUSTAIN:
-    current_level_ = stage_rates_[ENVELOPE_STAGE_SUSTAIN];
-    coefficient_ = 1.0f;
-    break;
-  case ENVELOPE_STAGE_RELEASE:
-    // We could go from ATTACK/DECAY to RELEASE,
-    // so we're not changing currentLevel here.
-    coefficient_ =
-        Coefficient(current_level_, minimum_level_, next_stage_sample_index_);
-    break;
-  default:
-    break;
+    case ENVELOPE_STAGE_OFF:
+      Reset();
+      break;
+    case ENVELOPE_STAGE_ATTACK:
+      current_level_ = minimum_level_;
+      coefficient_ = Coefficient(current_level_, envelope.A_L.getValue(),
+                                 next_stage_sample_index_);
+      break;
+    case ENVELOPE_STAGE_DECAY:
+      current_level_ = envelope.A_L.getValue();
+      coefficient_ = Coefficient(
+          current_level_,
+          std::fmax(stage_rates_[ENVELOPE_STAGE_SUSTAIN], minimum_level_),
+          next_stage_sample_index_);
+      break;
+    case ENVELOPE_STAGE_SUSTAIN:
+      current_level_ = stage_rates_[ENVELOPE_STAGE_SUSTAIN];
+      coefficient_ = 1.0f;
+      break;
+    case ENVELOPE_STAGE_RELEASE:
+      // We could go from ATTACK/DECAY to RELEASE,
+      // so we're not changing currentLevel here.
+      coefficient_ =
+          Coefficient(current_level_, minimum_level_, next_stage_sample_index_);
+      break;
+    default:
+      break;
   }
 }
 
@@ -110,4 +108,4 @@ GeneratorPatch::ModType EnvelopeGenerator::mod_type() const {
   return GeneratorPatch::ModType::ENVELOPE;
 }
 
-} // namespace sidebands
+}  // namespace sidebands

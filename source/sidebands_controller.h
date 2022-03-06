@@ -1,24 +1,29 @@
 #pragma once
 
-#include "public.sdk/source/vst/vsteditcontroller.h"
 #include <vstgui/plugin-bindings/vst3editor.h>
+
+#include "public.sdk/source/vst/vsteditcontroller.h"
 
 namespace sidebands {
 
 class SidebandsController : public Steinberg::Vst::EditControllerEx1,
                             public VSTGUI::VST3EditorDelegate {
-public:
+ public:
   static Steinberg::FUnknown *Instantiate(void * /*context*/);
 
   SidebandsController() = default;
   ~SidebandsController() override = default;
 
+  // Update the parameter in such a way that the changes are propagated to the
+  // processor.
+  void UpdateParameterNormalized(Steinberg::Vst::ParamID param_id,
+                                 Steinberg::Vst::ParamValue value);
+
+  // EditControllerEx1 overrides
   VSTGUI::CView *createCustomView(VSTGUI::UTF8StringPtr name,
                                   const VSTGUI::UIAttributes &attributes,
                                   const VSTGUI::IUIDescription *description,
                                   VSTGUI::VST3Editor *editor) override;
-
-  Steinberg::tresult setParamPlain(Steinberg::Vst::ParamID tag, Steinberg::Vst::ParamValue value);
 
   // IPluginBase overrides
   Steinberg::tresult PLUGIN_API
@@ -43,15 +48,15 @@ public:
 
   //---Interface---------
   DEFINE_INTERFACES
-  DEF_INTERFACE (IUnitInfo)
+  DEF_INTERFACE(IUnitInfo)
   // Here you can add more supported VST3 interfaces
   // DEF_INTERFACE (Vst::IXXX)
   END_DEFINE_INTERFACES(EditController)
   DELEGATE_REFCOUNT(EditController)
 
-private:
+ private:
   VSTGUI::CView *analysis_view_ = nullptr;
 };
 
 //------------------------------------------------------------------------
-} // namespace sidebands
+}  // namespace sidebands

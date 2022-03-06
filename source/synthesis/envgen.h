@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cmath>
-
 #include <pluginterfaces/vst/vsttypes.h>
+
+#include <cmath>
 
 #include "synthesis/modulation_source.h"
 #include "synthesis/patch.h"
@@ -13,11 +13,14 @@ using Steinberg::Vst::ParamValue;
 using Steinberg::Vst::SampleRate;
 
 class EnvelopeGenerator : public IModulationSource {
-public:
+ public:
   explicit EnvelopeGenerator()
-      : minimum_level_(0.0001), stage_(ENVELOPE_STAGE_OFF),
-        current_level_(minimum_level_), coefficient_(1.0),
-        current_sample_index_(0), next_stage_sample_index_(0){};
+      : minimum_level_(0.0001),
+        stage_(ENVELOPE_STAGE_OFF),
+        current_level_(minimum_level_),
+        coefficient_(1.0),
+        current_sample_index_(0),
+        next_stage_sample_index_(0){};
 
   enum EnvelopeStage {
     ENVELOPE_STAGE_OFF = 0,
@@ -36,14 +39,13 @@ public:
   void Release(SampleRate sample_rate,
                const GeneratorPatch::ModulationParameters &parameters) override;
   void Reset() override;
-  ParamValue
-  NextSample(SampleRate sample_rate,
-             ParamValue velocity,
-             const GeneratorPatch::ModulationParameters &parameters) override;
+  ParamValue NextSample(
+      SampleRate sample_rate, ParamValue velocity,
+      const GeneratorPatch::ModulationParameters &parameters) override;
   bool Playing() const override { return stage_ != ENVELOPE_STAGE_OFF; }
   GeneratorPatch::ModType mod_type() const override;
 
-private:
+ private:
   void EnterStage(SampleRate sample_rate, EnvelopeStage new_stage,
                   const GeneratorPatch::EnvelopeValues &envelope);
 
@@ -55,4 +57,4 @@ private:
   size_t next_stage_sample_index_;
 };
 
-} // namespace sidebands
+}  // namespace sidebands

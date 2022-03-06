@@ -1,5 +1,6 @@
 #include "ui/mod_target_view.h"
 
+#include "sidebands_controller.h"
 #include "synthesis/patch.h"
 #include "ui/envelope_editor_view.h"
 #include "ui/lfo_editor_view.h"
@@ -7,9 +8,9 @@
 namespace sidebands {
 namespace ui {
 
-ModulatorTargetView::ModulatorTargetView(
-    const VSTGUI::CRect &size, Steinberg::Vst::EditController *edit_controller,
-    TargetTag target)
+ModulatorTargetView::ModulatorTargetView(const VSTGUI::CRect &size,
+                                         SidebandsController *edit_controller,
+                                         TargetTag target)
     : VSTGUI::CRowColumnView(
           size, VSTGUI::CRowColumnView::kRowStyle,
           VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2),
@@ -46,10 +47,8 @@ ModulatorTargetView::ModulatorTargetView(
 
 void ModulatorTargetView::valueChanged(VSTGUI::CControl *control) {
   ParamID tag = control->getTag();
-  edit_controller()->setParamNormalized(tag, control->getValueNormalized());
-  edit_controller()->beginEdit(tag);
-  edit_controller()->performEdit(tag, control->getValueNormalized());
-  edit_controller()->endEdit(tag);
+  edit_controller()->UpdateParameterNormalized(tag,
+                                               control->getValueNormalized());
 
   if (control == mod_source_selector_) {
     SwitchViewVisibility();
@@ -108,5 +107,5 @@ void ModulatorTargetView::SwitchViewVisibility() {
   setDirty(true);
 }
 
-} // namespace ui
-} //  namespace sidebands
+}  // namespace ui
+}  //  namespace sidebands

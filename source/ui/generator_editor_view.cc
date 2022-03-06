@@ -23,10 +23,10 @@ namespace {
 
 constexpr int kModRowHeight = 285;
 
-} // namespace
+}  // namespace
 
-GeneratorEditorView::GeneratorEditorView(
-    const VSTGUI::CRect &size, Steinberg::Vst::EditController *edit_controller)
+GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
+                                         SidebandsController *edit_controller)
     : VSTGUI::CScrollView(
           size, VSTGUI::CRect(0, 0, size.getWidth(), kModRowHeight * 4),
           CScrollView::kVerticalScrollbar),
@@ -49,32 +49,32 @@ GeneratorEditorView::GeneratorEditorView(
       absl::StrFormat("#%d", selected_generator).c_str());
 
   VSTGUI::CRect column_size{0, 0, 40, modulator_rows->getHeight()};
-  c_slider_ = new ParameterEditorView(column_size,
-                                      FindRangedParameter(edit_controller,
-                                                          selected_generator,
-                                                          TAG_OSC, TARGET_C),
-                                      this, "C");
+  c_slider_ = new ParameterEditorView(
+      column_size,
+      FindRangedParameter(edit_controller, selected_generator, TAG_OSC,
+                          TARGET_C),
+      this, "C");
 
-  m_slider_ = new ParameterEditorView(column_size,
-                                      FindRangedParameter(edit_controller,
-                                                          selected_generator,
-                                                          TAG_OSC, TARGET_M),
-                                      this, "M");
-  k_slider_ = new ParameterEditorView(column_size,
-                                      FindRangedParameter(edit_controller,
-                                                          selected_generator,
-                                                          TAG_OSC, TARGET_K),
-                                      this, "K");
-  r_slider_ = new ParameterEditorView(column_size,
-                                      FindRangedParameter(edit_controller,
-                                                          selected_generator,
-                                                          TAG_OSC, TARGET_R),
-                                      this, "R");
-  s_slider_ = new ParameterEditorView(column_size,
-                                      FindRangedParameter(edit_controller,
-                                                          selected_generator,
-                                                          TAG_OSC, TARGET_S),
-                                      this, "S");
+  m_slider_ = new ParameterEditorView(
+      column_size,
+      FindRangedParameter(edit_controller, selected_generator, TAG_OSC,
+                          TARGET_M),
+      this, "M");
+  k_slider_ = new ParameterEditorView(
+      column_size,
+      FindRangedParameter(edit_controller, selected_generator, TAG_OSC,
+                          TARGET_K),
+      this, "K");
+  r_slider_ = new ParameterEditorView(
+      column_size,
+      FindRangedParameter(edit_controller, selected_generator, TAG_OSC,
+                          TARGET_R),
+      this, "R");
+  s_slider_ = new ParameterEditorView(
+      column_size,
+      FindRangedParameter(edit_controller, selected_generator, TAG_OSC,
+                          TARGET_S),
+      this, "S");
 
   a_target_view_ = new ModulatorTargetView(
       VSTGUI::CRect(0, 0, modulator_rows->getWidth() - c_slider_->getWidth(),
@@ -147,15 +147,14 @@ GeneratorEditorView::~GeneratorEditorView() {
 
 void GeneratorEditorView::valueChanged(VSTGUI::CControl *control) {
   // the tag on the scrollbar is the same as our "toggle" tag! don't handle it.
-  if (control == getVerticalScrollbar() || control == getHorizontalScrollbar()) {
+  if (control == getVerticalScrollbar() ||
+      control == getHorizontalScrollbar()) {
     CScrollView::valueChanged(control);
     return;
   }
   ParamID tag = control->getTag();
-  edit_controller_->setParamNormalized(tag, control->getValueNormalized());
-  edit_controller_->beginEdit(tag);
-  edit_controller_->performEdit(tag, control->getValueNormalized());
-  edit_controller_->endEdit(tag);
+  edit_controller_->UpdateParameterNormalized(tag,
+                                              control->getValueNormalized());
 
   setDirty(true);
 }
@@ -201,5 +200,5 @@ void GeneratorEditorView::update(Steinberg::FUnknown *changedUnknown,
   }
 }
 
-} // namespace ui
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

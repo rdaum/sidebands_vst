@@ -14,7 +14,7 @@ ParamValue NoteToFreq(ParamValue note) {
   return kNoteConversionMultiplier * std::pow(2.0f, ((note - 9.0f) / 12.0f));
 }
 
-} // namespace
+}  // namespace
 
 Voice::Voice() : note_frequency_(0), note_(0), velocity_(0) {
   for (int x = 0; x < kNumGenerators; x++) {
@@ -26,8 +26,7 @@ bool Voice::Playing() const {
   std::lock_guard<std::mutex> generators_lock(generators_mutex_);
 
   for (const auto &g : generators_) {
-    if (g->Playing())
-      return true;
+    if (g->Playing()) return true;
   }
   return false;
 }
@@ -59,8 +58,7 @@ void Voice::NoteOff(SampleRate sample_rate, Patch *patch, int16_t note) {
   std::lock_guard<std::mutex> generators_lock(generators_mutex_);
   for (int g_num = 0; g_num < kNumGenerators; g_num++) {
     auto &g = generators_[g_num];
-    if (!g->Playing())
-      continue;
+    if (!g->Playing()) continue;
     auto &gp = g_patches[g_num];
     g->NoteOff(sample_rate, *gp, note);
   }
@@ -68,8 +66,7 @@ void Voice::NoteOff(SampleRate sample_rate, Patch *patch, int16_t note) {
 
 MixBuffers Voice::Perform(SampleRate sample_rate, size_t frames_per_buffer,
                           Patch *patch) {
-  if (!Playing())
-    return {};
+  if (!Playing()) return {};
   auto g_patches = patch->generators_;
 
   // Copy references to the generators that we need to use, and create a mix
@@ -79,8 +76,7 @@ MixBuffers Voice::Perform(SampleRate sample_rate, size_t frames_per_buffer,
     std::lock_guard<std::mutex> generators_lock(generators_mutex_);
     for (int g_num = 0; g_num < kNumGenerators; g_num++) {
       auto &g = generators_[g_num];
-      if (!g->Playing() || !g_patches[g_num]->on())
-        continue;
+      if (!g->Playing() || !g_patches[g_num]->on()) continue;
       generators.emplace_back(std::make_pair(g_patches[g_num].get(), g.get()));
     }
   }
@@ -91,7 +87,8 @@ MixBuffers Voice::Perform(SampleRate sample_rate, size_t frames_per_buffer,
                  generators.end(), mix_buffers.begin(),
                  [frames_per_buffer, sample_rate,
                   this](const std::pair<GeneratorPatch *, Generator *> &gpair) {
-                   auto mix_buffer = std::make_unique<MixBuffer>(frames_per_buffer);
+                   auto mix_buffer =
+                       std::make_unique<MixBuffer>(frames_per_buffer);
                    gpair.second->Perform(sample_rate, *gpair.first,
                                          *mix_buffer.get(), note_frequency_);
                    return mix_buffer;
@@ -106,4 +103,4 @@ void Voice::Reset() {
   }
 }
 
-} // namespace sidebands
+}  // namespace sidebands

@@ -1,11 +1,10 @@
 #pragma once
 
-#include "public.sdk/source/vst/vstaudioeffect.h"
+#include <pluginterfaces/vst/ivstparameterchanges.h>
 
 #include <memory>
 
-#include <pluginterfaces/vst/ivstparameterchanges.h>
-
+#include "public.sdk/source/vst/vstaudioeffect.h"
 #include "synthesis/patch.h"
 
 namespace sidebands {
@@ -13,7 +12,7 @@ namespace sidebands {
 class Player;
 
 class SidebandsProcessor : public Steinberg::Vst::AudioEffect {
-public:
+ public:
   SidebandsProcessor();
   ~SidebandsProcessor() override;
 
@@ -50,9 +49,9 @@ public:
   Steinberg::tresult PLUGIN_API setState(Steinberg::IBStream *state) override;
   Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream *state) override;
 
-private:
+ private:
   std::unique_ptr<Player> player_;
 };
 
 //------------------------------------------------------------------------
-} // namespace sidebands
+}  // namespace sidebands

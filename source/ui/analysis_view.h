@@ -7,9 +7,10 @@ namespace ui {
 
 class WaveformView;
 class AnalysisView : public VSTGUI::CRowColumnView {
-public:
+ public:
   explicit AnalysisView(const VSTGUI::CRect &size);
-private:
+
+ private:
   WaveformView *waveform_view_;
 };
 

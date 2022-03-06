@@ -95,7 +95,7 @@ void BlackingWindow(CArray &buf) {
     buf[i] *= multiplier;
   }
 }
-} // namespace
+}  // namespace
 
 SpectrumView::SpectrumView(const VSTGUI::CRect &size,
                            const std::vector<VSTGUI::CColor> colours,
@@ -109,8 +109,7 @@ void SpectrumView::draw(VSTGUI::CDrawContext *pContext) {
 void SpectrumView::drawRect(VSTGUI::CDrawContext *context,
                             const VSTGUI::CRect &dirtyRect) {
   VSTGUI::ConcatClip cc(*context, dirtyRect);
-  if (cc.isEmpty())
-    return;
+  if (cc.isEmpty()) return;
   context->setClipRect(dirtyRect);
   VSTGUI::CDrawContext::Transform transform(
       *context, VSTGUI::CGraphicsTransform().translate(getViewSize().left,
@@ -120,8 +119,7 @@ void SpectrumView::drawRect(VSTGUI::CDrawContext *context,
   auto buffer_size = size_t(1024);
   for (int gen = 0; gen < generators_.size(); gen++) {
     auto &gp = kPatch->generators_[gen];
-    if (!gp->on())
-      continue;
+    if (!gp->on()) continue;
     OscBuffer osc_buffer(buffer_size);
 
     OscParam a(gp->a(), buffer_size);
@@ -143,11 +141,10 @@ void SpectrumView::drawRect(VSTGUI::CDrawContext *context,
       db_bins[i] = std::abs(fft_buffer[i].real());
     }
     // Get the bin for the carrier, and scale things based on that.
-    double max_bin = db_bins[65536/2048];
+    double max_bin = db_bins[65536 / 2048];
     auto scale_ratio = getHeight() / max_bin;
     auto path = VSTGUI::owned(context->createGraphicsPath());
-    if (path == nullptr)
-      return;
+    if (path == nullptr) return;
     path->beginSubpath(VSTGUI::CPoint(-1, db_bins[0] * scale_ratio));
 
     // Scale X axis from the first non-zero point until the nyquist point.
@@ -187,5 +184,5 @@ void SpectrumView::SetGenerators(const std::vector<int> &generators) {
   setDirty(true);
 }
 
-} // namespace ui
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

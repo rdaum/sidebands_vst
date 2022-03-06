@@ -1,8 +1,11 @@
 #include "ui/parameter_editor_view.h"
 
-#include <charconv>
 #include <glog/logging.h>
 #include <pluginterfaces/vst/vsttypes.h>
+
+#include <charconv>
+
+#include "sidebands_controller.h"
 
 namespace sidebands {
 namespace ui {
@@ -17,10 +20,9 @@ constexpr int kNumericEditHeight = 15;
 VSTGUI::CResourceDescription kSliderBackground("slider_rail.png");
 VSTGUI::CResourceDescription kSliderHandle("slider_handle.png");
 
-VSTGUI::CControl *
-MakeVerticalSlider(Steinberg::Vst::RangeParameter *range_parameter,
-                   VSTGUI::IControlListener *listener) {
-
+VSTGUI::CControl *MakeVerticalSlider(
+    Steinberg::Vst::RangeParameter *range_parameter,
+    VSTGUI::IControlListener *listener) {
   auto *slider_control = new VSTGUI::CVerticalSlider(
       VSTGUI::CRect(0, 0, kSliderWidth, kSliderHeight), listener,
       range_parameter->getInfo().id, 0, kSliderMaxPos,
@@ -37,10 +39,9 @@ MakeVerticalSlider(Steinberg::Vst::RangeParameter *range_parameter,
   return slider_control;
 }
 
-VSTGUI::CControl *
-MakeNumericEditor(Steinberg::Vst::RangeParameter *range_parameter,
-                  VSTGUI::IControlListener *listener) {
-
+VSTGUI::CControl *MakeNumericEditor(
+    Steinberg::Vst::RangeParameter *range_parameter,
+    VSTGUI::IControlListener *listener) {
   auto *edit_control = new VSTGUI::CTextEdit(
       VSTGUI::CRect(0, 0, kSliderWidth, kNumericEditHeight), listener,
       range_parameter->getInfo().id);
@@ -48,21 +49,22 @@ MakeNumericEditor(Steinberg::Vst::RangeParameter *range_parameter,
   edit_control->setMin(range_parameter->getMin());
   edit_control->setValueNormalized(range_parameter->getNormalized());
   VSTGUI::CTextEdit::StringToValueFunction str_function =
-      [](VSTGUI::UTF8StringPtr txt, float& result, VSTGUI::CTextEdit* textEdit) -> bool {
-         try {
-           float v = std::stof(txt);
-           result = v;
-           return true;
-         } catch (const std::exception &e) {
-           return false;
-         }
-      };
+      [](VSTGUI::UTF8StringPtr txt, float &result,
+         VSTGUI::CTextEdit *textEdit) -> bool {
+    try {
+      float v = std::stof(txt);
+      result = v;
+      return true;
+    } catch (const std::exception &e) {
+      return false;
+    }
+  };
   edit_control->setStringToValueFunction(str_function);
 
   return edit_control;
 }
 
-} // namespace
+}  // namespace
 
 ParameterEditorView::ParameterEditorView(
     const VSTGUI::CRect &size, Steinberg::Vst::RangeParameter *parameter,
@@ -89,16 +91,13 @@ ParameterEditorView::~ParameterEditorView() {
 
 void ParameterEditorView::update(Steinberg::FUnknown *unknown,
                                  Steinberg::int32 message) {
-
-  if (message != IDependent::kChanged)
-    return;
+  if (message != IDependent::kChanged) return;
   Steinberg::Vst::Parameter *changed_param;
   if (unknown->queryInterface(Steinberg::Vst::Parameter::iid,
                               (void **)&changed_param) != Steinberg::kResultOk)
     return;
 
-  if (changed_param != parameter_)
-    return;
+  if (changed_param != parameter_) return;
 
   // Make sure all values are updated.
   for (auto *control : controls_) {
@@ -108,7 +107,7 @@ void ParameterEditorView::update(Steinberg::FUnknown *unknown,
 }
 
 void ParameterEditorView::UpdateControlParameters(
-    Steinberg::Vst::EditController *edit_controller,
+    SidebandsController *edit_controller,
     Steinberg::Vst::RangeParameter *new_parameter) {
   parameter_->removeDependent(this);
   for (auto *control : controls_) {

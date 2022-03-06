@@ -1,12 +1,12 @@
 #include "synthesis/generator.h"
 
-#include "constants.h"
-#include "synthesis/lfo.h"
-#include "synthesis/oscillator.h"
-#include "synthesis/dsp.h"
-
 #include <cmath>
 #include <mutex>
+
+#include "constants.h"
+#include "synthesis/dsp.h"
+#include "synthesis/lfo.h"
+#include "synthesis/oscillator.h"
 
 namespace sidebands {
 
@@ -24,13 +24,13 @@ double Produce(SampleRate sample_rate, ParamValue velocity,
   return value;
 }
 
-std::function<std::complex<double>()>
-Generator::ImaginaryProducerFor(SampleRate sample_rate, ParamValue velocity,
-                                GeneratorPatch &gp, TargetTag dest) {
+std::function<std::complex<double>()> Generator::ImaginaryProducerFor(
+    SampleRate sample_rate, ParamValue velocity, GeneratorPatch &gp,
+    TargetTag dest) {
   return [sample_rate, &gp, dest, this, velocity]() {
-    return std::complex<double>(0, Produce(sample_rate, velocity, gp, dest,
-                                           gp.ParameterGetterFor(dest),
-                                           ModulatorFor(gp, dest)));
+    return std::complex<double>(
+        0, Produce(sample_rate, velocity, gp, dest, gp.ParameterGetterFor(dest),
+                   ModulatorFor(gp, dest)));
   };
 }
 
@@ -78,7 +78,6 @@ void Generator::NoteOn(
     SampleRate sample_rate, const GeneratorPatch &patch,
     std::chrono::high_resolution_clock::time_point start_time,
     ParamValue velocity, uint8_t note) {
-
   ConfigureModulators(patch);
 
   velocity_ = velocity;
@@ -107,8 +106,7 @@ bool Generator::Playing() const {
 
 void Generator::Reset() {
   for (auto &mod : modulators_) {
-    if (mod)
-      mod->Reset();
+    if (mod) mod->Reset();
   }
 }
 
@@ -116,15 +114,15 @@ void Generator::ConfigureModulators(const GeneratorPatch &patch) {
   for (const auto &target : kModulationTargets) {
     auto mod_type = patch.ModTypeFor(target);
     switch (mod_type) {
-    case GeneratorPatch::ModType::NONE:
-      modulators_[target].reset();
-      break;
-    case GeneratorPatch::ModType::ENVELOPE:
-      modulators_[target] = std::make_unique<EnvelopeGenerator>();
-      break;
-    case GeneratorPatch::ModType::LFO:
-      modulators_[target] = std::make_unique<LFO>();
-      break;
+      case GeneratorPatch::ModType::NONE:
+        modulators_[target].reset();
+        break;
+      case GeneratorPatch::ModType::ENVELOPE:
+        modulators_[target] = std::make_unique<EnvelopeGenerator>();
+        break;
+      case GeneratorPatch::ModType::LFO:
+        modulators_[target] = std::make_unique<LFO>();
+        break;
     }
   }
 }
@@ -139,4 +137,4 @@ IModulationSource *Generator::ModulatorFor(const GeneratorPatch &patch,
   return mod;
 }
 
-} // namespace sidebands
+}  // namespace sidebands

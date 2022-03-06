@@ -46,7 +46,7 @@ bool Player::Perform(OscBuffer &mixdown_buffer) {
 }
 
 bool Player::Perform32(Sample32 *in_buffer, Sample32 *out_buffer,
-                     size_t frames_per_buffer) {
+                       size_t frames_per_buffer) {
   memset(out_buffer, 0, frames_per_buffer * sizeof(Sample32));
   MixBuffer mixdown_buffer(0.0f, frames_per_buffer);
   if (Perform(mixdown_buffer)) {
@@ -54,7 +54,6 @@ bool Player::Perform32(Sample32 *in_buffer, Sample32 *out_buffer,
   }
   return true;
 }
-
 
 bool Player::Perform64(Sample64 *in_buffer, Sample64 *out_buffer,
                        size_t frames_per_buffer) {
@@ -78,7 +77,8 @@ void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
   // while the previous one is releasing.
   // it's just awful, hosts that do this are vile.
   if (note_id == -1) {
-    LOG(INFO) << "On note id: " << std::hex << note_id << " for note: " << (int)pitch;
+    LOG(INFO) << "On note id: " << note_id << " for note: " << std::hex
+              << (int)pitch;
     note_id = pitch;
   }
   Voice *v = NewVoice(note_id);
@@ -92,17 +92,20 @@ void Player::NoteOff(int32_t note_id, int16_t pitch) {
 
   // Handle "-1" note IDs on note off, but also the odd situation when
   // Carla/JUCE sends a "0" for note-off, which is Wrong(tm).
-  if (note_id == -1 || (note_id == 0 && voices_.find(note_id) == voices_.end())) {
+  if (note_id == -1 ||
+      (note_id == 0 && voices_.find(note_id) == voices_.end())) {
     for (auto &v : voices_) {
       if (v.second.note() == pitch) {
-        LOG(INFO) << "Off note id: " << note_id << " substituted with " << pitch;
+        LOG(INFO) << "Off note id: " << note_id << " substituted with "
+                  << pitch;
         note_id = pitch;
         break;
       }
     }
 
     if (note_id == -1 || note_id == 0) {
-      LOG(ERROR) << "Could not find note for fake note id : " << note_id << " " << pitch;
+      LOG(ERROR) << "Could not find note for fake note id : " << note_id << " "
+                 << pitch;
     }
   }
 
@@ -142,4 +145,4 @@ Voice *Player::NewVoice(int32_t note_id) {
   return &voices_[note_id];
 }
 
-} // namespace sidebands
+}  // namespace sidebands

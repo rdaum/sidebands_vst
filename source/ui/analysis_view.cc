@@ -1,8 +1,8 @@
 #include "ui/analysis_view.h"
 
 #include "constants.h"
-#include "ui/waveform_view.h"
 #include "ui/spectrum_view.h"
+#include "ui/waveform_view.h"
 
 namespace sidebands {
 namespace ui {
@@ -24,9 +24,11 @@ AnalysisView::AnalysisView(const VSTGUI::CRect &size)
   for (uint8_t i = 0; i < kNumGenerators; i++) {
     generators[i] = i;
   }
-  addView(new WaveformView(VSTGUI::CRect(0, 0, getWidth(), getHeight()/2), colours, generators));
-  addView(new SpectrumView(VSTGUI::CRect(0, 0, getWidth(), getHeight()/2), colours, generators));
+  addView(new WaveformView(VSTGUI::CRect(0, 0, getWidth(), getHeight() / 2),
+                           colours, generators));
+  addView(new SpectrumView(VSTGUI::CRect(0, 0, getWidth(), getHeight() / 2),
+                           colours, generators));
 }
 
-} // namespace ui
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

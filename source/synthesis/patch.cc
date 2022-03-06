@@ -179,17 +179,17 @@ bool Patch::ValidParam(ParamID param_id) const {
 }
 
 GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
-    : gennum_(gen), on_(true),
+    : gennum_(gen),
+      on_(true),
       c_(TagFor(gennum_, TAG_OSC, TARGET_C), 1 + gennum_),
       a_(TagFor(gennum_, TAG_OSC, TARGET_A), 0.5),
       m_(TagFor(gennum_, TAG_OSC, TARGET_M), 0),
       k_(TagFor(gennum_, TAG_OSC, TARGET_K), 0),
       r_(TagFor(gennum_, TAG_OSC, TARGET_R), 1),
       s_(TagFor(gennum_, TAG_OSC, TARGET_S), 0) {
-
-  DeclareParameter(&on_,
-                   BooleanParameter(unit_id, "Toggle", TAG_GENERATOR_TOGGLE,
-                                    TARGET_NA, gennum_));
+  DeclareParameter(
+      &on_, BooleanParameter(unit_id, "Toggle", TAG_GENERATOR_TOGGLE, TARGET_NA,
+                             gennum_));
 
   DeclareParameter(&c_, OscillatorParameter(unit_id, "C", TARGET_C, gennum_, 0,
                                             kNumGenerators));
@@ -226,10 +226,8 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
   }
 }
 
-IPtr<RangeParameter>
-GeneratorPatch::DeclareParameter(SampleAccurateValue *value,
-                                 IPtr<RangeParameter> param) {
-
+IPtr<RangeParameter> GeneratorPatch::DeclareParameter(
+    SampleAccurateValue *value, IPtr<RangeParameter> param) {
   value->setParamID(param->getInfo().id);
   value->minPlain = param->getMin();
   value->maxPlain = param->getMax();
@@ -237,19 +235,17 @@ GeneratorPatch::DeclareParameter(SampleAccurateValue *value,
   auto param_key = ParamKeyFor(param->getInfo().id);
 
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
-  parameters_[param_key] = std::move(
-      std::make_unique<PDesc>(value, param));
+  parameters_[param_key] = std::move(std::make_unique<PDesc>(value, param));
 
   return param;
 }
 
-IPtr<RangeParameter>
-GeneratorPatch::DeclareParameter(IPtr<RangeParameter> param) {
+IPtr<RangeParameter> GeneratorPatch::DeclareParameter(
+    IPtr<RangeParameter> param) {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
 
   auto param_key = ParamKeyFor(param->getInfo().id);
-  parameters_[param_key] =
-      std::move(std::make_unique<PDesc>(nullptr, param));
+  parameters_[param_key] = std::move(std::make_unique<PDesc>(nullptr, param));
 
   return param;
 }
@@ -266,8 +262,8 @@ void GeneratorPatch::AppendParameters(ParameterContainer *container) {
   }
 }
 
-std::optional<ParamValue>
-GetLastValue(Steinberg::Vst::IParamValueQueue *p_queue) {
+std::optional<ParamValue> GetLastValue(
+    Steinberg::Vst::IParamValueQueue *p_queue) {
   ParamValue value;
   int32_t numPoints = p_queue->getPointCount();
   Steinberg::int32 sample_offset;
@@ -280,31 +276,32 @@ GetLastValue(Steinberg::Vst::IParamValueQueue *p_queue) {
 
 void GeneratorPatch::BeginParameterChange(
     ParamID param_id, Steinberg::Vst::IParamValueQueue *p_queue) {
-  if (!p_queue->getPointCount())
-    return;
+  if (!p_queue->getPointCount()) return;
 
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
-  if (GeneratorFor(param_id) != gennum_)
-    return;
+  if (GeneratorFor(param_id) != gennum_) return;
 
   auto key = ParamKeyFor(param_id);
   auto &param = parameters_[key];
-  if (!param)
-    return;
+  if (!param) return;
   param->sa_value->beginChanges(p_queue);
 }
 
 void GeneratorPatch::EndChanges() {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
   for (auto &pdesc : parameters_) {
-    pdesc.second->sa_value->endChanges();
+    if (pdesc.second) pdesc.second->sa_value->endChanges();
   }
 }
 
 void GeneratorPatch::AdvanceParameterChanges(uint32_t num_samples) {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
   for (auto &pdesc : parameters_) {
-    pdesc.second->sa_value->advance(num_samples);
+    if (pdesc.second)
+      pdesc.second->sa_value->advance(num_samples);
+    else
+      LOG(ERROR) << "Missing SampleAccurateValue for: " << pdesc.first.p_tag
+                 << "/" << pdesc.first.s_tag;
   }
 }
 
@@ -312,20 +309,22 @@ void GeneratorPatch::AdvanceParameterChanges(uint32_t num_samples) {
 // internal rep of it.
 void GeneratorPatch::update(FUnknown *changedUnknown,
                             Steinberg::int32 message) {
-  if (message == IDependent::kChanged) {
-    Steinberg::Vst::RangeParameter *changed_param;
-    changedUnknown->queryInterface(Parameter::iid, (void **)&changed_param);
-    std::lock_guard<std::mutex> params_lock(patch_mutex_);
-
-    for (auto &param : parameters_) {
-      if (param.second && param.second->param &&
-          param.second->param->getInfo().id == changed_param->getInfo().id) {
-        ParamValue v = changed_param->toPlain(changed_param->getNormalized());
-        param.second->sa_value->setValue(v);
-        break;
-      }
-    }
-  }
+  //  if (message == IDependent::kChanged) {
+  //    Steinberg::Vst::RangeParameter *changed_param;
+  //    changedUnknown->queryInterface(Parameter::iid, (void **)&changed_param);
+  //    std::lock_guard<std::mutex> params_lock(patch_mutex_);
+  //
+  //    for (auto &param : parameters_) {
+  //      if (param.second && param.second->param &&
+  //          param.second->param->getInfo().id == changed_param->getInfo().id)
+  //          {
+  //        ParamValue v =
+  //        changed_param->toPlain(changed_param->getNormalized());
+  ////        param.second->sa_value->setValue(v);
+  //        break;
+  //      }
+  //    }
+  //  }
 }
 
 bool GeneratorPatch::on() const {
@@ -383,31 +382,31 @@ GeneratorPatch::ModulationParams(TargetTag destination) const {
   return std::nullopt;
 }
 
-GeneratorPatch::ModType
-GeneratorPatch::ModTypeFor(TargetTag destination) const {
+GeneratorPatch::ModType GeneratorPatch::ModTypeFor(
+    TargetTag destination) const {
   return kModTypes[off_t(mod_type_[destination].getValue())];
 }
 
-std::function<double()>
-GeneratorPatch::ParameterGetterFor(TargetTag dest) const {
+std::function<double()> GeneratorPatch::ParameterGetterFor(
+    TargetTag dest) const {
   switch (dest) {
-  case TARGET_A:
-    return std::bind(&GeneratorPatch::a, this);
-  case TARGET_K:
-    return std::bind(&GeneratorPatch::k, this);
-  case TARGET_C:
-    return std::bind(&GeneratorPatch::c, this);
-  case TARGET_M:
-    return std::bind(&GeneratorPatch::m, this);
-  case TARGET_R:
-    return std::bind(&GeneratorPatch::r, this);
-  case TARGET_S:
-    return std::bind(&GeneratorPatch::s, this);
-  default:
-    LOG(ERROR) << "Unknown parameter: " << dest;
-    assert(0);
-    return std::bind(&GeneratorPatch::a, this);
+    case TARGET_A:
+      return std::bind(&GeneratorPatch::a, this);
+    case TARGET_K:
+      return std::bind(&GeneratorPatch::k, this);
+    case TARGET_C:
+      return std::bind(&GeneratorPatch::c, this);
+    case TARGET_M:
+      return std::bind(&GeneratorPatch::m, this);
+    case TARGET_R:
+      return std::bind(&GeneratorPatch::r, this);
+    case TARGET_S:
+      return std::bind(&GeneratorPatch::s, this);
+    default:
+      LOG(ERROR) << "Unknown parameter: " << dest;
+      assert(0);
+      return std::bind(&GeneratorPatch::a, this);
   }
 }
 
-} // namespace sidebands
+}  // namespace sidebands

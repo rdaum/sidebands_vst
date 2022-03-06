@@ -1,6 +1,5 @@
 #include "sidebands_controller.h"
 
-#include "base/source/fstreamer.h"
 #include <absl/strings/str_format.h>
 #include <glog/logging.h>
 #include <pluginterfaces/base/ustring.h>
@@ -8,13 +7,14 @@
 #include <vstgui/uidescription/uiattributes.h>
 #include <vstgui/vstgui.h>
 
+#include "base/source/fstreamer.h"
 #include "globals.h"
 #include "sidebands_cids.h"
 #include "synthesis/patch.h"
 #include "tags.h"
+#include "ui/analysis_view.h"
 #include "ui/drawbar_view.h"
 #include "ui/generator_editor_view.h"
-#include "ui/analysis_view.h"
 
 using namespace Steinberg;
 
@@ -57,11 +57,10 @@ tresult PLUGIN_API SidebandsController::initialize(FUnknown *context) {
 
   // Universal parameters, not generator specific.
   std::string sel_gen_param_name = "Selected Generator Number";
-  auto parameter_info = Vst::ParameterInfo{
-      .id = TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA),
-      .defaultNormalizedValue = 0,
-      .unitId = Vst::kRootUnitId
-  };
+  auto parameter_info =
+      Vst::ParameterInfo{.id = TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA),
+                         .defaultNormalizedValue = 0,
+                         .unitId = Vst::kRootUnitId};
   Steinberg::UString(parameter_info.title, USTRINGSIZE(parameter_info.title))
       .assign(USTRING(sel_gen_param_name.c_str()));
   parameters.addParameter(parameter_info);
@@ -80,44 +79,50 @@ tresult PLUGIN_API SidebandsController::terminate() {
 
 tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
   // Here you get the state of the component (Processor part)
-  if (!state)
-    return kResultFalse;
+  if (!state) return kResultFalse;
+
+  startGroupEdit();
 
   IBStreamer streamer(state, kLittleEndian);
   for (int i = 0; i < kNumGenerators; i++) {
-    setParamPlain(TagFor(i, TAG_OSC, TARGET_A), 0.25);
-    setParamNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_A),
-                       double(GeneratorPatch::ModType::ENVELOPE) / (GeneratorPatch::kNumModTypes -1));
-    setParamNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_K),
-                       double(GeneratorPatch::ModType::ENVELOPE) / (GeneratorPatch::kNumModTypes -1));
-    setParamNormalized(TagFor(i, TAG_OSC, TARGET_C),
-                       float(1 + i) / kNumGenerators);
+    UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_A), 0.25);
+    UpdateParameterNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_A),
+                              double(GeneratorPatch::ModType::ENVELOPE) /
+                                  (GeneratorPatch::kNumModTypes - 1));
+    UpdateParameterNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_K),
+                              double(GeneratorPatch::ModType::ENVELOPE) /
+                                  (GeneratorPatch::kNumModTypes - 1));
+    UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_C),
+                              float(1 + i) / kNumGenerators);
     setParamNormalized(TagFor(i, TAG_OSC, TARGET_K), 0.5);
     setParamNormalized(TagFor(i, TAG_OSC, TARGET_M), 0.5);
-    setParamPlain(TagFor(i, TAG_OSC, TARGET_R), 1);
-    setParamPlain(TagFor(i, TAG_OSC, TARGET_S), 0);
+    UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_R), 1);
+    UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_S), 1);
 
-    setParamNormalized(TagFor(i, TAG_ENV_A, TARGET_A), 0.05);
-    setParamNormalized(TagFor(i, TAG_ENV_AL, TARGET_A), 1);
-    setParamNormalized(TagFor(i, TAG_ENV_D, TARGET_A), 0.2);
-    setParamNormalized(TagFor(i, TAG_ENV_S, TARGET_A), 0.25);
-    setParamNormalized(TagFor(i, TAG_ENV_R, TARGET_A), 0.2);
-    setParamNormalized(TagFor(i, TAG_ENV_VS, TARGET_A), 1.0);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_A, TARGET_A), 0.05);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_AL, TARGET_A), 1);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_D, TARGET_A), 0.2);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_S, TARGET_A), 0.25);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_R, TARGET_A), 0.2);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_VS, TARGET_A), 1.0);
 
-    setParamNormalized(TagFor(i, TAG_ENV_A, TARGET_K), 0.00);
-    setParamNormalized(TagFor(i, TAG_ENV_AL, TARGET_K), 1);
-    setParamNormalized(TagFor(i, TAG_ENV_D, TARGET_K), 0.25);
-    setParamNormalized(TagFor(i, TAG_ENV_S, TARGET_K), 0.25);
-    setParamNormalized(TagFor(i, TAG_ENV_R, TARGET_K), 0.3);
-    setParamNormalized(TagFor(i, TAG_ENV_VS, TARGET_K), 1);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_A, TARGET_K), 0.00);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_AL, TARGET_K), 1);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_D, TARGET_K), 0.25);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_S, TARGET_K), 0.25);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_R, TARGET_K), 0.3);
+    UpdateParameterNormalized(TagFor(i, TAG_ENV_VS, TARGET_K), 1);
 
-    setParamNormalized(TagFor(i, TAG_LFO_FREQ, TARGET_K), 0.01);
-    setParamNormalized(TagFor(i, TAG_LFO_AMP, TARGET_K), 0.5);
-    setParamNormalized(TagFor(i, TAG_LFO_VS, TARGET_K), 1);
-    setParamNormalized(TagFor(i, TAG_LFO_TYPE, TARGET_K), 0);
+    UpdateParameterNormalized(TagFor(i, TAG_LFO_FREQ, TARGET_K), 0.01);
+    UpdateParameterNormalized(TagFor(i, TAG_LFO_AMP, TARGET_K), 0.5);
+    UpdateParameterNormalized(TagFor(i, TAG_LFO_VS, TARGET_K), 1);
+    UpdateParameterNormalized(TagFor(i, TAG_LFO_TYPE, TARGET_K), 0);
   }
+  UpdateParameterNormalized(TagFor(0, TAG_GENERATOR_TOGGLE, TARGET_NA), 1);
+
+  finishGroupEdit();
+
   setParamNormalized(TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA), 0);
-  setParamNormalized(TagFor(0, TAG_GENERATOR_TOGGLE, TARGET_NA), 1);
 
   return kResultOk;
 }
@@ -157,11 +162,6 @@ tresult PLUGIN_API SidebandsController::setParamNormalized(
   return result;
 }
 
-Steinberg::tresult SidebandsController::setParamPlain(Vst::ParamID tag, Vst::ParamValue value) {
-  auto *param = getParameterObject(tag);
-  return param->setNormalized(param->toNormalized(value));
-}
-
 tresult PLUGIN_API SidebandsController::getParamStringByValue(
     Vst::ParamID tag, Vst::ParamValue valueNormalized, Vst::String128 string) {
   // called by host to get a string for given normalized value of a specific
@@ -179,7 +179,6 @@ tresult PLUGIN_API SidebandsController::getParamValueByString(
 VSTGUI::CView *SidebandsController::createCustomView(
     VSTGUI::UTF8StringPtr name, const VSTGUI::UIAttributes &attributes,
     const VSTGUI::IUIDescription *description, VSTGUI::VST3Editor *editor) {
-
   const auto &view_name = VSTGUI::UTF8StringView(name);
 
   VSTGUI::CPoint origin;
@@ -200,4 +199,12 @@ VSTGUI::CView *SidebandsController::createCustomView(
   return nullptr;
 }
 
-} // namespace sidebands
+void SidebandsController::UpdateParameterNormalized(
+    Steinberg::Vst::ParamID param_id, Steinberg::Vst::ParamValue value) {
+  beginEdit(param_id);
+  getParameterObject(param_id)->setNormalized(value);
+  performEdit(param_id, value);
+  endEdit(param_id);
+}
+
+}  // namespace sidebands

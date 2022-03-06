@@ -1,12 +1,12 @@
 #pragma once
 
+#include <pluginterfaces/vst/vsttypes.h>
+
 #include <chrono>
 #include <complex>
 #include <mutex>
 #include <valarray>
 #include <vector>
-
-#include <pluginterfaces/vst/vsttypes.h>
 
 #include "constants.h"
 
@@ -22,7 +22,7 @@ struct Patch;
 class Generator;
 
 class Voice {
-public:
+ public:
   Voice();
 
   // Produce a series of buffers, one per playing generator.
@@ -49,7 +49,7 @@ public:
     return on_time_;
   }
 
-private:
+ private:
   mutable std::mutex generators_mutex_;
   std::unique_ptr<Generator> generators_[kNumGenerators];
   std::chrono::high_resolution_clock::time_point on_time_;
@@ -58,4 +58,4 @@ private:
   ParamValue note_frequency_;
 };
 
-} // namespace sidebands
+}  // namespace sidebands

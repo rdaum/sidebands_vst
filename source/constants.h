@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cstdint>
 #include <vstgui/lib/ccolor.h>
+
+#include <cstdint>
 
 namespace sidebands {
 
@@ -13,4 +14,4 @@ constexpr size_t kSampleAccurateChunkSizeSamples = 128;
 
 constexpr VSTGUI::CColor kBgGrey(219, 219, 219);
 
-} // namespace sidebands
+}  // namespace sidebands

@@ -7,6 +7,9 @@
 #include "tags.h"
 
 namespace sidebands {
+
+class SidebandsController;
+
 namespace ui {
 
 // Combination of a slider and numeric text editor and possibly other things.
@@ -14,7 +17,7 @@ namespace ui {
 // changes.
 class ParameterEditorView : public VSTGUI::CRowColumnView,
                             public Steinberg::FObject {
-public:
+ public:
   ParameterEditorView(const VSTGUI::CRect &size,
                       Steinberg::Vst::RangeParameter *parameter,
                       VSTGUI::IControlListener *listener,
@@ -23,16 +26,16 @@ public:
 
   // Change the parameter associated with all controls (e.g. for generator
   // change) and update them to reflect the new values.
-  void UpdateControlParameters(Steinberg::Vst::EditController *edit_controller,
+  void UpdateControlParameters(SidebandsController *edit_controller,
                                Steinberg::Vst::RangeParameter *new_parameter);
 
   // IDependent overrides
   void update(Steinberg::FUnknown *unknown, Steinberg::int32 int_32) override;
 
-private:
+ private:
   std::vector<VSTGUI::CControl *> controls_;
   Steinberg::Vst::RangeParameter *parameter_;
 };
 
 }  // namespace ui
-} // namespace sidebands
+}  // namespace sidebands

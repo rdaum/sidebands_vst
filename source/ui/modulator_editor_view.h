@@ -7,14 +7,15 @@
 #include "tags.h"
 
 namespace sidebands {
+class SidebandsController;
+
 namespace ui {
 
 // Abstract mixin for modulation source editors (envelopes, LFOs)
 class ModulatorEditorView : public Steinberg::FObject,
                             public VSTGUI::IControlListener {
-public:
-  ModulatorEditorView(Steinberg::Vst::EditController *edit_controller,
-                      TargetTag target)
+ public:
+  ModulatorEditorView(SidebandsController *edit_controller, TargetTag target)
       : edit_controller_(edit_controller), target_(target) {}
   virtual void SwitchGenerator(int new_generator) = 0;
 
@@ -24,13 +25,11 @@ public:
   // IDependent overrides
   virtual void update(FUnknown *unknown, Steinberg::int32 int_32) override;
 
-  Steinberg::Vst::EditController *edit_controller() const {
-    return edit_controller_;
-  }
+  SidebandsController *edit_controller() const { return edit_controller_; }
   TargetTag target() const { return target_; }
 
-private:
-  Steinberg::Vst::EditController *edit_controller_;
+ private:
+  SidebandsController *edit_controller_;
   const TargetTag target_;
 };
 

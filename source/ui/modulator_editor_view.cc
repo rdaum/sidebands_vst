@@ -1,5 +1,7 @@
 #include "ui/modulator_editor_view.h"
 
+#include "sidebands_controller.h"
+
 namespace sidebands {
 namespace ui {
 
@@ -12,7 +14,7 @@ void ModulatorEditorView::valueChanged(VSTGUI::CControl *control) {
 }
 
 void ModulatorEditorView::update(Steinberg::FUnknown *changedUnknown,
-                                Steinberg::int32 message) {
+                                 Steinberg::int32 message) {
   if (message == IDependent::kChanged) {
     Steinberg::Vst::RangeParameter *changed_param;
     auto query_result = changedUnknown->queryInterface(

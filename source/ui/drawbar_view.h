@@ -13,7 +13,7 @@ class SidebandsController;
 namespace ui {
 
 class DrawbarView : public VSTGUI::CRowColumnView, public PatchParameterView {
-public:
+ public:
   explicit DrawbarView(const VSTGUI::CRect &size,
                        SidebandsController *edit_controller);
 
@@ -23,10 +23,10 @@ public:
   // IDependent overrides
   void update(Steinberg::FUnknown *unknown, Steinberg::int32 int_32) override;
 
-private:
+ private:
   VSTGUI::COnOffButton *toggle_buttons_[kNumGenerators];
   VSTGUI::COnOffButton *select_buttons_[kNumGenerators];
 };
 
 }  // namespace ui
-} // namespace sidebands
+}  // namespace sidebands

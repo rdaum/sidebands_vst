@@ -3,8 +3,8 @@
 #include <public.sdk/source/vst/vsteditcontroller.h>
 #include <vstgui/vstgui.h>
 
-#include "ui/patch_param_view.h"
 #include "ui/modulator_editor_view.h"
+#include "ui/patch_param_view.h"
 
 namespace sidebands {
 namespace ui {
@@ -12,10 +12,10 @@ namespace ui {
 class GraphicalEnvelopeEditorView : public VSTGUI::CView,
                                     public VSTGUI::IFocusDrawing,
                                     public ModulatorEditorView {
-public:
+ public:
   GraphicalEnvelopeEditorView(const VSTGUI::CRect &size,
                               VSTGUI::IControlListener *listener,
-                              Steinberg::Vst::EditController *edit_controller,
+                              SidebandsController *edit_controller,
                               int selected_generator, TargetTag target);
 
   void SwitchGenerator(int new_generator) override;
@@ -27,22 +27,19 @@ public:
   void draw(VSTGUI::CDrawContext *pContext) override;
   void drawRect(VSTGUI::CDrawContext *context,
                 const VSTGUI::CRect &dirtyRect) override;
-  VSTGUI::CMouseEventResult
-  onMouseDown(VSTGUI::CPoint &where,
-              const VSTGUI::CButtonState &buttons) override;
+  VSTGUI::CMouseEventResult onMouseDown(
+      VSTGUI::CPoint &where, const VSTGUI::CButtonState &buttons) override;
   void setDirty(bool val) override;
-  VSTGUI::CMouseEventResult
-  onMouseMoved(VSTGUI::CPoint &where,
-               const VSTGUI::CButtonState &buttons) override;
-  VSTGUI::CMouseEventResult
-  onMouseUp(VSTGUI::CPoint &where,
-            const VSTGUI::CButtonState &buttons) override;
+  VSTGUI::CMouseEventResult onMouseMoved(
+      VSTGUI::CPoint &where, const VSTGUI::CButtonState &buttons) override;
+  VSTGUI::CMouseEventResult onMouseUp(
+      VSTGUI::CPoint &where, const VSTGUI::CButtonState &buttons) override;
 
   // IFocusDrawing overrides
   bool drawFocusOnTop() override;
   bool getFocusPath(VSTGUI::CGraphicsPath &outPath) override;
 
-private:
+ private:
   void UpdateSegments();
 
   struct Segment {
@@ -66,4 +63,4 @@ private:
 };
 
 }  // namespace ui
-} // namespace sidebands
+}  // namespace sidebands

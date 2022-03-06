@@ -1,18 +1,18 @@
 #pragma once
 
+#include <pluginterfaces/vst/ivstparameterchanges.h>
+#include <pluginterfaces/vst/vsttypes.h>
+#include <public.sdk/source/vst/vstparameters.h>
+
 #include <functional>
 #include <mutex>
 #include <unordered_map>
 #include <variant>
-
-#include <pluginterfaces/vst/ivstparameterchanges.h>
-#include <pluginterfaces/vst/vsttypes.h>
-#include <public.sdk/source/vst/vstparameters.h>
 #include <vector>
 
 #include "constants.h"
-#include "tags.h"
 #include "sample_accurate_value.h"
+#include "tags.h"
 
 namespace sidebands {
 
@@ -26,7 +26,7 @@ using Steinberg::Vst::RangeParameter;
 using Steinberg::Vst::Unit;
 
 class GeneratorPatch : public Steinberg::FObject {
-public:
+ public:
   GeneratorPatch(uint32_t gennum, Steinberg::Vst::UnitID);
 
   void AppendParameters(ParameterContainer *container);
@@ -49,12 +49,12 @@ public:
   ParamValue portamento() const;
 
   struct EnvelopeValues {
-    SampleAccurateValue A_R; // attack rate
-    SampleAccurateValue A_L; // attack peak level
-    SampleAccurateValue D_R; // decay rate
-    SampleAccurateValue S_L; // sustain level
-    SampleAccurateValue R_R; // release rate
-    SampleAccurateValue VS;  // velocity sensitivity
+    SampleAccurateValue A_R;  // attack rate
+    SampleAccurateValue A_L;  // attack peak level
+    SampleAccurateValue D_R;  // decay rate
+    SampleAccurateValue S_L;  // sustain level
+    SampleAccurateValue R_R;  // release rate
+    SampleAccurateValue VS;   // velocity sensitivity
   };
   enum class LFOType { SIN, COS };
   static constexpr LFOType kLFOTypes[]{LFOType::SIN, LFOType::COS};
@@ -74,16 +74,15 @@ public:
 
   static constexpr int kNumModTypes = sizeof(kModTypes) / sizeof(ModType);
 
-  std::optional<ModulationParameters>
-  ModulationParams(TargetTag destination) const;
+  std::optional<ModulationParameters> ModulationParams(
+      TargetTag destination) const;
   ModType ModTypeFor(TargetTag destination) const;
 
   std::function<double()> ParameterGetterFor(TargetTag dest) const;
 
-private:
-  IPtr<RangeParameter>
-  DeclareParameter(SampleAccurateValue *value,
-                   IPtr<RangeParameter> param);
+ private:
+  IPtr<RangeParameter> DeclareParameter(SampleAccurateValue *value,
+                                        IPtr<RangeParameter> param);
   IPtr<RangeParameter> DeclareParameter(IPtr<RangeParameter> param);
   void DeclareEnvelopeParameters(Steinberg::Vst::UnitID unit_id,
                                  TargetTag target, uint32_t gen_num);
@@ -93,8 +92,7 @@ private:
   mutable std::mutex patch_mutex_;
 
   SampleAccurateValue on_;
-  SampleAccurateValue c_, a_, m_, k_, r_, s_,
-      portamento_;
+  SampleAccurateValue c_, a_, m_, k_, r_, s_, portamento_;
 
   SampleAccurateValue mod_type_[NUM_TARGETS];
 
@@ -109,9 +107,8 @@ private:
       parameters_;
 };
 
-
 class Patch {
-public:
+ public:
   Patch();
 
   void AppendParameters(ParameterContainer *container);
@@ -125,4 +122,4 @@ public:
   std::unique_ptr<GeneratorPatch> generators_[kNumGenerators];
 };
 
-} // namespace sidebands
+}  // namespace sidebands

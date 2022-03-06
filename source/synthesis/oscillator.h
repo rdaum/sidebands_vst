@@ -13,15 +13,14 @@ namespace sidebands {
 using Steinberg::Vst::ParamValue;
 
 class Oscillator {
-public:
+ public:
   void Perform(uint32_t sample_rate, OscBuffer &buffer, OscParam &note_freq,
-               OscParam &C, OscParam &M, OscParam &R, OscParam &S,
-               OscParam &K);
+               OscParam &C, OscParam &M, OscParam &R, OscParam &S, OscParam &K);
 
   void Reset() { phase_ = 0.0f; }
 
-private:
+ private:
   ParamValue phase_ = 0.0f;
 };
 
-} // namespace sidebands
+}  // namespace sidebands

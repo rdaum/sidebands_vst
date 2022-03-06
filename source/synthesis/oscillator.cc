@@ -31,7 +31,8 @@ void Oscillator::Perform(uint32_t sample_rate, OscBuffer &buffer,
   /*
   buffer =
       (exp(R * K * cos(omega_m)) * cos(omega_c + S * K * sin(omega_m))) /
-      exp(K) /* normalize for K by dividing out exp of K */;
+      exp(K) /* normalize for K by dividing out exp of K */
+  ;
 }
 
-} // namespace sidebands
+}  // namespace sidebands

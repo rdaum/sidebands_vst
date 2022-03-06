@@ -3,6 +3,7 @@
 #include <cassert>
 
 #include "constants.h"
+#include "sidebands_controller.h"
 
 namespace sidebands {
 
@@ -24,8 +25,7 @@ std::string TagStr(Steinberg::Vst::ParamID tag) {
   std::string param = kParamNames[ParamFor(tag)];
   std::string result = "#" + gen + "/" + param;
   TargetTag sp(TargetFor(tag));
-  if (sp != TARGET_NA)
-    result = result + "/" + kTargetNames[sp];
+  if (sp != TARGET_NA) result = result + "/" + kTargetNames[sp];
   return result;
 }
 
@@ -52,14 +52,12 @@ ParamKey ParamKeyFor(Steinberg::Vst::ParamID tag) {
   return {ParamFor(tag), TargetFor(tag)};
 }
 
-Steinberg::Vst::RangeParameter *
-FindRangedParameter(Steinberg::Vst::EditController *edit_controller,
-                    uint16_t generator, const ParamTag &param,
-                    const TargetTag &sp) {
+Steinberg::Vst::RangeParameter *FindRangedParameter(
+    Steinberg::Vst::EditController *edit_controller, uint16_t generator,
+    const ParamTag &param, const TargetTag &sp) {
   Steinberg::Vst::ParamID tag = TagFor(generator, param, sp);
   auto *param_obj = edit_controller->getParameterObject(tag);
-  if (!param_obj)
-    return nullptr;
+  if (!param_obj) return nullptr;
   Steinberg::Vst::RangeParameter *ranged_parameter;
   auto result = param_obj->queryInterface(Steinberg::Vst::RangeParameter::iid,
                                           (void **)&ranged_parameter);
@@ -67,9 +65,9 @@ FindRangedParameter(Steinberg::Vst::EditController *edit_controller,
   return ranged_parameter;
 }
 
-void SelectGenerator(Steinberg::Vst::IEditController *edit_controller,
+void SelectGenerator(SidebandsController *edit_controller,
                      int generator_number) {
-  edit_controller->setParamNormalized(
+  edit_controller->UpdateParameterNormalized(
       TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA),
       generator_number / (float)kNumGenerators);
 }
@@ -79,4 +77,4 @@ int SelectedGenerator(Steinberg::Vst::IEditController *edit_controller) {
              TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA)) *
          kNumGenerators;
 }
-} // namespace sidebands
+}  // namespace sidebands

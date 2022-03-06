@@ -1,10 +1,11 @@
 #include "synthesis/dsp.h"
 
-#include <algorithm>
-#include <functional>
 #include <vectorclass.h>
 #include <vectormath_exp.h>
 #include <vectormath_trig.h>
+
+#include <algorithm>
+#include <functional>
 
 namespace sidebands {
 
@@ -36,9 +37,9 @@ void VapplyBinaryInplace(
   }
 }
 
-OscBuffer
-VapplyBinary(const OscBuffer &l, const OscBuffer &r,
-             const std::function<Vec8d(const Vec8d &, const Vec8d &)> &f) {
+OscBuffer VapplyBinary(
+    const OscBuffer &l, const OscBuffer &r,
+    const std::function<Vec8d(const Vec8d &, const Vec8d &)> &f) {
   size_t size(l.size());
   OscBuffer dest(size);
   Vec8d l_vec, r_vec, dst_vec;
@@ -63,7 +64,7 @@ OscBuffer VapplyBinary(const OscBuffer &l, double r,
   }
   return dest;
 }
-} // namespace
+}  // namespace
 
 OscBuffer Vsin(const OscBuffer &src) {
   return VapplyUnary(src, [](const Vec8d &v) { return sin(v); });
@@ -151,4 +152,4 @@ void linspace(OscBuffer &linspaced, double start, double end, size_t num) {
                 [&x, start, delta]() { return (start + delta * x++); });
 }
 
-} // namespace sidebands
+}  // namespace sidebands

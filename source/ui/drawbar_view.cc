@@ -19,7 +19,7 @@ VSTGUI::CResourceDescription kSelect("select.png");
 VSTGUI::CResourceDescription kOnOff("on-off.png");
 VSTGUI::CResourceDescription kToggleSwitch("toggle_switch.png");
 
-} // namespace
+}  // namespace
 
 DrawbarView::DrawbarView(const VSTGUI::CRect &size,
                          SidebandsController *edit_controller)
@@ -27,7 +27,6 @@ DrawbarView::DrawbarView(const VSTGUI::CRect &size,
       VSTGUI::CRowColumnView(
           size, VSTGUI::CRowColumnView::kColumnStyle,
           VSTGUI::CRowColumnView::LayoutStyle::kCenterEqualy) {
-
   setBackgroundColor(kBgGrey);
 
   auto *label_column = new VSTGUI::CRowColumnView(
@@ -93,17 +92,13 @@ void DrawbarView::valueChanged(VSTGUI::CControl *control) {
         MakeUnitID(UNIT_GENERATOR, GeneratorFor(tag)));
     return;
   }
-  edit_controller()->setParamNormalized(tag, control->getValueNormalized());
-  edit_controller()->beginEdit(tag);
-  edit_controller()->performEdit(tag, control->getValueNormalized());
-  edit_controller()->endEdit(tag);
+  edit_controller()->UpdateParameterNormalized(tag,
+                                               control->getValueNormalized());
 }
 
 void DrawbarView::update(Steinberg::FUnknown *unknown,
                          Steinberg::int32 message) {
-
-  if (message != IDependent::kChanged)
-    return;
+  if (message != IDependent::kChanged) return;
   Steinberg::Vst::Parameter *changed_param;
   if (unknown->queryInterface(Steinberg::Vst::Parameter::iid,
                               (void **)&changed_param) != Steinberg::kResultOk)
@@ -116,5 +111,5 @@ void DrawbarView::update(Steinberg::FUnknown *unknown,
   }
 }
 
-} // namespace ui
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <cassert>
 #include <pluginterfaces/vst/ivstparameterchanges.h>
 #include <pluginterfaces/vst/vsttypes.h>
 #include <public.sdk/source/vst/vstparameters.h>
+
+#include <cassert>
 
 namespace sidebands {
 
@@ -16,7 +17,8 @@ using Steinberg::Vst::ParamValue;
 // Fork of Steinberg::SampleAccurate::Parameter that supports parameter value
 // ranges and whatever else I need.
 struct SampleAccurateValue {
-  SampleAccurateValue(ParamID pid = 0, ParamValue initValue = 0., ParamValue min = 0., ParamValue max = 1.) noexcept;
+  SampleAccurateValue(ParamID pid = 0, ParamValue initValue = 0.,
+                      ParamValue min = 0., ParamValue max = 1.) noexcept;
 
   void setValue(ParamValue v) noexcept;
   ParamValue getValue() const noexcept;
@@ -28,21 +30,24 @@ struct SampleAccurateValue {
   ParamValue advance(int32 numSamples) noexcept;
   ParamValue flushChanges() noexcept;
   ParamValue endChanges() noexcept;
-  template <typename Proc> void advance(int32 numSamples, Proc p) noexcept;
-  template <typename Proc> void flushChanges(Proc p) noexcept;
-  template <typename Proc> void endChanges(Proc p) noexcept;
+  template <typename Proc>
+  void advance(int32 numSamples, Proc p) noexcept;
+  template <typename Proc>
+  void flushChanges(Proc p) noexcept;
+  template <typename Proc>
+  void endChanges(Proc p) noexcept;
 
   ParamValue minPlain;
   ParamValue maxPlain;
 
-private:
+ private:
   struct ValuePoint {
     ParamValue value{0.};
     double rampPerSample{0.};
     int32 sampleOffset{-1};
 
     void adjust(ParamValue min, ParamValue max) {
-      value = min + (value * (max-min));
+      value = min + (value * (max - min));
     }
   };
 
@@ -55,14 +60,14 @@ private:
   ParamValue currentValue{0.};
   ValuePoint valuePoint;
 
-
   IParamValueQueue *queue{nullptr};
 };
 
 //------------------------------------------------------------------------
 SMTG_ALWAYS_INLINE
-SampleAccurateValue::SampleAccurateValue(ParamID pid,
-                                         ParamValue initValue, ParamValue min, ParamValue max) noexcept {
+SampleAccurateValue::SampleAccurateValue(ParamID pid, ParamValue initValue,
+                                         ParamValue min,
+                                         ParamValue max) noexcept {
   setParamID(pid);
   setValue(initValue);
   minPlain = min;
@@ -70,8 +75,7 @@ SampleAccurateValue::SampleAccurateValue(ParamID pid,
 }
 
 //------------------------------------------------------------------------
-SMTG_ALWAYS_INLINE void
-SampleAccurateValue::setValue(ParamValue v) noexcept {
+SMTG_ALWAYS_INLINE void SampleAccurateValue::setValue(ParamValue v) noexcept {
   currentValue = v;
   pointCount = 0;
   valuePoint = {currentValue, 0., -1};
@@ -88,8 +92,7 @@ SMTG_ALWAYS_INLINE ParamID SampleAccurateValue::getParamID() const noexcept {
 }
 
 //------------------------------------------------------------------------
-SMTG_ALWAYS_INLINE ParamValue
-SampleAccurateValue::getValue() const noexcept {
+SMTG_ALWAYS_INLINE ParamValue SampleAccurateValue::getValue() const noexcept {
   return currentValue;
 }
 
@@ -99,23 +102,21 @@ SMTG_ALWAYS_INLINE bool SampleAccurateValue::hasChanges() const noexcept {
 }
 
 //------------------------------------------------------------------------
-SMTG_ALWAYS_INLINE void
-SampleAccurateValue::beginChanges(IParamValueQueue *valueQueue) noexcept {
+SMTG_ALWAYS_INLINE void SampleAccurateValue::beginChanges(
+    IParamValueQueue *valueQueue) noexcept {
   assert(queue == nullptr);
   assert(valueQueue->getParameterId() == getParamID());
   queue = valueQueue;
   pointCount = queue->getPointCount();
   pointIndex = 0;
   sampleCounter = 0;
-  if (pointCount)
-    valuePoint = processNextValuePoint();
+  if (pointCount) valuePoint = processNextValuePoint();
 }
 
 //------------------------------------------------------------------------
 SMTG_ALWAYS_INLINE ParamValue
 SampleAccurateValue::advance(int32 numSamples) noexcept {
-  if (pointCount < 0)
-    return currentValue;
+  if (pointCount < 0) return currentValue;
   while (valuePoint.sampleOffset >= 0 && valuePoint.sampleOffset < numSamples) {
     sampleCounter += valuePoint.sampleOffset;
     numSamples -= valuePoint.sampleOffset;
@@ -160,16 +161,14 @@ SMTG_ALWAYS_INLINE void SampleAccurateValue::advance(int32 numSamples,
 template <typename Proc>
 SMTG_ALWAYS_INLINE void SampleAccurateValue::flushChanges(Proc p) noexcept {
   auto originalValue = currentValue;
-  if (flushChanges() != originalValue)
-    p(currentValue);
+  if (flushChanges() != originalValue) p(currentValue);
 }
 
 //------------------------------------------------------------------------
 template <typename Proc>
 SMTG_ALWAYS_INLINE void SampleAccurateValue::endChanges(Proc p) noexcept {
   auto originalValue = currentValue;
-  if (endChanges() != originalValue)
-    p(currentValue);
+  if (endChanges() != originalValue) p(currentValue);
 }
 
 //------------------------------------------------------------------------
@@ -193,4 +192,4 @@ SMTG_ALWAYS_INLINE auto SampleAccurateValue::processNextValuePoint() noexcept
   return nv;
 }
 
-} // namespace sidebands
+}  // namespace sidebands

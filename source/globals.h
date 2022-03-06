@@ -6,4 +6,4 @@ namespace sidebands {
 
 extern std::unique_ptr<Patch> kPatch;
 
-} // namespace sidebands
+}  // namespace sidebands

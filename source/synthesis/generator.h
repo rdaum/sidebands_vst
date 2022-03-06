@@ -1,8 +1,9 @@
 #pragma once
 
+#include <pluginterfaces/vst/vsttypes.h>
+
 #include <chrono>
 #include <mutex>
-#include <pluginterfaces/vst/vsttypes.h>
 #include <vector>
 
 #include "synthesis/envgen.h"
@@ -15,13 +16,12 @@ using Steinberg::Vst::SampleRate;
 // Each "generator" represents a single FM oscillator + associated envelope
 // generators or other modulation sources.
 class Generator {
-public:
+ public:
   Generator();
   virtual ~Generator() = default;
 
   void Perform(SampleRate sample_rate, GeneratorPatch &patch,
-               OscBuffer &out_buffer,
-               Steinberg::Vst::ParamValue base_freq);
+               OscBuffer &out_buffer, Steinberg::Vst::ParamValue base_freq);
 
   void NoteOn(SampleRate sample_rate, const GeneratorPatch &patch,
               std::chrono::high_resolution_clock::time_point start_time,
@@ -33,19 +33,19 @@ public:
   bool Playing() const;
   void Reset();
 
-private:
+ private:
   void ConfigureModulators(const GeneratorPatch &patch);
   IModulationSource *ModulatorFor(const GeneratorPatch &patch, TargetTag dest);
 
   std::function<double()> ProducerFor(SampleRate sample_rate,
                                       ParamValue velocity, GeneratorPatch &gp,
                                       TargetTag dest);
-  std::function<std::complex<double>()>
-  ImaginaryProducerFor(SampleRate sample_rate, ParamValue velocity,
-                       GeneratorPatch &gp, TargetTag dest);
+  std::function<std::complex<double>()> ImaginaryProducerFor(
+      SampleRate sample_rate, ParamValue velocity, GeneratorPatch &gp,
+      TargetTag dest);
   std::unique_ptr<IModulationSource> modulators_[NUM_TARGETS];
   ParamValue velocity_ = 0;
   Oscillator o_;
 };
 
-} // namespace sidebands
+}  // namespace sidebands

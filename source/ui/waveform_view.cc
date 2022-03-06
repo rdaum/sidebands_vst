@@ -19,8 +19,7 @@ void WaveformView::draw(VSTGUI::CDrawContext *pContext) {
 void WaveformView::drawRect(VSTGUI::CDrawContext *context,
                             const VSTGUI::CRect &dirtyRect) {
   VSTGUI::ConcatClip cc(*context, dirtyRect);
-  if (cc.isEmpty())
-    return;
+  if (cc.isEmpty()) return;
   context->setClipRect(dirtyRect);
   VSTGUI::CDrawContext::Transform transform(
       *context, VSTGUI::CGraphicsTransform().translate(getViewSize().left,
@@ -30,8 +29,7 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
   auto buffer_size = 1024;
   for (int gen_num = 0; gen_num < generators_.size(); gen_num++) {
     auto &gp = kPatch->generators_[gen_num];
-    if (!gp->on())
-      continue;
+    if (!gp->on()) continue;
     OscBuffer buffer(buffer_size);
 
     OscParam c(gp->c(), buffer_size);
@@ -47,11 +45,11 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
     auto scale_factor = 1.0;
     if (max_point > 1) {
       scale_factor = 1 / max_point;
-      LOG(INFO) << "Max point: " << max_point << " scale factor: " << scale_factor;
+      LOG(INFO) << "Max point: " << max_point
+                << " scale factor: " << scale_factor;
     }
     auto path = VSTGUI::owned(context->createGraphicsPath());
-    if (path == nullptr)
-      return;
+    if (path == nullptr) return;
     double mid = getHeight() / 2;
     path->beginSubpath(
         VSTGUI::CPoint(0, mid + (buffer[0] * scale_factor * getHeight() / 2)));
@@ -69,8 +67,9 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
     double top_ref = 0.9;
     double bottom_ref = -0.9;
 
-    double top_ref_line_y = mid + ( top_ref * scale_factor * (getHeight() / 2));
-    double bottom_ref_line_y = mid + (bottom_ref * scale_factor * (getHeight() / 2));
+    double top_ref_line_y = mid + (top_ref * scale_factor * (getHeight() / 2));
+    double bottom_ref_line_y =
+        mid + (bottom_ref * scale_factor * (getHeight() / 2));
     context->drawLine({0, top_ref_line_y}, {getWidth(), top_ref_line_y});
     context->drawLine({0, bottom_ref_line_y}, {getWidth(), bottom_ref_line_y});
   }
@@ -97,5 +96,5 @@ void WaveformView::SetGenerators(const std::vector<int> &generators) {
   setDirty(true);
 }
 
-} // namespace ui
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

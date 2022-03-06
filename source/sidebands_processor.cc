@@ -1,11 +1,12 @@
 #include "sidebands_processor.h"
 
 #include <base/source/fstreamer.h>
-#include <chrono>
 #include <glog/logging.h>
 #include <pluginterfaces/vst/ivstevents.h>
 #include <pluginterfaces/vst/ivstparameterchanges.h>
 #include <public.sdk/source/vst/utility/processdataslicer.h>
+
+#include <chrono>
 #include <set>
 
 #include "globals.h"
@@ -75,22 +76,22 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
       Vst::Event event;
       input_events->getEvent(i, event);
       switch (event.type) {
-      case Vst::Event::kNoteOnEvent:
-        player_->NoteOn(std::chrono::high_resolution_clock::now(),
-                        event.noteOn.noteId, event.noteOn.velocity,
-                        event.noteOn.pitch);
-        break;
-      case Vst::Event::kNoteOffEvent:
-        player_->NoteOff(event.noteOff.noteId, event.noteOff.pitch);
-        break;
-      case Vst::Event::kLegacyMIDICCOutEvent:
-        VLOG(1) << "Legacy CC control# " << std::hex
-                << (int)event.midiCCOut.controlNumber
-                << " value: " << (int)event.midiCCOut.value;
-        break;
-      default:
-        LOG(INFO) << "Other VST event: " << event.type;
-        break;
+        case Vst::Event::kNoteOnEvent:
+          player_->NoteOn(std::chrono::high_resolution_clock::now(),
+                          event.noteOn.noteId, event.noteOn.velocity,
+                          event.noteOn.pitch);
+          break;
+        case Vst::Event::kNoteOffEvent:
+          player_->NoteOff(event.noteOff.noteId, event.noteOff.pitch);
+          break;
+        case Vst::Event::kLegacyMIDICCOutEvent:
+          VLOG(1) << "Legacy CC control# " << std::hex
+                  << (int)event.midiCCOut.controlNumber
+                  << " value: " << (int)event.midiCCOut.value;
+          break;
+        default:
+          LOG(INFO) << "Other VST event: " << event.type;
+          break;
       }
     }
   }
@@ -157,11 +158,9 @@ SidebandsProcessor::setupProcessing(Vst::ProcessSetup &newSetup) {
 
 tresult PLUGIN_API
 SidebandsProcessor::canProcessSampleSize(int32 symbolicSampleSize) {
-  if (symbolicSampleSize == Vst::kSample32)
-    return kResultTrue;
+  if (symbolicSampleSize == Vst::kSample32) return kResultTrue;
 
-  if (symbolicSampleSize == Vst::kSample64)
-    return kResultTrue;
+  if (symbolicSampleSize == Vst::kSample64) return kResultTrue;
 
   return kResultFalse;
 }
@@ -182,4 +181,4 @@ tresult PLUGIN_API SidebandsProcessor::getState(IBStream *state) {
   return kResultOk;
 }
 
-} // namespace sidebands
+}  // namespace sidebands

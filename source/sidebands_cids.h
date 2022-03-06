@@ -13,4 +13,4 @@ static const Steinberg::FUID kSidebandsControllerUID(0x8AF5F67B, 0x3AED5632,
 #define sidebandsVST3Category "Instrument|Synth"
 
 //------------------------------------------------------------------------
-} // namespace sidebands
+}  // namespace sidebands

@@ -1,5 +1,6 @@
 #include "ui/lfo_editor_view.h"
 
+#include "sidebands_controller.h"
 #include "synthesis/patch.h"
 #include "ui/parameter_editor_view.h"
 
@@ -7,7 +8,7 @@ namespace sidebands {
 namespace ui {
 
 LFOEditorView::LFOEditorView(const VSTGUI::CRect &size,
-                             Steinberg::Vst::EditController *edit_controller,
+                             SidebandsController *edit_controller,
                              TargetTag target)
     : VSTGUI::CRowColumnView(
           size, VSTGUI::CRowColumnView::kColumnStyle,
@@ -54,12 +55,10 @@ void LFOEditorView::SwitchGenerator(int new_generator) {
 
 void LFOEditorView::valueChanged(VSTGUI::CControl *control) {
   ParamID tag = control->getTag();
-  edit_controller()->beginEdit(tag);
-  edit_controller()->performEdit(tag, control->getValueNormalized());
-  edit_controller()->endEdit(tag);
-  //  edit_controller_->setParamNormalized(tag, control->getValueNormalized());
+  edit_controller()->UpdateParameterNormalized(tag,
+                                               control->getValueNormalized());
 
   setDirty(true);
 }
-} // namespace ui
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

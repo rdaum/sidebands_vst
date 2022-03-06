@@ -1,8 +1,9 @@
 #include "ui/patch_param_view.h"
 
-#include <charconv>
 #include <glog/logging.h>
 #include <pluginterfaces/vst/vsttypes.h>
+
+#include <charconv>
 
 #include "constants.h"
 #include "sidebands_controller.h"
@@ -29,39 +30,36 @@ constexpr int kKnobHeight = 20;
 constexpr int kKnobSubpixmaps = 80;
 
 class ParameterChangeListener : public Steinberg::FObject {
-public:
+ public:
   ParameterChangeListener(Steinberg::Vst::Parameter *parameter,
                           VSTGUI::CControl *control)
       : parameter_(parameter), control_(control) {}
 
   void update(FUnknown *changedUnknown, Steinberg::int32 message) override {
-    if (message != IDependent::kChanged)
-      return;
+    if (message != IDependent::kChanged) return;
     Steinberg::Vst::Parameter *changed_param;
     if (changedUnknown->queryInterface(Steinberg::Vst::Parameter::iid,
                                        (void **)&changed_param) !=
         Steinberg::kResultOk)
       return;
 
-    if (changed_param != parameter_)
-      return;
+    if (changed_param != parameter_) return;
 
     control_->setValueNormalized(changed_param->getNormalized());
     control_->setDirty(true);
   }
 
-private:
+ private:
   Steinberg::Vst::Parameter *parameter_;
   VSTGUI::CControl *control_;
 };
 
-} // namespace
+}  // namespace
 
 void PatchParameterView::RmDependent(int tag_id) {
   Steinberg::Vst::Parameter *param =
       edit_controller_->getParameterObject(tag_id);
-  if (param)
-    param->removeDependent(this);
+  if (param) param->removeDependent(this);
 }
 
 VSTGUI::CControl *PatchParameterView::NewKnob(uint16_t generator,

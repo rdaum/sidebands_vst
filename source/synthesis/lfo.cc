@@ -20,14 +20,13 @@ void LFO::Reset() {
   playing_ = false;
 }
 
-ParamValue
-LFO::NextSample(SampleRate sample_rate, ParamValue velocity,
-                const GeneratorPatch::ModulationParameters &parameters) {
+ParamValue LFO::NextSample(
+    SampleRate sample_rate, ParamValue velocity,
+    const GeneratorPatch::ModulationParameters &parameters) {
   auto &lfo_values = std::get<GeneratorPatch::LFOValues>(parameters);
   phase_ +=
       2.0 * std::numbers::pi * lfo_values.frequency.getValue() / sample_rate;
-  while (phase_ >= 2.0 * std::numbers::pi)
-    phase_ -= 2.0 * std::numbers::pi;
+  while (phase_ >= 2.0 * std::numbers::pi) phase_ -= 2.0 * std::numbers::pi;
 
   auto velocity_scale = (lfo_values.velocity_sensivity.getValue() * velocity) +
                         (1 - lfo_values.velocity_sensivity.getValue());
@@ -45,4 +44,4 @@ GeneratorPatch::ModType LFO::mod_type() const {
   return GeneratorPatch::ModType::LFO;
 }
 
-} // namespace sidebands
+}  // namespace sidebands

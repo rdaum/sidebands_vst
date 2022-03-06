@@ -1,5 +1,6 @@
 #include "ui/envelope_editor_view.h"
 
+#include "sidebands_controller.h"
 #include "synthesis/patch.h"
 #include "ui/graphical_envelope_editor.h"
 #include "ui/parameter_editor_view.h"
@@ -7,9 +8,9 @@
 namespace sidebands {
 namespace ui {
 
-EnvelopeEditorView::EnvelopeEditorView(
-    const VSTGUI::CRect &size, Steinberg::Vst::EditController *edit_controller,
-    TargetTag target)
+EnvelopeEditorView::EnvelopeEditorView(const VSTGUI::CRect &size,
+                                       SidebandsController *edit_controller,
+                                       TargetTag target)
     : VSTGUI::CRowColumnView(
           size, VSTGUI::CRowColumnView::kColumnStyle,
           VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2),
@@ -18,31 +19,31 @@ EnvelopeEditorView::EnvelopeEditorView(
   int selected_generator = SelectedGenerator(edit_controller);
 
   VSTGUI::CRect column_size{0, 0, 40, getHeight()};
-  a_slider_ = new ParameterEditorView(column_size,
-                                      FindRangedParameter(edit_controller,
-                                                          selected_generator,
-                                                          TAG_ENV_A, target),
-                                      this, "A");
-  d_slider_ = new ParameterEditorView(column_size,
-                                      FindRangedParameter(edit_controller,
-                                                          selected_generator,
-                                                          TAG_ENV_D, target),
-                                      this, "D");
-  s_slider_ = new ParameterEditorView(column_size,
-                                      FindRangedParameter(edit_controller,
-                                                          selected_generator,
-                                                          TAG_ENV_S, target),
-                                      this, "S");
-  r_slider_ = new ParameterEditorView(column_size,
-                                      FindRangedParameter(edit_controller,
-                                                          selected_generator,
-                                                          TAG_ENV_R, target),
-                                      this, "R");
-  vs_slider_ = new ParameterEditorView(column_size,
-                                       FindRangedParameter(edit_controller,
-                                                           selected_generator,
-                                                           TAG_ENV_VS, target),
-                                       this, "VS");
+  a_slider_ = new ParameterEditorView(
+      column_size,
+      FindRangedParameter(edit_controller, selected_generator, TAG_ENV_A,
+                          target),
+      this, "A");
+  d_slider_ = new ParameterEditorView(
+      column_size,
+      FindRangedParameter(edit_controller, selected_generator, TAG_ENV_D,
+                          target),
+      this, "D");
+  s_slider_ = new ParameterEditorView(
+      column_size,
+      FindRangedParameter(edit_controller, selected_generator, TAG_ENV_S,
+                          target),
+      this, "S");
+  r_slider_ = new ParameterEditorView(
+      column_size,
+      FindRangedParameter(edit_controller, selected_generator, TAG_ENV_R,
+                          target),
+      this, "R");
+  vs_slider_ = new ParameterEditorView(
+      column_size,
+      FindRangedParameter(edit_controller, selected_generator, TAG_ENV_VS,
+                          target),
+      this, "VS");
 
   envelope_editor_ = new GraphicalEnvelopeEditorView(
       {0, 0, 400, getHeight()}, this, edit_controller, selected_generator,
@@ -58,11 +59,8 @@ EnvelopeEditorView::EnvelopeEditorView(
 
 void EnvelopeEditorView::valueChanged(VSTGUI::CControl *control) {
   ParamID tag = control->getTag();
-  edit_controller()->setParamNormalized(tag, control->getValueNormalized());
-  edit_controller()->beginEdit(tag);
-  edit_controller()->performEdit(tag, control->getValueNormalized());
-  edit_controller()->endEdit(tag);
-
+  edit_controller()->UpdateParameterNormalized(tag,
+                                               control->getValueNormalized());
   setDirty(true);
 }
 
@@ -86,5 +84,5 @@ void EnvelopeEditorView::SwitchGenerator(int new_generator) {
                                              TAG_ENV_VS, target()));
 }
 
-} // namespace ui
-} // namespace sidebands
+}  // namespace ui
+}  // namespace sidebands

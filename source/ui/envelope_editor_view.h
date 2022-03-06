@@ -14,10 +14,9 @@ class ParameterEditorView;
 class GraphicalEnvelopeEditorView;
 class EnvelopeEditorView : public VSTGUI::CRowColumnView,
                            public ModulatorEditorView {
-public:
+ public:
   EnvelopeEditorView(const VSTGUI::CRect &size,
-                     Steinberg::Vst::EditController *edit_controller,
-                     TargetTag target);
+                     SidebandsController *edit_controller, TargetTag target);
   ~EnvelopeEditorView() override = default;
 
   void SwitchGenerator(int new_generator) override;
