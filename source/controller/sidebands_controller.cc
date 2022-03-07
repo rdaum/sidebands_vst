@@ -7,7 +7,6 @@
 #include <vstgui/uidescription/uiattributes.h>
 #include <vstgui/vstgui.h>
 
-#include "base/source/fstreamer.h"
 #include "globals.h"
 #include "sidebands_cids.h"
 #include "tags.h"
@@ -48,7 +47,8 @@ tresult PLUGIN_API SidebandsController::initialize(FUnknown *context) {
   }
 
   LOG(INFO) << "Declaring units and parameters";
-  PatchController::AppendParameters(&parameters);
+  patch_controller_ = std::make_unique<PatchController>();
+  patch_controller_->AppendParameters(&parameters);
 
   // Universal parameters, not generator specific.
   std::string sel_gen_param_name = "Selected Generator Number";
@@ -76,45 +76,7 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
   // Here you get the state of the component (Processor part)
   if (!state) return kResultFalse;
 
-  startGroupEdit();
-
-  IBStreamer streamer(state, kLittleEndian);
-  for (int i = 0; i < kNumGenerators; i++) {
-    UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_A), 0.25);
-
-    UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_C),
-                              float(1 + i) / kNumGenerators);
-    UpdateParameterNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_A),
-                              double(ModType::ENVELOPE) / (kNumModTypes - 1));
-    UpdateParameterNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_K),
-                              double(ModType::ENVELOPE) / (kNumModTypes - 1));
-    setParamNormalized(TagFor(i, TAG_OSC, TARGET_K), 0.5);
-    setParamNormalized(TagFor(i, TAG_OSC, TARGET_M), 0.5);
-    UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_R), 1);
-    UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_S), 1);
-
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_A, TARGET_A), 0.05);
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_AL, TARGET_A), 1);
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_D, TARGET_A), 0.2);
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_S, TARGET_A), 0.25);
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_R, TARGET_A), 0.2);
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_VS, TARGET_A), 1.0);
-
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_A, TARGET_K), 0.00);
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_AL, TARGET_K), 1);
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_D, TARGET_K), 0.25);
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_S, TARGET_K), 0.25);
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_R, TARGET_K), 0.3);
-    UpdateParameterNormalized(TagFor(i, TAG_ENV_VS, TARGET_K), 1);
-
-    UpdateParameterNormalized(TagFor(i, TAG_LFO_FREQ, TARGET_K), 0.01);
-    UpdateParameterNormalized(TagFor(i, TAG_LFO_AMP, TARGET_K), 0.5);
-    UpdateParameterNormalized(TagFor(i, TAG_LFO_VS, TARGET_K), 1);
-    UpdateParameterNormalized(TagFor(i, TAG_LFO_TYPE, TARGET_K), 0);
-  }
-  UpdateParameterNormalized(TagFor(0, TAG_GENERATOR_TOGGLE, TARGET_NA), 1);
-
-  finishGroupEdit();
+  if (patch_controller_->LoadPatch(state, this) != kResultOk) return kResultFalse;
 
   setParamNormalized(TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA), 0);
 
@@ -122,9 +84,7 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
 }
 
 tresult PLUGIN_API SidebandsController::setState(IBStream *state) {
-  // Here you get the state of the controller
-
-  return kResultTrue;
+  return patch_controller_->SavePatch(state);
 }
 
 tresult PLUGIN_API SidebandsController::getState(IBStream *state) {

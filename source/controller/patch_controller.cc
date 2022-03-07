@@ -1,10 +1,10 @@
 #include "controller/patch_controller.h"
 
 #include <absl/strings/str_format.h>
-#include <string>
-
+#include <base/source/fstreamer.h>
 #include <pluginterfaces/base/ustring.h>
 #include <pluginterfaces/vst/vsttypes.h>
+#include <string>
 
 #include "constants.h"
 #include "tags.h"
@@ -169,6 +169,25 @@ void PatchController::AppendParameters(ParameterContainer *container) {
                                            target, generator, 0, 1));
     }
   }
+}
+
+Steinberg::tresult
+PatchController::LoadPatch(Steinberg::IBStream *stream,
+                           Steinberg::Vst::IEditController *edit_controller) {
+  Steinberg::IBStreamer streamer(stream);
+  while (true) {
+    Steinberg::Vst::ParamID id;
+    if (!streamer.readInt32u(id)) break;
+    ParamValue v;
+    CHECK(streamer.readDouble(v)) << "Unable to read value for param id: " << id;
+    v = edit_controller->plainParamToNormalized(id, v);
+    edit_controller->setParamNormalized(id, v);
+  }
+  return Steinberg::kResultOk;
+}
+
+Steinberg::tresult PatchController::SavePatch(Steinberg::IBStream *stream) {
+  return Steinberg::kResultOk;
 }
 
 } // namespace sidebands

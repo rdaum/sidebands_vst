@@ -16,7 +16,10 @@ using Steinberg::Vst::RangeParameter;
 // Declaration of all parameter objects.
 class PatchController {
 public:
-  static void AppendParameters(ParameterContainer *container);
+  void AppendParameters(ParameterContainer *container);
+  Steinberg::tresult LoadPatch(Steinberg::IBStream *stream, Steinberg::Vst::IEditController *edit_controller);
+  Steinberg::tresult SavePatch(Steinberg::IBStream *stream);
+
 };  // namespace PatchController
 
 }  // namespace sidebands

@@ -7,6 +7,7 @@
 
 namespace sidebands {
 
+class PatchController;
 class SidebandsController : public Steinberg::Vst::EditControllerEx1,
                             public VSTGUI::VST3EditorDelegate {
 public:
@@ -66,6 +67,7 @@ public:
 
 private:
   VSTGUI::CView *analysis_view_ = nullptr;
+  std::unique_ptr<PatchController> patch_controller_;
 };
 
 //------------------------------------------------------------------------
