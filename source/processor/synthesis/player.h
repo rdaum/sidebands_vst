@@ -24,7 +24,7 @@ class Player {
  public:
   static constexpr int kNumVoices = 8;  // Must be power of 2.
 
-  Player(Patch *patch, SampleRate sample_rate);
+  Player(PatchProcessor *patch, SampleRate sample_rate);
 
   // Fill the audio buffer.
   bool Perform32(Sample32 *in_buffer, Sample32 *out_buffer,
@@ -45,7 +45,7 @@ class Player {
   bool Perform(OscBuffer &buffer);
 
   const SampleRate sample_rate_;
-  Patch *patch_;  // Current patch.
+  PatchProcessor *patch_;  // Current patch.
 
   // Mutex for locking the voices and their states.
   mutable std::mutex voices_mutex_;

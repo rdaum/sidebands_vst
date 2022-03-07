@@ -126,21 +126,19 @@ void PatchController::AppendParameters(ParameterContainer *container) {
     container->addParameter(BooleanParameter(
         unit_id, "On", TAG_GENERATOR_TOGGLE, TARGET_NA, generator));
     container->addParameter(
-        OscillatorParameter(unit_id, "A", TARGET_A, generator, 0, 1));
-    container->addParameter(
-        OscillatorParameter(unit_id, "A", TARGET_A, generator, 0, 1));
-    container->addParameter(
         OscillatorParameter(unit_id, "C", TARGET_C, generator, 0, 8));
     container->addParameter(
-        OscillatorParameter(unit_id, "K", TARGET_K, generator, 0, 10));
+        OscillatorParameter(unit_id, "A", TARGET_A, generator, 0, 1));
     container->addParameter(
         OscillatorParameter(unit_id, "M", TARGET_M, generator, 0, 8));
     container->addParameter(
-        OscillatorParameter(unit_id, "S", TARGET_S, generator, 0, 1));
+        OscillatorParameter(unit_id, "K", TARGET_K, generator, 0, 10));
     container->addParameter(
-        OscillatorParameter(unit_id, "R", TARGET_R, generator, -1, 8));
+        OscillatorParameter(unit_id, "R", TARGET_R, generator, 0, 1));
+    container->addParameter(
+        OscillatorParameter(unit_id, "S", TARGET_S, generator, -1, 1));
     container->addParameter(OscillatorParameter(
-        unit_id, "Portamento", TARGET_PORTAMENTO, generator, -1, 1));
+        unit_id, "Portamento", TARGET_PORTAMENTO, generator, 0, 1));
 
     for (auto target : kModulationTargets) {
       container->addParameter(ModTypeParameter(unit_id, target, generator));

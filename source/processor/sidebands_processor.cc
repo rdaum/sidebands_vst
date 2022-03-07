@@ -36,7 +36,7 @@ tresult PLUGIN_API SidebandsProcessor::initialize(FUnknown *context) {
   addEventInput(STR16("Event In"), 1);
 
   LOG(INFO) << "Creating patch storage...";
-  patch_ = std::make_unique<Patch>();
+  patch_ = std::make_unique<PatchProcessor>();
 
   return kResultOk;
 }
@@ -61,7 +61,7 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
       auto *pq = data.inputParameterChanges->getParameterData(num_changes);
       if (pq) {
         auto param_id = pq->getParameterId();
-        if (!Patch::ValidParam(param_id)) {
+        if (!PatchProcessor::ValidParam(param_id)) {
           LOG(ERROR) << "Invalid parameter change: " << param_id
                      << ", ignoring";
           continue;

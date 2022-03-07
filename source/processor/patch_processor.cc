@@ -10,11 +10,11 @@
 namespace sidebands {
 
 // static
-bool Patch::ValidParam(ParamID param_id) {
+bool PatchProcessor::ValidParam(ParamID param_id) {
   return GeneratorFor(param_id) < kNumGenerators;
 }
 
-Patch::Patch() {
+PatchProcessor::PatchProcessor() {
   for (int g = 0; g < kNumGenerators; g++) {
     auto unit_id = MakeUnitID(UNIT_GENERATOR, g);
 
@@ -22,19 +22,19 @@ Patch::Patch() {
   }
 }
 
-void Patch::BeginParameterChange(ParamID param_id,
-                                 Steinberg::Vst::IParamValueQueue *p_queue) {
+void PatchProcessor::BeginParameterChange(
+    ParamID param_id, Steinberg::Vst::IParamValueQueue *p_queue) {
   uint8_t gen_num = GeneratorFor(param_id);
   generators_[gen_num]->BeginParameterChange(param_id, p_queue);
 }
 
-void Patch::EndParameterChanges() {
+void PatchProcessor::EndParameterChanges() {
   for (auto &generator : generators_) {
     generator->EndChanges();
   }
 }
 
-void Patch::AdvanceParameterChanges(uint32_t num_samples) {
+void PatchProcessor::AdvanceParameterChanges(uint32_t num_samples) {
   for (auto &item : generators_) {
     item->AdvanceParameterChanges(num_samples);
   }
@@ -44,21 +44,31 @@ void GeneratorPatch::DeclareParameter(SampleAccurateValue *value) {
   auto param_key = ParamKeyFor(value->getParamID());
 
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
-  parameters_[param_key] = value;
+
+  parameters_[param_key].sa = true;
+  parameters_[param_key].v.sv = value;
+}
+
+void GeneratorPatch::DeclareParameter(ParamID param_id, Steinberg::Vst::ParamValue *value) {
+  std::lock_guard<std::mutex> params_lock(patch_mutex_);
+  auto param_key = ParamKeyFor(param_id);
+
+  parameters_[param_key].sa = false;
+  parameters_[param_key].v.v = value;
 }
 
 GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
     : gennum_(gen),
-      on_(TagFor(gennum_, TAG_GENERATOR_TOGGLE, TARGET_NA), false, 0, 1),
+      on_(false),
       c_(TagFor(gennum_, TAG_OSC, TARGET_C), 1 + gennum_, 0, 8),
       a_(TagFor(gennum_, TAG_OSC, TARGET_A), 0.5, 0, 1),
       m_(TagFor(gennum_, TAG_OSC, TARGET_M), 0, 0, 8),
       k_(TagFor(gennum_, TAG_OSC, TARGET_K), 0, 0, 10),
       r_(TagFor(gennum_, TAG_OSC, TARGET_R), 1, 0, 1),
       s_(TagFor(gennum_, TAG_OSC, TARGET_S), 0, -1, 1),
-      portamento_(TagFor(gennum_, TAG_OSC, TARGET_S), 0, 0, 1) {
+      portamento_(TagFor(gennum_, TAG_OSC, TARGET_PORTAMENTO), 0, 0, 1) {
 
-  DeclareParameter(&on_);
+  DeclareParameter(TagFor(gen, TAG_GENERATOR_TOGGLE, TARGET_NA), &on_);
   DeclareParameter(&c_);
   DeclareParameter(&a_);
   DeclareParameter(&m_);
@@ -68,8 +78,9 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
   DeclareParameter(&portamento_);
 
   for (auto &target : kModulationTargets) {
-    SampleAccurateValue mod_type(TagFor(gennum_, TAG_MOD_TYPE, target),
-                                 (int)ModType::ENVELOPE, 0, kNumModTypes - 1);
+    ParamValue mod_type(target == TARGET_A || target == TARGET_K
+                                     ? (int)ModType::ENVELOPE
+                                     : (int)ModType::NONE);
     EnvelopeValues envelope_values{
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_A, target), 0.1, 0, 5),
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_AL, target), 1, 0, 1),
@@ -79,29 +90,30 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_VS, target), 1, 0, 1),
     };
     LFOValues lfo_values{
-        SampleAccurateValue(TagFor(gennum_, TAG_LFO_TYPE, target),
-                            (int)LFOType::SIN, 0, kNumLFOTypes - 1),
+        Steinberg::Vst::ParamValue(LFOType::SIN),
         SampleAccurateValue(TagFor(gennum_, TAG_LFO_FREQ, target), 10, 0, 20),
         SampleAccurateValue(TagFor(gennum_, TAG_LFO_AMP, target), 0.5, 0, 1),
         SampleAccurateValue(TagFor(gennum_, TAG_LFO_VS, target), 1, 0, 1),
     };
-    ModTarget mod_target = {mod_type, envelope_values, lfo_values};
-    mod_targets_.emplace_back(mod_target);
+    auto mod_target = std::make_unique<ModTarget>(target, mod_type, envelope_values, lfo_values);
+    mod_targets_[target] = std::move(mod_target);
   };
 
   // Take pointers _after_ the vector is fully constructed, just in case things
   // get moved.
   for (auto &mt : mod_targets_) {
-    DeclareParameter(&mt.mod_type);
-    DeclareParameter(&mt.lfo_parameters.type);
-    DeclareParameter(&mt.lfo_parameters.amplitude);
-    DeclareParameter(&mt.lfo_parameters.velocity_sensivity);
-    DeclareParameter(&mt.envelope_parameters.A_R);
-    DeclareParameter(&mt.envelope_parameters.A_L);
-    DeclareParameter(&mt.envelope_parameters.D_R);
-    DeclareParameter(&mt.envelope_parameters.S_L);
-    DeclareParameter(&mt.envelope_parameters.R_R);
-    DeclareParameter(&mt.envelope_parameters.VS);
+    if (!mt) continue;
+    DeclareParameter(TagFor(gennum_, TAG_MOD_TYPE, mt->target), &mt->mod_type);
+    DeclareParameter(&mt->envelope_parameters.A_R);
+    DeclareParameter(&mt->envelope_parameters.A_L);
+    DeclareParameter(&mt->envelope_parameters.D_R);
+    DeclareParameter(&mt->envelope_parameters.S_L);
+    DeclareParameter(&mt->envelope_parameters.R_R);
+    DeclareParameter(&mt->envelope_parameters.VS);
+    DeclareParameter(TagFor(gennum_, TAG_LFO_TYPE, mt->target), &mt->lfo_parameters.type);
+    DeclareParameter(&mt->lfo_parameters.amplitude);
+    DeclareParameter(&mt->lfo_parameters.frequency);
+    DeclareParameter(&mt->lfo_parameters.velocity_sensivity);
   }
 }
 
@@ -128,34 +140,35 @@ void GeneratorPatch::BeginParameterChange(
 
   auto key = ParamKeyFor(param_id);
   auto &param = parameters_[key];
-  if (!param)
-    return;
-  param->beginChanges(p_queue);
+  if (param.sa)
+    param.v.sv->beginChanges(p_queue);
+  else {
+    const auto &last_v_opt = GetLastValue(p_queue);
+    if (last_v_opt)
+      *param.v.v = last_v_opt.value();
+  }
 }
 
 void GeneratorPatch::EndChanges() {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
   for (auto &pdesc : parameters_) {
-    if (pdesc.second)
-      pdesc.second->endChanges();
+    if (pdesc.second.sa)
+      pdesc.second.v.sv->endChanges();
   }
 }
 
 void GeneratorPatch::AdvanceParameterChanges(uint32_t num_samples) {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
   for (auto &pdesc : parameters_) {
-    if (pdesc.second)
-      pdesc.second->advance(num_samples);
-    else
-      LOG(ERROR) << "Missing SampleAccurateValue for: "
-                 << kParamNames[pdesc.first.p_tag] << "/"
-                 << kTargetNames[pdesc.first.target];
+    if (pdesc.second.sa) {
+      pdesc.second.v.sv->advance(num_samples);
+    }
   }
 }
 
 bool GeneratorPatch::on() const {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
-  return on_.getValue();
+  return on_;
 }
 
 ParamValue GeneratorPatch::c() const {
@@ -196,18 +209,20 @@ ParamValue GeneratorPatch::portamento() const {
 std::optional<GeneratorPatch::ModulationParameters>
 GeneratorPatch::ModulationParams(TargetTag destination) const {
   if (ModTypeFor(destination) == ModType::ENVELOPE) {
-    return mod_targets_[destination].envelope_parameters;
+    return mod_targets_[destination]->envelope_parameters;
   }
 
   if (ModTypeFor(destination) == ModType::LFO) {
-    return mod_targets_[destination].lfo_parameters;
+    return mod_targets_[destination]->lfo_parameters;
   }
 
   return std::nullopt;
 }
 
 ModType GeneratorPatch::ModTypeFor(TargetTag destination) const {
-  return kModTypes[off_t(mod_targets_[destination].mod_type.getValue())];
+  auto &mod_target = mod_targets_[destination];
+  if (!mod_target) return ModType::NONE;
+  return kModTypes[off_t(mod_target->mod_type * kNumModTypes)];
 }
 
 std::function<double()>

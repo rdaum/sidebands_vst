@@ -101,7 +101,11 @@ void Generator::NoteOff(SampleRate sample_rate, const GeneratorPatch &patch,
 
 bool Generator::Playing() const {
   auto &mod = modulators_[TARGET_A];
-  return mod && mod->Playing();
+  if (mod)
+    return mod->Playing();
+  else
+    return false;
+//  return mod && mod->Playing();
 }
 
 void Generator::Reset() {

@@ -12,7 +12,7 @@
 
 namespace sidebands {
 
-Player::Player(Patch *patch, SampleRate sample_rate)
+Player::Player(PatchProcessor *patch, SampleRate sample_rate)
     : patch_(patch), sample_rate_(sample_rate) {}
 
 bool Player::Perform(OscBuffer &mixdown_buffer) {

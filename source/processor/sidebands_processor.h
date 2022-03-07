@@ -50,7 +50,7 @@ public:
   Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream *state) override;
 
 private:
-  std::unique_ptr<Patch> patch_;
+  std::unique_ptr<PatchProcessor> patch_;
   std::unique_ptr<Player> player_;
 };
 

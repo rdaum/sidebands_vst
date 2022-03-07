@@ -15,8 +15,7 @@
 
 namespace sidebands {
 
-
-
+// Parameter value storage for patch parameters for each generator.
 class GeneratorPatch {
  public:
   GeneratorPatch(uint32_t gennum, Steinberg::Vst::UnitID);
@@ -47,7 +46,7 @@ class GeneratorPatch {
   };
 
   struct LFOValues {
-    SampleAccurateValue type;
+    ParamValue type;
     SampleAccurateValue frequency;
     SampleAccurateValue amplitude;
     SampleAccurateValue velocity_sensivity;
@@ -63,33 +62,42 @@ class GeneratorPatch {
 
  private:
    void DeclareParameter(SampleAccurateValue *value);
+   void DeclareParameter(ParamID param_id, Steinberg::Vst::ParamValue *value);
 
   const uint32_t gennum_;
 
   mutable std::mutex patch_mutex_;
 
-  SampleAccurateValue on_;
+  ParamValue on_;
   SampleAccurateValue c_, a_, m_, k_, r_, s_, portamento_;
   struct ModTarget {
-    SampleAccurateValue mod_type;
+    TargetTag target;
+    ParamValue mod_type;
     EnvelopeValues envelope_parameters;
     LFOValues lfo_parameters;
   };
-  std::vector<ModTarget> mod_targets_;
+  std::unique_ptr<ModTarget> mod_targets_[NUM_TARGETS];
 
-  std::unordered_map<ParamKey, SampleAccurateValue*, ParamKey::Hash>
+  struct Param {
+    union {
+      ParamValue *v;
+      SampleAccurateValue *sv;
+    } v;
+    bool sa ;
+  };
+  std::unordered_map<ParamKey, Param, ParamKey::Hash>
       parameters_;
 };
 
-class Patch {
+// Manages the processing of parameter changes from the processor loop.
+class PatchProcessor {
  public:
-  Patch();
+   PatchProcessor();
 
   void BeginParameterChange(ParamID param_id,
                             Steinberg::Vst::IParamValueQueue *p_queue);
   void EndParameterChanges();
   void AdvanceParameterChanges(uint32_t num_samples);
-
   static bool ValidParam(ParamID param_id);
 
   std::unique_ptr<GeneratorPatch> generators_[kNumGenerators];

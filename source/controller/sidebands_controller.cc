@@ -81,12 +81,13 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
   IBStreamer streamer(state, kLittleEndian);
   for (int i = 0; i < kNumGenerators; i++) {
     UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_A), 0.25);
+
+    UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_C),
+                              float(1 + i) / kNumGenerators);
     UpdateParameterNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_A),
                               double(ModType::ENVELOPE) / (kNumModTypes - 1));
     UpdateParameterNormalized(TagFor(i, TAG_MOD_TYPE, TARGET_K),
                               double(ModType::ENVELOPE) / (kNumModTypes - 1));
-    UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_C),
-                              float(1 + i) / kNumGenerators);
     setParamNormalized(TagFor(i, TAG_OSC, TARGET_K), 0.5);
     setParamNormalized(TagFor(i, TAG_OSC, TARGET_M), 0.5);
     UpdateParameterNormalized(TagFor(i, TAG_OSC, TARGET_R), 1);

@@ -18,7 +18,7 @@ using Steinberg::Vst::SampleRate;
 using MixBuffer = std::valarray<double>;
 using MixBuffers = std::vector<std::unique_ptr<MixBuffer>>;
 
-struct Patch;
+struct PatchProcessor;
 class Generator;
 
 class Voice {
@@ -27,15 +27,15 @@ class Voice {
 
   // Produce a series of buffers, one per playing generator.
   MixBuffers Perform(SampleRate sample_rate, size_t frames_per_buffer,
-                     Patch *patch);
+                     PatchProcessor *patch);
 
   // Trigger a note-on even for each generator in the voice.
-  void NoteOn(SampleRate sample_rate, Patch *patch,
+  void NoteOn(SampleRate sample_rate, PatchProcessor *patch,
               std::chrono::high_resolution_clock::time_point start_time,
               ParamValue velocity, int16_t note);
 
   // Trigger a note-release for each generator in the voice.
-  void NoteOff(SampleRate sample_rate, Patch *patch, int16_t note);
+  void NoteOff(SampleRate sample_rate, PatchProcessor *patch, int16_t note);
 
   // Force all off (i.e. for stealing)
   void Reset();
