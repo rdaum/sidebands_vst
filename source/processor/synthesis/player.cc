@@ -69,13 +69,10 @@ void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
                     int32_t note_id, ParamValue velocity, int16_t pitch) {
   std::lock_guard<std::mutex> player_lock(voices_mutex_);
 
-  // If we were sent a note ID of -1, it means the host is not capable of
-  // delivering note ids (and the note-off event will be -1 or 0 to correspond.)
+  LOG(INFO) << "Note on: " << note_id << " note id: " << pitch;
 
-  // In this case we need to produce some form of synthetic note id, so we'll
-  // just use the note # but that means we can't play the same note in sequence
-  // while the previous one is releasing.
-  // it's just awful, hosts that do this are vile.
+  // If we were sent a note ID of -1, it means the host is not capable of
+  // delivering note ids (and the note-off event will be -1 to correspond.)
   if (note_id == -1) {
     LOG(INFO) << "On note id: " << note_id << " for note: " << std::hex
               << (int)pitch;
@@ -90,24 +87,13 @@ void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
 void Player::NoteOff(int32_t note_id, int16_t pitch) {
   std::lock_guard<std::mutex> player_lock(voices_mutex_);
 
-  // Handle "-1" note IDs on note off, but also the odd situation when
-  // Carla/JUCE sends a "0" for note-off, which is Wrong(tm).
-  if (note_id == -1 ||
-      (note_id == 0 && voices_.find(note_id) == voices_.end())) {
-    for (auto &v : voices_) {
-      if (v.second.note() == pitch) {
-        LOG(INFO) << "Off note id: " << note_id << " substituted with "
-                  << pitch;
-        note_id = pitch;
-        break;
-      }
-    }
+  LOG(INFO) << "Note off: " << note_id << " note id: " << pitch;
 
-    if (note_id == -1 || note_id == 0) {
-      LOG(ERROR) << "Could not find note for fake note id : " << note_id << " "
-                 << pitch;
-    }
+  // Handle "-1" note IDs on note off on hosts that do that.
+  if (note_id == -1) {
+    note_id = pitch;
   }
+
 
   // Find the voice playing this note id and send it a note-off event.
   auto voice_it = voices_.find(note_id);
@@ -145,4 +131,4 @@ Voice *Player::NewVoice(int32_t note_id) {
   return &voices_[note_id];
 }
 
-}  // namespace sidebands
+} // namespace sidebands
