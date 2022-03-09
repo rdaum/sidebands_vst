@@ -61,6 +61,15 @@ Steinberg::tresult PatchProcessor::LoadPatch(Steinberg::IBStream *stream) {
   // called when we load a preset, the model has to be reloaded
   Steinberg::IBStreamer streamer(stream, kLittleEndian);
 
+  Steinberg::uint32 num_generators;
+  if (!streamer.readInt32u(num_generators)) {
+    LOG(ERROR) << "Could not read patch stream; expected generator count.";
+    return Steinberg::kResultFalse;
+  }
+  if (num_generators != kNumGenerators) {
+    LOG(ERROR) << "Incompatible generator count. Got: " << num_generators << " expected: " << kNumGenerators;
+    return Steinberg::kResultFalse;
+  }
   for (int i = 0; i < kNumGenerators; i++) {
     generators_[i]->LoadPatch(streamer);
   }
@@ -72,6 +81,7 @@ Steinberg::tresult PatchProcessor::SavePatch(Steinberg::IBStream *stream) {
   // called when we load a preset, the model has to be reloaded
   Steinberg::IBStreamer streamer(stream, kLittleEndian);
 
+  streamer.writeInt32u(kNumGenerators);
   for (int i = 0; i < kNumGenerators; i++) {
     generators_[i]->SavePatch(streamer);
   }
@@ -80,7 +90,20 @@ Steinberg::tresult PatchProcessor::SavePatch(Steinberg::IBStream *stream) {
 }
 
 Steinberg::tresult GeneratorPatch::LoadPatch(Steinberg::IBStreamer &streamer) {
-  while (true) {
+  Steinberg::uint32 stream_gennum, num_params;
+  if (!streamer.readInt32u(stream_gennum)) {
+    LOG(ERROR) << "Unable to read start of generator: " << gennum_;
+    return Steinberg::kResultFalse;
+  }
+  if (stream_gennum != gennum_) {
+    LOG(ERROR) << "Wrong generator # in file; was: " << stream_gennum << " expected: " << gennum_;
+    return Steinberg::kResultFalse;
+  }
+  if (!streamer.readInt32u(num_params)) {
+    LOG(ERROR) << "Unable to read parameter count for generator: " << gennum_;
+    return Steinberg::kResultFalse;
+  }
+  while (num_params--) {
     Steinberg::Vst::ParamID id;
     if (!streamer.readInt32u(id))
       break;
@@ -95,35 +118,30 @@ Steinberg::tresult GeneratorPatch::LoadPatch(Steinberg::IBStreamer &streamer) {
     }
     auto plain = v * (it->second.min + (it->second.max - it->second.min));
     if (it->second.sa) {
-      if (it->first.target == TARGET_C) {
-        LOG(INFO) << "C!";
-      }
       it->second.v.sv->setValueNormalized(v);
     } else {
       *it->second.v.v = plain;
     }
-    LOG(INFO) << "Loaded " << TagStr(id) << " := " << plain << " (from: " << v
-              << ")";
   }
   return Steinberg::kResultOk;
 }
 
 Steinberg::tresult GeneratorPatch::SavePatch(Steinberg::IBStreamer &streamer) {
 
-  // Format is tag followed by value.
-  // Everything is float, at least for now, because our parameter framework
-  // doesn't really know anything else.
+  // First write generator number, then the # of parameters.
+  streamer.writeInt32u(gennum_);
+  streamer.writeInt32u(parameters_.size());
   for (auto &param : parameters_) {
+    // Format is tag followed by value.
+    // Everything is float, at least for now, because our parameter framework
+    // doesn't really know anything else.
+
     Param &p = param.second;
     ParamValue v = p.sa ? p.v.sv->getValue() : *p.v.v;
     auto nv = (v - p.min) / (p.max - p.min);
-    LOG(INFO) << "Saving "
-              << TagStr(TagFor(gennum_, param.first.p_tag, param.first.target))
-              << " as normalized: " << nv << " from plain: " << v;
     WriteParameter(streamer, gennum_, param.first.p_tag, param.first.target,
                    nv);
   }
-
   return Steinberg::kResultOk;
 }
 
@@ -237,7 +255,7 @@ void GeneratorPatch::BeginParameterChange(
   auto &param = parameters_[key];
   if (param.sa) {
     param.v.sv->beginChanges(p_queue);
-    LOG(INFO) << "Beginning SAV changes for: " << TagStr(param_id);
+    sa_changed_params_.push_back(param_id);
   } else {
     const auto &last_v_opt = GetLastValue(p_queue);
     if (last_v_opt) {
@@ -252,9 +270,14 @@ void GeneratorPatch::BeginParameterChange(
 
 void GeneratorPatch::EndChanges() {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
-  for (auto &pdesc : parameters_) {
-    if (pdesc.second.sa)
-      pdesc.second.v.sv->endChanges();
+  while (!sa_changed_params_.empty()) {
+    auto changed_param = sa_changed_params_.front();
+    auto key = ParamKeyFor(changed_param);
+    auto pdesc = parameters_[key];
+    sa_changed_params_.pop_back();
+    if (pdesc.sa) {
+      pdesc.v.sv->endChanges();
+    }
   }
 }
 

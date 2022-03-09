@@ -170,8 +170,6 @@ SidebandsProcessor::canProcessSampleSize(int32 symbolicSampleSize) {
 }
 
 tresult PLUGIN_API SidebandsProcessor::setState(IBStream *state) {
-  LOG(INFO) << "setState: " << state;
-
   // Here you set the state of the component (Processor part)
   if (!state) return kResultFalse;
 
@@ -179,8 +177,6 @@ tresult PLUGIN_API SidebandsProcessor::setState(IBStream *state) {
 }
 
 tresult PLUGIN_API SidebandsProcessor::getState(IBStream *state) {
-  LOG(INFO) << "getState: " << state;
-
   // Here you get the state of the component (Processor part)
   if (!state) return kResultFalse;
 

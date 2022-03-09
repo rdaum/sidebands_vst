@@ -2,6 +2,7 @@
 
 #include <pluginterfaces/vst/ivstparameterchanges.h>
 #include <pluginterfaces/vst/vsttypes.h>
+#include <deque>
 
 #include <functional>
 #include <mutex>
@@ -94,6 +95,7 @@ private:
     ParamValue max;
   };
   std::unordered_map<ParamKey, Param, ParamKey::Hash> parameters_;
+  std::deque<Steinberg::Vst::ParamID> sa_changed_params_;
 };
 
 // Manages the processing of parameter changes from the processor loop.

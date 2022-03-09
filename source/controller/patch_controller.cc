@@ -175,18 +175,43 @@ Steinberg::tresult
 PatchController::LoadPatch(Steinberg::IBStream *stream,
                            Steinberg::Vst::IEditController *edit_controller) {
   Steinberg::IBStreamer streamer(stream);
-  while (true) {
-    Steinberg::Vst::ParamID id;
-    if (!streamer.readInt32u(id)) break;
-    ParamValue v;
-    CHECK(streamer.readDouble(v)) << "Unable to read value for param id: " << id;
-    auto p = edit_controller->normalizedParamToPlain(id, v);
-    LOG(INFO) << "Setting parameter: " << TagStr(id) << " to normalized: " << v
-              << " (plain: " << p << ")";
-    if (TargetFor(id) == TARGET_C && GeneratorFor(id) == 0 && ParamFor(id) == TAG_OSC) {
-      LOG(INFO) << "C";
+
+  LOG(INFO) << "Loading from stream...";
+  Steinberg::uint32 num_generators;
+  if (!streamer.readInt32u(num_generators)) {
+    LOG(ERROR) << "Could not read patch stream; expected generator count.";
+    return Steinberg::kResultFalse;
+  }
+  if (num_generators != kNumGenerators) {
+    LOG(ERROR) << "Incompatible generator count. Got: " << num_generators
+               << " expected: " << kNumGenerators;
+    return Steinberg::kResultFalse;
+  }
+
+  while (num_generators--) {
+    Steinberg::uint32 stream_gennum, num_params;
+    if (!streamer.readInt32u(stream_gennum)) {
+      LOG(ERROR) << "Unable to read start of generator";
+      return Steinberg::kResultFalse;
     }
-    edit_controller->setParamNormalized(id, v);
+    if (!streamer.readInt32u(num_params)) {
+      LOG(ERROR) << "Unable to read parameter count for generator: "
+                 << stream_gennum;
+      return Steinberg::kResultFalse;
+    }
+    while (num_params--) {
+      Steinberg::Vst::ParamID id;
+      if (!streamer.readInt32u(id))
+        break;
+      ParamValue v;
+      CHECK(streamer.readDouble(v))
+          << "Unable to read value for param id: " << id;
+      auto p = edit_controller->normalizedParamToPlain(id, v);
+      if (TargetFor(id) == TARGET_C && GeneratorFor(id) == 0 &&
+          ParamFor(id) == TAG_OSC) {
+      }
+      edit_controller->setParamNormalized(id, v);
+    }
   }
   return Steinberg::kResultOk;
 }
