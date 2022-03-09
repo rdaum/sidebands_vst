@@ -43,7 +43,7 @@ class Generator {
   std::function<std::complex<double>()> ImaginaryProducerFor(
       SampleRate sample_rate, ParamValue velocity, GeneratorPatch &gp,
       TargetTag dest);
-  std::unique_ptr<IModulationSource> modulators_[NUM_TARGETS];
+  std::unique_ptr<IModulationSource> modulators_[NUM_TARGETS][kNumModTypes];
   ParamValue velocity_ = 0;
   Oscillator o_;
 };

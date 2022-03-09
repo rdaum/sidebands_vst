@@ -10,12 +10,12 @@
 #include <vector>
 
 #include "constants.h"
-#include "processor/sample_accurate_value.h"
+#include "processor/util/sample_accurate_value.h"
 #include "tags.h"
 
 namespace Steinberg {
 class IBStreamer;
-}  // namespace Steinberg
+} // namespace Steinberg
 
 namespace sidebands {
 
@@ -67,7 +67,8 @@ public:
 
 private:
   void DeclareParameter(SampleAccurateValue *value);
-  void DeclareParameter(ParamID param_id, Steinberg::Vst::ParamValue *value);
+  void DeclareParameter(ParamID param_id, Steinberg::Vst::ParamValue *value,
+                        ParamValue min, ParamValue max);
 
   const uint32_t gennum_;
 
@@ -89,6 +90,8 @@ private:
       SampleAccurateValue *sv;
     } v;
     bool sa;
+    ParamValue min;
+    ParamValue max;
   };
   std::unordered_map<ParamKey, Param, ParamKey::Hash> parameters_;
 };

@@ -24,13 +24,13 @@ double Produce(SampleRate sample_rate, ParamValue velocity,
   return value;
 }
 
-std::function<std::complex<double>()> Generator::ImaginaryProducerFor(
-    SampleRate sample_rate, ParamValue velocity, GeneratorPatch &gp,
-    TargetTag dest) {
+std::function<std::complex<double>()>
+Generator::ImaginaryProducerFor(SampleRate sample_rate, ParamValue velocity,
+                                GeneratorPatch &gp, TargetTag dest) {
   return [sample_rate, &gp, dest, this, velocity]() {
-    return std::complex<double>(
-        0, Produce(sample_rate, velocity, gp, dest, gp.ParameterGetterFor(dest),
-                   ModulatorFor(gp, dest)));
+    return std::complex<double>(0, Produce(sample_rate, velocity, gp, dest,
+                                           gp.ParameterGetterFor(dest),
+                                           ModulatorFor(gp, dest)));
   };
 }
 
@@ -100,45 +100,46 @@ void Generator::NoteOff(SampleRate sample_rate, const GeneratorPatch &patch,
 }
 
 bool Generator::Playing() const {
-  auto &mod = modulators_[TARGET_A];
-  if (mod)
-    return mod->Playing();
-  else
-    return false;
-//  return mod && mod->Playing();
+  for (const auto &mod_type : kModTypes) {
+    auto &mod = modulators_[TARGET_A][off_t(mod_type)];
+    if (mod && mod->Playing())
+      return true;
+  }
+  return false;
 }
 
 void Generator::Reset() {
-  for (auto &mod : modulators_) {
-    if (mod) mod->Reset();
+  for (const auto &target : kModulationTargets) {
+    for (const auto &mod_type : kModTypes) {
+      auto &mod = modulators_[target][off_t(mod_type)];
+      if (mod)
+        mod->Reset();
+    }
   }
 }
 
 void Generator::ConfigureModulators(const GeneratorPatch &patch) {
   for (const auto &target : kModulationTargets) {
-    auto mod_type = patch.ModTypeFor(target);
-    switch (mod_type) {
+    for (const auto &mod_type : kModTypes) {
+      switch (mod_type) {
       case ModType::NONE:
-        modulators_[target].reset();
+        modulators_[target][off_t(mod_type)].reset();
         break;
       case ModType::ENVELOPE:
-        modulators_[target] = std::make_unique<EnvelopeGenerator>();
+        modulators_[target][off_t(mod_type)] =
+            std::make_unique<EnvelopeGenerator>();
         break;
       case ModType::LFO:
-        modulators_[target] = std::make_unique<LFO>();
+        modulators_[target][off_t(mod_type)] = std::make_unique<LFO>();
         break;
+      }
     }
   }
 }
 
 IModulationSource *Generator::ModulatorFor(const GeneratorPatch &patch,
                                            TargetTag dest) {
-  auto *mod = modulators_[dest].get();
-  if (mod && mod->mod_type() != patch.ModTypeFor(dest)) {
-    ConfigureModulators(patch);
-    mod = modulators_[dest].get();
-  }
-  return mod;
+  return modulators_[dest][off_t(patch.ModTypeFor(dest))].get();
 }
 
-}  // namespace sidebands
+} // namespace sidebands

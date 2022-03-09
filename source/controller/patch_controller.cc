@@ -180,13 +180,19 @@ PatchController::LoadPatch(Steinberg::IBStream *stream,
     if (!streamer.readInt32u(id)) break;
     ParamValue v;
     CHECK(streamer.readDouble(v)) << "Unable to read value for param id: " << id;
-    v = edit_controller->plainParamToNormalized(id, v);
+    auto p = edit_controller->normalizedParamToPlain(id, v);
+    LOG(INFO) << "Setting parameter: " << TagStr(id) << " to normalized: " << v
+              << " (plain: " << p << ")";
+    if (TargetFor(id) == TARGET_C && GeneratorFor(id) == 0 && ParamFor(id) == TAG_OSC) {
+      LOG(INFO) << "C";
+    }
     edit_controller->setParamNormalized(id, v);
   }
   return Steinberg::kResultOk;
 }
 
 Steinberg::tresult PatchController::SavePatch(Steinberg::IBStream *stream) {
+
   return Steinberg::kResultOk;
 }
 

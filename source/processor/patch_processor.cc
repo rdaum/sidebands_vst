@@ -8,6 +8,9 @@
 #include "constants.h"
 #include "tags.h"
 
+using Steinberg::Vst::ParamID;
+using Steinberg::Vst::ParamValue;
+
 namespace sidebands {
 
 namespace {
@@ -58,6 +61,10 @@ Steinberg::tresult PatchProcessor::LoadPatch(Steinberg::IBStream *stream) {
   // called when we load a preset, the model has to be reloaded
   Steinberg::IBStreamer streamer(stream, kLittleEndian);
 
+  for (int i = 0; i < kNumGenerators; i++) {
+    generators_[i]->LoadPatch(streamer);
+  }
+
   return Steinberg::kResultOk;
 }
 
@@ -73,7 +80,31 @@ Steinberg::tresult PatchProcessor::SavePatch(Steinberg::IBStream *stream) {
 }
 
 Steinberg::tresult GeneratorPatch::LoadPatch(Steinberg::IBStreamer &streamer) {
-
+  while (true) {
+    Steinberg::Vst::ParamID id;
+    if (!streamer.readInt32u(id))
+      break;
+    ParamValue v;
+    CHECK(streamer.readDouble(v))
+        << "Unable to read value for param id: " << TagStr(id);
+    ParamKey k{ParamFor(id), TargetFor(id)};
+    const auto &it = parameters_.find(k);
+    if (it == parameters_.end()) {
+      LOG(ERROR) << " Missing parameter for id: " << TagStr(id);
+      continue;
+    }
+    auto plain = v * (it->second.min + (it->second.max - it->second.min));
+    if (it->second.sa) {
+      if (it->first.target == TARGET_C) {
+        LOG(INFO) << "C!";
+      }
+      it->second.v.sv->setValueNormalized(v);
+    } else {
+      *it->second.v.v = plain;
+    }
+    LOG(INFO) << "Loaded " << TagStr(id) << " := " << plain << " (from: " << v
+              << ")";
+  }
   return Steinberg::kResultOk;
 }
 
@@ -84,8 +115,13 @@ Steinberg::tresult GeneratorPatch::SavePatch(Steinberg::IBStreamer &streamer) {
   // doesn't really know anything else.
   for (auto &param : parameters_) {
     Param &p = param.second;
+    ParamValue v = p.sa ? p.v.sv->getValue() : *p.v.v;
+    auto nv = (v - p.min) / (p.max - p.min);
+    LOG(INFO) << "Saving "
+              << TagStr(TagFor(gennum_, param.first.p_tag, param.first.target))
+              << " as normalized: " << nv << " from plain: " << v;
     WriteParameter(streamer, gennum_, param.first.p_tag, param.first.target,
-                   p.sa ? p.v.sv->getValue() : *p.v.v);
+                   nv);
   }
 
   return Steinberg::kResultOk;
@@ -96,30 +132,32 @@ void GeneratorPatch::DeclareParameter(SampleAccurateValue *value) {
 
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
 
-  parameters_[param_key].sa = true;
-  parameters_[param_key].v.sv = value;
+  parameters_[param_key] = {{.sv = value}, true, value->min(), value->max()};
 }
 
 void GeneratorPatch::DeclareParameter(ParamID param_id,
-                                      Steinberg::Vst::ParamValue *value) {
+                                      Steinberg::Vst::ParamValue *value,
+                                      ParamValue min, ParamValue max) {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
   auto param_key = ParamKeyFor(param_id);
 
   parameters_[param_key].sa = false;
   parameters_[param_key].v.v = value;
+  parameters_[param_key].min = min;
+  parameters_[param_key].max = max;
 }
 
 GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
-    : gennum_(gen), on_(false),
+    : gennum_(gen), on_(gen == 0),
       c_(TagFor(gennum_, TAG_OSC, TARGET_C), 1 + gennum_, 0, 8),
       a_(TagFor(gennum_, TAG_OSC, TARGET_A), 0.5, 0, 1),
-      m_(TagFor(gennum_, TAG_OSC, TARGET_M), 0, 0, 8),
-      k_(TagFor(gennum_, TAG_OSC, TARGET_K), 0, 0, 10),
+      m_(TagFor(gennum_, TAG_OSC, TARGET_M), 4, 0, 8),
+      k_(TagFor(gennum_, TAG_OSC, TARGET_K), 1, 0, 10),
       r_(TagFor(gennum_, TAG_OSC, TARGET_R), 1, 0, 1),
       s_(TagFor(gennum_, TAG_OSC, TARGET_S), 0, -1, 1),
       portamento_(TagFor(gennum_, TAG_OSC, TARGET_PORTAMENTO), 0, 0, 1) {
 
-  DeclareParameter(TagFor(gen, TAG_GENERATOR_TOGGLE, TARGET_NA), &on_);
+  DeclareParameter(TagFor(gen, TAG_GENERATOR_TOGGLE, TARGET_NA), &on_, 0, 1);
   DeclareParameter(&c_);
   DeclareParameter(&a_);
   DeclareParameter(&m_);
@@ -129,9 +167,11 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
   DeclareParameter(&portamento_);
 
   for (auto &target : kModulationTargets) {
-    ParamValue mod_type(target == TARGET_A || target == TARGET_K
-                            ? (int)ModType::ENVELOPE
-                            : (int)ModType::NONE);
+    auto default_mod_type = target == TARGET_A || target == TARGET_K
+                                ? (int)ModType::ENVELOPE
+                                : (int)ModType::NONE;
+
+    ParamValue mod_type(default_mod_type);
     EnvelopeValues envelope_values{
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_A, target), 0.1, 0, 5),
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_AL, target), 1, 0, 1),
@@ -156,7 +196,8 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
   for (auto &mt : mod_targets_) {
     if (!mt)
       continue;
-    DeclareParameter(TagFor(gennum_, TAG_MOD_TYPE, mt->target), &mt->mod_type);
+    DeclareParameter(TagFor(gennum_, TAG_MOD_TYPE, mt->target), &mt->mod_type,
+                     0, kNumModTypes - 1);
     DeclareParameter(&mt->envelope_parameters.A_R);
     DeclareParameter(&mt->envelope_parameters.A_L);
     DeclareParameter(&mt->envelope_parameters.D_R);
@@ -164,7 +205,7 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
     DeclareParameter(&mt->envelope_parameters.R_R);
     DeclareParameter(&mt->envelope_parameters.VS);
     DeclareParameter(TagFor(gennum_, TAG_LFO_TYPE, mt->target),
-                     &mt->lfo_parameters.type);
+                     &mt->lfo_parameters.type, 0, kNumLFOTypes - 1);
     DeclareParameter(&mt->lfo_parameters.amplitude);
     DeclareParameter(&mt->lfo_parameters.frequency);
     DeclareParameter(&mt->lfo_parameters.velocity_sensivity);
@@ -194,12 +235,18 @@ void GeneratorPatch::BeginParameterChange(
 
   auto key = ParamKeyFor(param_id);
   auto &param = parameters_[key];
-  if (param.sa)
+  if (param.sa) {
     param.v.sv->beginChanges(p_queue);
-  else {
+    LOG(INFO) << "Beginning SAV changes for: " << TagStr(param_id);
+  } else {
     const auto &last_v_opt = GetLastValue(p_queue);
-    if (last_v_opt)
-      *param.v.v = last_v_opt.value();
+    if (last_v_opt) {
+      auto nv = param.min + (last_v_opt.value() * (param.max - param.min));
+      LOG(INFO) << "Setting non-Sample accurate parameter: " << TagStr(param_id)
+                << " to  " << nv << " (was: " << *param.v.v << ")";
+
+      *param.v.v = nv;
+    }
   }
 }
 
@@ -277,7 +324,9 @@ ModType GeneratorPatch::ModTypeFor(TargetTag destination) const {
   auto &mod_target = mod_targets_[destination];
   if (!mod_target)
     return ModType::NONE;
-  return kModTypes[off_t(mod_target->mod_type * kNumModTypes)];
+  auto index = off_t(mod_target->mod_type);
+  ModType mod_type = kModTypes[index];
+  return mod_type;
 }
 
 std::function<double()>

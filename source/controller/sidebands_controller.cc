@@ -73,6 +73,7 @@ tresult PLUGIN_API SidebandsController::terminate() {
 }
 
 tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
+  LOG(INFO) << "setComponentState: " << state;
   // Here you get the state of the component (Processor part)
   if (!state) return kResultFalse;
 
@@ -84,7 +85,10 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
 }
 
 tresult PLUGIN_API SidebandsController::setState(IBStream *state) {
-  return patch_controller_->SavePatch(state);
+  LOG(INFO) << "setState: " << state;
+  // I'm not clear on what this method is for, appear to be called on load, not
+  // save, and after setComponentState has already been called, and with an empty stream.
+  return kResultOk;
 }
 
 tresult PLUGIN_API SidebandsController::getState(IBStream *state) {
@@ -112,7 +116,6 @@ tresult PLUGIN_API SidebandsController::setParamNormalized(
   if (analysis_view_) {
     analysis_view_->setDirty(true);
   }
-  LOG(INFO) << "Set: " << TagStr(tag) << " to normalized: " << value;
   return result;
 }
 

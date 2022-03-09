@@ -101,10 +101,11 @@ smtg_add_vst3plugin(sidebands
 
         source/processor/sidebands_processor.h
         source/processor/sidebands_processor.cc
-        source/processor/sample_accurate_value.h
         source/processor/patch_processor.h
         source/processor/patch_processor.cc
-        
+        source/processor/util/sample_accurate_value.h
+        source/processor/util/sample_accurate_value.cc
+
         source/processor/synthesis/dsp.cc
         source/processor/synthesis/dsp.h
         source/processor/synthesis/envgen.h
