@@ -14,6 +14,12 @@
       "slider_handle": {
         "path": "slider_handle.png"
       },
+      "metallic_knob_base": {
+        "path": "metallic_knob_base.png"
+      },
+      "metallic_knob_handle": {
+        "path": "metallic_knob_handle.png"
+      },
       "knob": {
         "path": "knob2.png"
       },
@@ -28,14 +34,23 @@
       }
     },
     "fonts": {},
-    "colors": {
-      "background-grey": "#dbdbdbff"
+    "gradients": {
+      "BackgroundGradient": [
+        {
+          "rgba": "#dfdfdfff",
+          "start": "0"
+        },
+        {
+          "rgba": "#8a8a8aff",
+          "start": "1"
+        }
+      ]
     },
     "control-tags": {},
     "custom": {
       "FocusDrawing": {},
       "VST3Editor": {
-        "Path": "C:\\Users\\ryand\\modfmi\\resource\\modfmi.uidesc"
+        "Path": "C:\\Users\\ryand\\sidebands_vst\\resource\\sidebands.uidesc"
       },
       "UIGridController": {
         "Grids": "1x 1,5x 5,10x 10,12x 12,15x 15"
@@ -45,113 +60,66 @@
       },
       "UIEditController": {
         "EditViewScale": "1",
-        "EditorSize": "0, 0, 1244, 898",
+        "EditorSize": "0, 0, 1330, 898",
         "SplitViewSize_0_0": "0.8509174311926605005496071498782839626074",
         "SplitViewSize_0_1": "0.1261467889908256811981601686056819744408",
         "SplitViewSize_1_0": "0.4885321100917431325072470826853532344103",
         "SplitViewSize_1_1": "0.5068807339449541427001122428919188678265",
-        "SplitViewSize_2_0": "0.8553054662379421246853894444939214736223",
-        "SplitViewSize_2_1": "0.1406752411575562800027938692437601275742",
-        "TabSwitchValue": "0",
+        "SplitViewSize_2_0": "0.864661654135338353377449038816848769784",
+        "SplitViewSize_2_1": "0.1315789473684210453274801011502859182656",
+        "TabSwitchValue": "4",
         "Version": "1"
       },
       "UIAttributesController": {},
       "UIViewCreatorDataSource": {
-        "SelectedRow": "22"
+        "SelectedRow": "4"
       },
       "UITagsDataSource": {
         "SelectedRow": "-1"
       },
       "UIColorsDataSource": {
         "SelectedRow": "-1"
+      },
+      "UIGradientsDataSource": {
+        "SelectedRow": "0"
+      },
+      "UIBitmapsDataSource": {
+        "SelectedRow": "-1"
+      },
+      "UIFontsDataSource": {
+        "SelectedRow": "-1"
       }
     },
     "templates": {
       "view": {
         "attributes": {
-          "background-color": "background-grey",
-          "background-color-draw-style": "filled and stroked",
           "class": "CViewContainer",
           "mouse-enabled": "true",
-          "opacity": "0.5",
+          "opacity": "1",
           "origin": "0, 0",
-          "size": "1240, 1250",
+          "size": "800, 1000",
           "transparent": "false",
           "wants-focus": "false"
         },
         "children": {
-          "CTextLabel": {
+          "CGradientView": {
             "attributes": {
-              "back-color": "None",
-              "background-offset": "0, 0",
-              "class": "CTextLabel",
-              "default-value": "0.5",
-              "font": "~ NormalFontBig",
-              "font-antialias": "true",
-              "font-color": "~ WhiteCColor",
-              "frame-color": "None",
-              "frame-width": "1",
-              "max-value": "1",
-              "min-value": "0",
+              "class": "CGradientView",
+              "draw-antialiased": "true",
+              "frame-color": "~ BlackCColor",
+              "frame-width": "2",
+              "gradient": "BackgroundGradient",
+              "gradient-angle": "0",
+              "gradient-style": "linear",
               "mouse-enabled": "true",
               "opacity": "1",
-              "origin": "10, 10",
-              "round-rect-radius": "6",
-              "shadow-color": "~ RedCColor",
-              "size": "130, 30",
-              "style-3D-in": "false",
-              "style-3D-out": "false",
-              "style-no-draw": "false",
-              "style-no-frame": "false",
-              "style-no-text": "false",
-              "style-round-rect": "false",
-              "style-shadow-text": "false",
-              "text-alignment": "center",
-              "text-inset": "0, 0",
-              "text-rotation": "0",
-              "text-shadow-offset": "1, 1",
-              "title": "Daum Audio Works",
-              "transparent": "false",
-              "value-precision": "2",
-              "wants-focus": "false",
-              "wheel-inc-value": "0.1"
-            }
-          },
-          "CTextLabel": {
-            "attributes": {
-              "back-color": "None",
-              "background-offset": "0, 0",
-              "class": "CTextLabel",
-              "default-value": "0.5",
-              "font": "~ NormalFontBig",
-              "font-antialias": "true",
-              "font-color": "~ WhiteCColor",
-              "frame-color": "None",
-              "frame-width": "1",
-              "max-value": "1",
-              "min-value": "0",
-              "mouse-enabled": "true",
-              "opacity": "1",
-              "origin": "510, 10",
-              "round-rect-radius": "6",
-              "shadow-color": "~ RedCColor",
-              "size": "130, 30",
-              "style-3D-in": "false",
-              "style-3D-out": "false",
-              "style-no-draw": "false",
-              "style-no-frame": "false",
-              "style-no-text": "false",
-              "style-round-rect": "false",
-              "style-shadow-text": "false",
-              "text-alignment": "center",
-              "text-inset": "0, 0",
-              "text-rotation": "0",
-              "text-shadow-offset": "1, 1",
-              "title": "Sidebands",
-              "transparent": "false",
-              "value-precision": "2",
-              "wants-focus": "false",
-              "wheel-inc-value": "0.1"
+              "origin": "0, 0",
+              "radial-center": "0.5, 0.5",
+              "radial-radius": "100",
+              "round-rect-radius": "10",
+              "size": "800, 1000",
+              "transparent": "true",
+              "wants-focus": "false"
             }
           },
           "UIViewSwitchContainer": {
@@ -164,10 +132,27 @@
               "class": "UIViewSwitchContainer",
               "custom-view-name": "DrawbarEditor",
               "mouse-enabled": "true",
-              "opacity": "1",
-              "origin": "20, 40",
-              "size": "600, 305",
-              "transparent": "false",
+              "opacity": "0",
+              "origin": "20, 20",
+              "size": "360, 240",
+              "transparent": "true",
+              "wants-focus": "false"
+            }
+          },
+          "UIViewSwitchContainer": {
+            "attributes": {
+              "animation-style": "fade",
+              "animation-time": "120",
+              "animation-timing-function": "linear",
+              "background-color": "None",
+              "background-color-draw-style": "filled and stroked",
+              "class": "UIViewSwitchContainer",
+              "custom-view-name": "AnalysisView",
+              "mouse-enabled": "true",
+              "opacity": "0",
+              "origin": "400, 20",
+              "size": "360, 240",
+              "transparent": "true",
               "wants-focus": "false"
             }
           },
@@ -182,26 +167,9 @@
               "custom-view-name": "GeneratorEditor",
               "mouse-enabled": "true",
               "opacity": "0",
-              "origin": "20, 360",
-              "size": "600, 800",
-              "transparent": "false",
-              "wants-focus": "false"
-            }
-          },
-          "UIViewSwitchContainer": {
-            "attributes": {
-              "animation-style": "fade",
-              "animation-time": "120",
-              "animation-timing-function": "linear",
-              "background-color": "None",
-              "background-color-draw-style": "filled and stroked",
-              "class": "UIViewSwitchContainer",
-              "custom-view-name": "AnalysisView",
-              "mouse-enabled": "true",
-              "opacity": "1",
-              "origin": "640, 40",
-              "size": "580, 305",
-              "transparent": "false",
+              "origin": "20, 280",
+              "size": "760, 740",
+              "transparent": "true",
               "wants-focus": "false"
             }
           }

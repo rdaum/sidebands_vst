@@ -7,6 +7,7 @@
 
 #include "constants.h"
 #include "controller/sidebands_controller.h"
+#include "controller/ui/gui_constants.h"
 #include "controller/ui/mod_target_view.h"
 #include "controller/ui/parameter_editor_view.h"
 #include "controller/ui/spectrum_view.h"
@@ -19,22 +20,17 @@ using Steinberg::Vst::ParamID;
 namespace sidebands {
 namespace ui {
 
-namespace {
-
-constexpr int kModRowHeight = 285;
-
-} // namespace
-
 GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
                                          SidebandsController *edit_controller)
     : VSTGUI::CScrollView(
           size, VSTGUI::CRect(0, 0, size.getWidth(), kModRowHeight * 4),
           CScrollView::kVerticalScrollbar),
       edit_controller_(edit_controller) {
+  setBackgroundColor(VSTGUI::kTransparentCColor);
+
   auto *sel_gen_param = edit_controller->getParameterObject(
       TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA));
   sel_gen_param->addDependent(this);
-  setBackgroundColor(kBgGrey);
 
   int selected_generator = edit_controller->SelectedGenerator();
 
@@ -42,7 +38,7 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
       VSTGUI::CRect(0, 0, getWidth() - 40, kModRowHeight * 4),
       VSTGUI::CRowColumnView::kRowStyle,
       VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2);
-  modulator_rows->setBackgroundColor(kBgGrey);
+  modulator_rows->setBackgroundColor(VSTGUI::kTransparentCColor);
 
   selected_label_ = new VSTGUI::CTextLabel(
       VSTGUI::CRect(0, 0, getWidth(), 20),
@@ -94,7 +90,7 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
                         m_slider_->getWidth(),
                     kModRowHeight),
       VSTGUI::CRowColumnView::kRowStyle);
-
+  analysis_area->setBackgroundColor(VSTGUI::kTransparentCColor);
   waveform_view_ = new WaveformView(
       VSTGUI::CRect(0, 0, analysis_area->getWidth(), kModRowHeight / 2),
       {VSTGUI::CColor(0, 0, 100)}, {selected_generator}, edit_controller);
@@ -111,7 +107,7 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
                                                analysis_area->getHeight()),
                                  VSTGUI::CRowColumnView::kColumnStyle);
 
-  osc_columns->setBackgroundColor(kBgGrey);
+  osc_columns->setBackgroundColor(VSTGUI::kTransparentCColor);
   modulator_rows->addView(osc_columns);
 
   osc_columns->addView(c_slider_);
@@ -125,7 +121,7 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
       new VSTGUI::CRowColumnView(VSTGUI::CRect(0, 0, modulator_rows->getWidth(),
                                                a_target_view_->getHeight()),
                                  VSTGUI::CRowColumnView::kColumnStyle);
-
+  a_columns->setBackgroundColor(VSTGUI::kTransparentCColor);
   a_columns->addView(a_target_view_);
 
   modulator_rows->addView(a_columns);
@@ -134,6 +130,8 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
       new VSTGUI::CRowColumnView(VSTGUI::CRect(0, 0, modulator_rows->getWidth(),
                                                k_target_view_->getHeight()),
                                  VSTGUI::CRowColumnView::kColumnStyle);
+  k_columns->setBackgroundColor(VSTGUI::kTransparentCColor);
+
   k_columns->addView(k_target_view_);
   modulator_rows->addView(k_columns);
   addView(modulator_rows);

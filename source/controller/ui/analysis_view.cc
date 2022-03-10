@@ -11,8 +11,7 @@ using VSTGUI::CColor;
 
 AnalysisView::AnalysisView(const VSTGUI::CRect &size, SidebandsController *sidebands_controller)
     : VSTGUI::CRowColumnView(size) {
-  setBackgroundColor(kBgGrey);
-
+  setBackgroundColor(VSTGUI::kTransparentCColor);
   std::vector<CColor> colours{
       {0x1a, 0x13, 0x34}, {0x26, 0x29, 0x4a}, {0x01, 0x54, 0x5a},
       {0x01, 0x73, 0x51}, {0x03, 0xc3, 0x83}, {0xaa, 0xd9, 0x62},

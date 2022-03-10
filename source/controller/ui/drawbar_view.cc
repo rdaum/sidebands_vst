@@ -5,6 +5,7 @@
 
 #include "constants.h"
 #include "controller/sidebands_controller.h"
+#include "controller/ui/gui_constants.h"
 #include "controller/ui/parameter_editor_view.h"
 
 using Steinberg::Vst::ParamID;
@@ -12,33 +13,30 @@ using Steinberg::Vst::ParamID;
 namespace sidebands {
 namespace ui {
 
-namespace {
-constexpr int kDrawbarWidth = 33;
-
-VSTGUI::CResourceDescription kSelect("select.png");
-VSTGUI::CResourceDescription kOnOff("on-off.png");
-VSTGUI::CResourceDescription kToggleSwitch("toggle_switch.png");
-
-}  // namespace
-
 DrawbarView::DrawbarView(const VSTGUI::CRect &size,
                          SidebandsController *edit_controller)
     : PatchParameterView(edit_controller),
       VSTGUI::CRowColumnView(
           size, VSTGUI::CRowColumnView::kColumnStyle,
           VSTGUI::CRowColumnView::LayoutStyle::kCenterEqualy) {
-  setBackgroundColor(kBgGrey);
+  setBackgroundColor(VSTGUI::kTransparentCColor);
 
   auto *label_column = new VSTGUI::CRowColumnView(
-      VSTGUI::CRect(0, 0, 40, getHeight()), VSTGUI::CRowColumnView::kRowStyle,
+      VSTGUI::CRect(0, 0, 40, kSliderHeight + kToggleButtonHeight + kToggleButtonHeight), VSTGUI::CRowColumnView::kRowStyle,
       VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2);
-  auto *on_off_label = new VSTGUI::CView(VSTGUI::CRect(0, 0, 36, 15));
+  label_column->setBackgroundColor(VSTGUI::kTransparentCColor);
+  auto *on_off_label =
+      new VSTGUI::CView(VSTGUI::CRect(0, 0, 36, kToggleButtonHeight));
   on_off_label->setBackground(new VSTGUI::CBitmap(kOnOff));
 
   label_column->addView(on_off_label);
-  label_column->addView(new VSTGUI::CView(VSTGUI::CRect(0, 0, 36, 275)));
 
-  auto *select_label = new VSTGUI::CView(VSTGUI::CRect(0, 0, 36, 15));
+  // spacer
+  label_column->addView(new VSTGUI::CView(
+      VSTGUI::CRect(0, 0, 36, kSliderHeight)));
+
+  auto *select_label =
+      new VSTGUI::CView(VSTGUI::CRect(0, 0, 36, kToggleButtonHeight));
   select_label->setBackground(new VSTGUI::CBitmap(kSelect));
   label_column->addView(select_label);
 
@@ -47,24 +45,24 @@ DrawbarView::DrawbarView(const VSTGUI::CRect &size,
   int selected_generator = edit_controller->SelectedGenerator();
   for (int drawbar_num = 0; drawbar_num < kNumGenerators; drawbar_num++) {
     auto *column = new VSTGUI::CRowColumnView(
-        VSTGUI::CRect(0, 0, kDrawbarWidth, getHeight()),
+        VSTGUI::CRect(0, 0, kDrawbarWidth, kSliderHeight + kNumericEditHeight + kToggleButtonHeight + kToggleButtonHeight),
         VSTGUI::CRowColumnView::kRowStyle,
         VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2);
-    column->setBackgroundColor(kBgGrey);
+    column->setBackgroundColor(VSTGUI::kTransparentCColor);
     toggle_buttons_[drawbar_num] = new VSTGUI::COnOffButton(
-        VSTGUI::CRect(0, 0, column->getWidth(), 15), this,
+        VSTGUI::CRect(0, 0, column->getWidth(), kToggleButtonHeight), this,
         TagFor(drawbar_num, TAG_GENERATOR_TOGGLE, TARGET_NA),
         new VSTGUI::CBitmap(kToggleSwitch));
     toggle_buttons_[drawbar_num]->setValue(edit_controller->getParamNormalized(
         TagFor(drawbar_num, TAG_GENERATOR_TOGGLE, TARGET_NA)));
     column->addView(toggle_buttons_[drawbar_num]);
     column->addView(new ParameterEditorView(
-        VSTGUI::CRect{0, 0, 40, getHeight() - 30},
+        VSTGUI::CRect{0, 0, 40, kSliderHeight + kNumericEditHeight},
         edit_controller->FindRangedParameter(drawbar_num, TAG_OSC, TARGET_A),
         this));
 
     select_buttons_[drawbar_num] = new VSTGUI::COnOffButton(
-        VSTGUI::CRect(0, 0, column->getWidth(), 15), this,
+        VSTGUI::CRect(0, 0, column->getWidth(), kToggleButtonHeight), this,
         TagFor(drawbar_num, TAG_GENERATOR_SELECT, TARGET_NA),
         new VSTGUI::CBitmap(kToggleSwitch));
     column->addView(select_buttons_[drawbar_num]);
@@ -98,7 +96,8 @@ void DrawbarView::valueChanged(VSTGUI::CControl *control) {
 
 void DrawbarView::update(Steinberg::FUnknown *unknown,
                          Steinberg::int32 message) {
-  if (message != IDependent::kChanged) return;
+  if (message != IDependent::kChanged)
+    return;
   Steinberg::Vst::Parameter *changed_param;
   if (unknown->queryInterface(Steinberg::Vst::Parameter::iid,
                               (void **)&changed_param) != Steinberg::kResultOk)
@@ -111,5 +110,5 @@ void DrawbarView::update(Steinberg::FUnknown *unknown,
   }
 }
 
-}  // namespace ui
-}  // namespace sidebands
+} // namespace ui
+} // namespace sidebands

@@ -13,7 +13,8 @@ LFOEditorView::LFOEditorView(const VSTGUI::CRect &size,
           size, VSTGUI::CRowColumnView::kColumnStyle,
           VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2),
       ModulatorEditorView(edit_controller, target) {
-  setBackgroundColor(kBgGrey);
+  setBackgroundColor(VSTGUI::kTransparentCColor);
+
   int selected_generator = edit_controller->SelectedGenerator();
 
   VSTGUI::CRect column_size{0, 0, 40, getHeight()};

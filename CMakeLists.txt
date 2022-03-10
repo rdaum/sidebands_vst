@@ -127,6 +127,7 @@ smtg_add_vst3plugin(sidebands
         source/controller/patch_controller.h
         source/controller/patch_controller.cc
 
+        source/controller/ui/gui_constants.h
         source/controller/ui/analysis_view.h
         source/controller/ui/analysis_view.cc
         source/controller/ui/patch_param_view.h
@@ -151,8 +152,6 @@ smtg_add_vst3plugin(sidebands
         source/controller/ui/spectrum_view.h
         source/controller/ui/waveform_view.cc
         source/controller/ui/waveform_view.h
-
-        resource/sidebands.uidesc
         )
 
 #- VSTGUI Wanted ----
@@ -175,6 +174,8 @@ if (SMTG_ADD_VSTGUI)
             "resource/toggle_switch.png"
             "resource/on-off.png"
             "resource/select.png"
+            "resource/metallic_knob_base.png"
+            "resource/metallic_knob_handle.png"
             )
 endif (SMTG_ADD_VSTGUI)
 # -------------------

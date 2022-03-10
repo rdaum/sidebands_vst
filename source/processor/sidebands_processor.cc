@@ -66,7 +66,6 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
                      << ", ignoring";
           continue;
         }
-        LOG(INFO) << "Beginning parameter change: " << TagStr(param_id);
         patch_->BeginParameterChange(param_id, pq);
       }
     }
@@ -94,7 +93,7 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
                   << " value: " << (int)event.midiCCOut.value;
           break;
         default:
-          LOG(INFO) << "Other VST event: " << event.type;
+          LOG(INFO) << "Other VST event type: " << event.type;
           break;
       }
     }
@@ -103,7 +102,7 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
   // Process data in kSampleAccurateChunkSizeSamples so parameters changed
   // mid-buffer have a chance to be reflected on a chunk by chunk basis.
   Steinberg::Vst::ProcessDataSlicer slicer(kSampleAccurateChunkSizeSamples);
-  auto processing_fn = [this](Steinberg::Vst::ProcessData &data) {
+  auto processing_fn = [this ](Steinberg::Vst::ProcessData &data) {
     auto *outputs = data.outputs;
 
     // Advance parameters to the state they'd be in this chunk.
@@ -154,9 +153,6 @@ SidebandsProcessor::setupProcessing(Vst::ProcessSetup &newSetup) {
 
   player_ = std::make_unique<Player>(patch_.get(), newSetup.sampleRate);
 
-  LOG(INFO) << "Instantiated player...";
-
-  //--- called before any processing ----
   return AudioEffect::setupProcessing(newSetup);
 }
 

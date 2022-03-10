@@ -7,6 +7,7 @@
 
 #include "constants.h"
 #include "controller/sidebands_controller.h"
+#include "controller/ui/gui_constants.h"
 
 using Steinberg::Vst::ParamID;
 
@@ -14,20 +15,6 @@ namespace sidebands {
 namespace ui {
 
 namespace {
-
-VSTGUI::CResourceDescription kSliderBackground("slider_rail.png");
-VSTGUI::CResourceDescription kSliderHandle("slider_handle.png");
-VSTGUI::CResourceDescription kSwitch("switches.png");
-VSTGUI::CResourceDescription kKnob("knob2.png");
-VSTGUI::CResourceDescription kSelect("select.png");
-VSTGUI::CResourceDescription kOnOff("on-off.png");
-VSTGUI::CResourceDescription kToggleSwitch("toggle_switch.png");
-
-constexpr int kToggleButtonWidth = 24;
-
-constexpr int kKnobWidth = 20;
-constexpr int kKnobHeight = 20;
-constexpr int kKnobSubpixmaps = 80;
 
 class ParameterChangeListener : public Steinberg::FObject {
  public:

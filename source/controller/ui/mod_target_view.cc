@@ -14,8 +14,9 @@ ModulatorTargetView::ModulatorTargetView(const VSTGUI::CRect &size,
           size, VSTGUI::CRowColumnView::kRowStyle,
           VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2),
       ModulatorEditorView(edit_controller, target) {
-  setBackgroundColor(kBgGrey);
-  int selected_generator = edit_controller->SelectedGenerator();
+  const int selected_generator = edit_controller->SelectedGenerator();
+
+  setBackgroundColor(VSTGUI::kTransparentCColor);
 
   if (target != TARGET_A) {
     auto *modulation_selector_row = new VSTGUI::CRowColumnView(

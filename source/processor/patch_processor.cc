@@ -252,7 +252,9 @@ void GeneratorPatch::BeginParameterChange(
     return;
 
   auto key = ParamKeyFor(param_id);
-  auto &param = parameters_[key];
+  const auto &param_it = parameters_.find(key);
+  if (param_it == parameters_.end()) return;
+  auto param = param_it->second;
   if (param.sa) {
     param.v.sv->beginChanges(p_queue);
     sa_changed_params_.push_back(param_id);

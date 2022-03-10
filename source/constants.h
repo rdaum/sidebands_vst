@@ -12,8 +12,6 @@ constexpr int32_t kNumGenerators = 8;
 // Minimum 8.
 constexpr size_t kSampleAccurateChunkSizeSamples = 128;
 
-constexpr VSTGUI::CColor kBgGrey(219, 219, 219);
-
 enum class LFOType { SIN, COS };
 constexpr LFOType kLFOTypes[]{LFOType::SIN, LFOType::COS};
 constexpr int kNumLFOTypes = sizeof(kLFOTypes) / sizeof(LFOType);

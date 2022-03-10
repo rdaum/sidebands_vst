@@ -6,16 +6,14 @@
 #include <charconv>
 
 #include "controller/sidebands_controller.h"
+#include "controller/ui/gui_constants.h"
 
 namespace sidebands {
 namespace ui {
 
 namespace {
 
-constexpr int kSliderWidth = 24;
-constexpr int kSliderHeight = 249;
-constexpr int kSliderMaxPos = 235;
-constexpr int kNumericEditHeight = 15;
+
 
 VSTGUI::CResourceDescription kSliderBackground("slider_rail.png");
 VSTGUI::CResourceDescription kSliderHandle("slider_handle.png");
@@ -28,14 +26,12 @@ VSTGUI::CControl *MakeVerticalSlider(
       range_parameter->getInfo().id, 0, kSliderMaxPos,
       new VSTGUI::CBitmap(kSliderHandle),
       new VSTGUI::CBitmap(kSliderBackground));
-  slider_control->setBackColor(kBgGrey);
   slider_control->setBackgroundOffset(VSTGUI::CPoint(-7.5, 0));
   slider_control->setOffsetHandle(VSTGUI::CPoint(4, 0));
   slider_control->setMax(range_parameter->getMax());
   slider_control->setMin(range_parameter->getMin());
-  slider_control->setBackColor(kBgGrey);
   slider_control->setValueNormalized(range_parameter->getNormalized());
-
+  slider_control->setBackColor(VSTGUI::kTransparentCColor);
   return slider_control;
 }
 
@@ -48,6 +44,11 @@ VSTGUI::CControl *MakeNumericEditor(
   edit_control->setMax(range_parameter->getMax());
   edit_control->setMin(range_parameter->getMin());
   edit_control->setValueNormalized(range_parameter->getNormalized());
+  edit_control->setBackColor(VSTGUI::kTransparentCColor);
+  edit_control->setFontColor(VSTGUI::kBlackCColor);
+  edit_control->setFrameWidth(0);
+  edit_control->setFont(VSTGUI::kNormalFontSmall);
+  
   VSTGUI::CTextEdit::StringToValueFunction str_function =
       [](VSTGUI::UTF8StringPtr txt, float &result,
          VSTGUI::CTextEdit *textEdit) -> bool {
@@ -73,13 +74,21 @@ ParameterEditorView::ParameterEditorView(
           size, VSTGUI::CRowColumnView::kRowStyle,
           VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2),
       parameter_(parameter) {
+  setBackgroundColor(VSTGUI::kTransparentCColor);
+
   parameter->addDependent(this);
 
   controls_ = {MakeVerticalSlider(parameter, listener),
                MakeNumericEditor(parameter, listener)};
-  if (!label.empty())
-    addView(new VSTGUI::CTextLabel(
-        VSTGUI::CRect(0, 0, getWidth(), kNumericEditHeight), label.c_str()));
+  if (!label.empty()) {
+    VSTGUI::CTextLabel *column_label = new VSTGUI::CTextLabel(
+        VSTGUI::CRect(0, 0, getWidth(), kColumnLabelHeight), label.c_str());
+    column_label->setFont(VSTGUI::kNormalFont);
+    column_label->setBackColor(VSTGUI::kTransparentCColor);
+    column_label->setFontColor(VSTGUI::kBlackCColor);
+    column_label->setFrameWidth(0);
+    addView(column_label);
+  }
   for (auto *item : controls_) {
     addView(item);
   }

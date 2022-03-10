@@ -1,7 +1,7 @@
 #include "controller/ui/waveform_view.h"
 
-#include "controller/sidebands_controller.h"
 #include "globals.h"
+#include "controller/sidebands_controller.h"
 #include "processor/synthesis/oscillator.h"
 
 namespace sidebands {
@@ -12,7 +12,8 @@ WaveformView::WaveformView(const VSTGUI::CRect &size,
                            const std::vector<int> &generators,
                            SidebandsController *edit_controller)
     : VSTGUI::CView(size), colours_(colours), generators_(generators),
-      sidebands_controller_(edit_controller) {}
+      sidebands_controller_(edit_controller) {
+}
 
 void WaveformView::draw(VSTGUI::CDrawContext *pContext) {
   return drawRect(pContext, getViewSize());
