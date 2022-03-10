@@ -12,9 +12,9 @@ namespace sidebands {
 using Steinberg::Vst::ParamValue;
 using Steinberg::Vst::SampleRate;
 
-class EnvelopeGenerator : public IModulationSource {
+class ADSREnvelopeGenerator : public IModulationSource {
  public:
-  explicit EnvelopeGenerator()
+  explicit ADSREnvelopeGenerator()
       : minimum_level_(0.0001),
         stage_(ENVELOPE_STAGE_OFF),
         current_level_(minimum_level_),
@@ -47,7 +47,7 @@ class EnvelopeGenerator : public IModulationSource {
 
  private:
   void EnterStage(SampleRate sample_rate, EnvelopeStage new_stage,
-                  const GeneratorPatch::EnvelopeValues &envelope);
+                  const GeneratorPatch::ADSREnvelopeValues &envelope);
 
   const ParamValue minimum_level_;
   EnvelopeStage stage_;

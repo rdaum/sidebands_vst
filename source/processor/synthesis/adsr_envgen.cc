@@ -1,4 +1,4 @@
-#include "envgen.h"
+#include "adsr_envgen.h"
 
 #include <glog/logging.h>
 
@@ -17,12 +17,12 @@ constexpr const char *kStageLabels[]{"OFF", "ATTACK", "DECAY", "SUSTAIN",
 // TODO: too much branching in loops, need to be able to set levels (not just
 // rates), more stages, aftertouch
 
-ParamValue EnvelopeGenerator::NextSample(
+ParamValue ADSREnvelopeGenerator::NextSample(
     SampleRate sample_rate, ParamValue velocity,
     const GeneratorPatch::ModulationParameters &parameters) {
   if (stage_ == ENVELOPE_STAGE_OFF) return current_level_;
 
-  const auto &ev = std::get<GeneratorPatch::EnvelopeValues>(parameters);
+  const auto &ev = std::get<GeneratorPatch::ADSREnvelopeValues>(parameters);
 
   // Vel sense of 1 means respond fully to velocity, 0 not velocity sensitive.
   // Inbetween we scale.
@@ -41,9 +41,9 @@ ParamValue EnvelopeGenerator::NextSample(
   return current_level_ * velocity_scale;
 }
 
-void EnvelopeGenerator::EnterStage(
+void ADSREnvelopeGenerator::EnterStage(
     SampleRate sample_rate, EnvelopeStage new_stage,
-    const GeneratorPatch::EnvelopeValues &envelope) {
+    const GeneratorPatch::ADSREnvelopeValues &envelope) {
   const ParamValue stage_rates_[]{
       0.0, envelope.A_R.getValue(), envelope.D_R.getValue(),
       envelope.S_L.getValue(), envelope.R_R.getValue()};
@@ -83,29 +83,29 @@ void EnvelopeGenerator::EnterStage(
   }
 }
 
-void EnvelopeGenerator::On(
+void ADSREnvelopeGenerator::On(
     SampleRate sample_rate,
     const GeneratorPatch::ModulationParameters &parameters) {
   EnterStage(sample_rate, ENVELOPE_STAGE_ATTACK,
-             std::get<GeneratorPatch::EnvelopeValues>(parameters));
+             std::get<GeneratorPatch::ADSREnvelopeValues>(parameters));
 }
 
-void EnvelopeGenerator::Release(
+void ADSREnvelopeGenerator::Release(
     SampleRate sample_rate,
     const GeneratorPatch::ModulationParameters &parameters) {
   EnterStage(sample_rate, ENVELOPE_STAGE_RELEASE,
-             std::get<GeneratorPatch::EnvelopeValues>(parameters));
+             std::get<GeneratorPatch::ADSREnvelopeValues>(parameters));
 }
 
-void EnvelopeGenerator::Reset() {
+void ADSREnvelopeGenerator::Reset() {
   current_sample_index_ = 0;
   current_level_ = 0.0;
   coefficient_ = 1.0f;
   stage_ = ENVELOPE_STAGE_OFF;
 }
 
-ModType EnvelopeGenerator::mod_type() const {
-  return ModType::ENVELOPE;
+ModType ADSREnvelopeGenerator::mod_type() const {
+  return ModType::ADSR_ENVELOPE;
 }
 
 }  // namespace sidebands

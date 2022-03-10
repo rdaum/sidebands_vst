@@ -44,7 +44,7 @@ public:
   ParamValue s() const;
   ParamValue portamento() const;
 
-  struct EnvelopeValues {
+  struct ADSREnvelopeValues {
     SampleAccurateValue A_R; // attack rate
     SampleAccurateValue A_L; // attack peak level
     SampleAccurateValue D_R; // decay rate
@@ -58,7 +58,7 @@ public:
     SampleAccurateValue amplitude;
     SampleAccurateValue velocity_sensivity;
   };
-  using ModulationParameters = std::variant<EnvelopeValues, LFOValues>;
+  using ModulationParameters = std::variant<ADSREnvelopeValues, LFOValues>;
 
   std::optional<ModulationParameters>
   ModulationParams(TargetTag destination) const;
@@ -80,7 +80,7 @@ private:
   struct ModTarget {
     TargetTag target;
     ParamValue mod_type;
-    EnvelopeValues envelope_parameters;
+    ADSREnvelopeValues envelope_parameters;
     LFOValues lfo_parameters;
   };
   std::unique_ptr<ModTarget> mod_targets_[NUM_TARGETS];

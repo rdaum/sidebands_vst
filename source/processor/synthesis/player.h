@@ -7,7 +7,7 @@
 #include <mutex>
 #include <vector>
 
-#include "envgen.h"
+#include "adsr_envgen.h"
 #include "generator.h"
 #include "oscillator.h"
 #include "voice.h"

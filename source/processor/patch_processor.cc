@@ -186,11 +186,11 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
 
   for (auto &target : kModulationTargets) {
     auto default_mod_type = target == TARGET_A || target == TARGET_K
-                                ? (int)ModType::ENVELOPE
+                                ? (int)ModType::ADSR_ENVELOPE
                                 : (int)ModType::NONE;
 
     ParamValue mod_type(default_mod_type);
-    EnvelopeValues envelope_values{
+    ADSREnvelopeValues envelope_values{
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_A, target), 0.1, 0, 5),
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_AL, target), 1, 0, 1),
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_D, target), 0.1, 0, 5),
@@ -334,7 +334,7 @@ ParamValue GeneratorPatch::portamento() const {
 
 std::optional<GeneratorPatch::ModulationParameters>
 GeneratorPatch::ModulationParams(TargetTag destination) const {
-  if (ModTypeFor(destination) == ModType::ENVELOPE) {
+  if (ModTypeFor(destination) == ModType::ADSR_ENVELOPE) {
     return mod_targets_[destination]->envelope_parameters;
   }
 

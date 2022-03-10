@@ -6,7 +6,7 @@
 #include <mutex>
 #include <vector>
 
-#include "processor/synthesis/envgen.h"
+#include "processor/synthesis/adsr_envgen.h"
 #include "processor/synthesis/oscillator.h"
 
 namespace sidebands {

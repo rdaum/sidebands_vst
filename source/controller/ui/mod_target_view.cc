@@ -88,7 +88,7 @@ void ModulatorTargetView::SwitchViewVisibility() {
     lfo_editor_view_->setViewSize(VSTGUI::CRect(0, 0, 0, 0));
   }
 
-  if (mod_type != ModType::ENVELOPE) {
+  if (mod_type != ModType::ADSR_ENVELOPE) {
     envelope_editor_view_->setVisible(false);
     envelope_editor_view_->setViewSize(VSTGUI::CRect(0, 0, 0, 0));
   }
@@ -98,7 +98,7 @@ void ModulatorTargetView::SwitchViewVisibility() {
     lfo_editor_view_->setViewSize(getViewSize());
   }
 
-  if (mod_type == ModType::ENVELOPE) {
+  if (mod_type == ModType::ADSR_ENVELOPE) {
     envelope_editor_view_->setVisible(true);
     envelope_editor_view_->setViewSize(getViewSize());
   }
