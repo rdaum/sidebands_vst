@@ -4,6 +4,12 @@
 
 namespace sidebands {
 
+namespace {
+
+constexpr double kPi2 = std::numbers::pi * 2.0;
+
+}  // namespace
+
 void Oscillator::Perform(uint32_t sample_rate, OscBuffer &buffer,
                          OscParam &note_freq, OscParam &C, OscParam &M,
                          OscParam &R, OscParam &S, OscParam &K) {
@@ -16,7 +22,7 @@ void Oscillator::Perform(uint32_t sample_rate, OscBuffer &buffer,
   phase_ += buffer_size;
 
   auto freq = Vmul(note_freq, C);
-  auto omega_c = Vmul(freq, std::numbers::pi * 2.0);
+  auto omega_c = Vmul(freq, kPi2);
   auto omega_m = Vmul(omega_c, M);
 
   VmulInplace(omega_c, T);

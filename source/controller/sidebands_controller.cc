@@ -196,4 +196,14 @@ SidebandsController::GetParamValue(Steinberg::Vst::ParamID param_id) {
   return ranged_parameter->toPlain(ranged_parameter->getNormalized());
 }
 
+Steinberg::tresult
+SidebandsController::beginEditFromHost(Steinberg::Vst::ParamID paramID) {
+  return beginEdit(paramID);
+}
+
+Steinberg::tresult
+SidebandsController::endEditFromHost(Steinberg::Vst::ParamID paramID) {
+  return endEdit(paramID);
+}
+
 } // namespace sidebands

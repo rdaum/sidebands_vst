@@ -9,6 +9,7 @@ namespace sidebands {
 
 class PatchController;
 class SidebandsController : public Steinberg::Vst::EditControllerEx1,
+                            public Steinberg::Vst::IEditControllerHostEditing,
                             public VSTGUI::VST3EditorDelegate {
 public:
   static Steinberg::FUnknown *Instantiate(void * /*context*/);
@@ -57,9 +58,14 @@ public:
       Steinberg::Vst::ParamID tag, Steinberg::Vst::TChar *string,
       Steinberg::Vst::ParamValue &valueNormalized) override;
 
+  // IEditControllerHostEditing overrides
+  Steinberg::tresult PLUGIN_API beginEditFromHost (Steinberg::Vst::ParamID paramID) override;
+  Steinberg::tresult PLUGIN_API endEditFromHost (Steinberg::Vst::ParamID paramID) override;
+
   //---Interface---------
   DEFINE_INTERFACES
   DEF_INTERFACE(IUnitInfo)
+  DEF_INTERFACE(IEditControllerHostEditing)
   // Here you can add more supported VST3 interfaces
   // DEF_INTERFACE (Vst::IXXX)
   END_DEFINE_INTERFACES(EditController)

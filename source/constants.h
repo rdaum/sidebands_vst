@@ -10,7 +10,7 @@ namespace sidebands {
 constexpr int32_t kNumGenerators = 8;
 
 // Minimum 8.
-constexpr size_t kSampleAccurateChunkSizeSamples = 128;
+constexpr size_t kSampleAccurateChunkSizeSamples = 32;
 
 enum class LFOType { SIN, COS };
 constexpr LFOType kLFOTypes[]{LFOType::SIN, LFOType::COS};
