@@ -12,38 +12,22 @@ namespace sidebands {
 
 Generator::Generator() {}
 
-double Produce(SampleRate sample_rate, ParamValue velocity,
-               GeneratorPatch &patch, TargetTag destination,
-               std::function<double()> value_getter,
-               IModulationSource *mod_source) {
-  auto value = value_getter();
-  auto mod = patch.ModulationParams(destination);
-  if (mod.has_value() && mod_source) {
-    value *= mod_source->NextSample(sample_rate, velocity, mod.value());
+void Generator::Produce(SampleRate sample_rate, GeneratorPatch &patch,
+                        OscParam &buffer, TargetTag target) {
+  std::generate(std::begin(buffer), std::end(buffer),
+                patch.ParameterGetterFor(target));
+  auto mod_opt = patch.ModulationParams(target);
+  if (mod_opt) {
+    OscBuffer mod_a(buffer.size());
+    std::generate(std::begin(mod_a), std::end(mod_a),
+                  [sample_rate, &mod_opt, &patch, target, this]() {
+                    auto mod = ModulatorFor(patch, target);
+                    return mod->NextSample(sample_rate, velocity_,
+                                           mod_opt.value());
+                  });
+    buffer *= mod_a;
   }
-  return value;
 }
-
-std::function<std::complex<double>()>
-Generator::ImaginaryProducerFor(SampleRate sample_rate, ParamValue velocity,
-                                GeneratorPatch &gp, TargetTag dest) {
-  return [sample_rate, &gp, dest, this, velocity]() {
-    return std::complex<double>(0, Produce(sample_rate, velocity, gp, dest,
-                                           gp.ParameterGetterFor(dest),
-                                           ModulatorFor(gp, dest)));
-  };
-}
-
-std::function<double()> Generator::ProducerFor(SampleRate sample_rate,
-                                               ParamValue velocity,
-                                               GeneratorPatch &gp,
-                                               TargetTag dest) {
-  return [sample_rate, &gp, dest, this, velocity]() {
-    return Produce(sample_rate, velocity, gp, dest, gp.ParameterGetterFor(dest),
-                   ModulatorFor(gp, dest));
-  };
-}
-
 void Generator::Perform(SampleRate sample_rate, GeneratorPatch &patch,
                         OscBuffer &out_buffer,
                         Steinberg::Vst::ParamValue base_freq) {
@@ -56,18 +40,13 @@ void Generator::Perform(SampleRate sample_rate, GeneratorPatch &patch,
   OscParam M(frames_per_buffer);
   OscParam freq(base_freq, frames_per_buffer);
 
-  std::generate(std::begin(A), std::end(A),
-                ProducerFor(sample_rate, velocity_, patch, TARGET_A));
-  std::generate(std::begin(K), std::end(K),
-                ProducerFor(sample_rate, velocity_, patch, TARGET_K));
-  std::generate(std::begin(C), std::end(C),
-                ProducerFor(sample_rate, velocity_, patch, TARGET_C));
-  std::generate(std::begin(R), std::end(R),
-                ProducerFor(sample_rate, velocity_, patch, TARGET_R));
-  std::generate(std::begin(S), std::end(S),
-                ProducerFor(sample_rate, velocity_, patch, TARGET_S));
-  std::generate(std::begin(M), std::end(M),
-                ProducerFor(sample_rate, velocity_, patch, TARGET_M));
+  Produce(sample_rate, patch, A, TARGET_A);
+  Produce(sample_rate, patch, K, TARGET_K);
+  Produce(sample_rate, patch, C, TARGET_C);
+  Produce(sample_rate, patch, R, TARGET_R);
+  Produce(sample_rate, patch, S, TARGET_S);
+  Produce(sample_rate, patch, M, TARGET_M);
+
   o_.Perform(sample_rate, out_buffer, freq, C, M, R, S, K);
 
   // Apply envelope.
