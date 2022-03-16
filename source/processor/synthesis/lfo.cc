@@ -5,13 +5,13 @@
 namespace sidebands {
 
 void LFO::On(SampleRate sample_rate,
-             const GeneratorPatch::ModulationParameters &parameters) {
+             const GeneratorPatch::ModTarget *parameters) {
   phase_ = 0.0;
   playing_ = true;
 }
 
 void LFO::Release(SampleRate sample_rate,
-                  const GeneratorPatch::ModulationParameters &parameters) {
+                  const GeneratorPatch::ModTarget *parameters) {
   Reset();
 }
 
@@ -22,8 +22,8 @@ void LFO::Reset() {
 
 ParamValue
 LFO::NextSample(SampleRate sample_rate, ParamValue velocity,
-                const GeneratorPatch::ModulationParameters &parameters) {
-  auto &lfo_values = std::get<GeneratorPatch::LFOValues>(parameters);
+                const GeneratorPatch::ModTarget *parameters) {
+  auto &lfo_values = parameters->lfo_parameters;
   phase_ +=
       2.0 * std::numbers::pi * lfo_values.frequency.getValue() / sample_rate;
   while (phase_ >= 2.0 * std::numbers::pi)

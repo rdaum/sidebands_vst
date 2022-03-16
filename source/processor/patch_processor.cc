@@ -67,7 +67,8 @@ Steinberg::tresult PatchProcessor::LoadPatch(Steinberg::IBStream *stream) {
     return Steinberg::kResultFalse;
   }
   if (num_generators != kNumGenerators) {
-    LOG(ERROR) << "Incompatible generator count. Got: " << num_generators << " expected: " << kNumGenerators;
+    LOG(ERROR) << "Incompatible generator count. Got: " << num_generators
+               << " expected: " << kNumGenerators;
     return Steinberg::kResultFalse;
   }
   for (int i = 0; i < kNumGenerators; i++) {
@@ -96,7 +97,8 @@ Steinberg::tresult GeneratorPatch::LoadPatch(Steinberg::IBStreamer &streamer) {
     return Steinberg::kResultFalse;
   }
   if (stream_gennum != gennum_) {
-    LOG(ERROR) << "Wrong generator # in file; was: " << stream_gennum << " expected: " << gennum_;
+    LOG(ERROR) << "Wrong generator # in file; was: " << stream_gennum
+               << " expected: " << gennum_;
     return Steinberg::kResultFalse;
   }
   if (!streamer.readInt32u(num_params)) {
@@ -216,12 +218,12 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
       continue;
     DeclareParameter(TagFor(gennum_, TAG_MOD_TYPE, mt->target), &mt->mod_type,
                      0, kNumModTypes - 1);
-    DeclareParameter(&mt->envelope_parameters.A_R);
-    DeclareParameter(&mt->envelope_parameters.A_L);
-    DeclareParameter(&mt->envelope_parameters.D_R);
-    DeclareParameter(&mt->envelope_parameters.S_L);
-    DeclareParameter(&mt->envelope_parameters.R_R);
-    DeclareParameter(&mt->envelope_parameters.VS);
+    DeclareParameter(&mt->adsr_parameters.A_R);
+    DeclareParameter(&mt->adsr_parameters.A_L);
+    DeclareParameter(&mt->adsr_parameters.D_R);
+    DeclareParameter(&mt->adsr_parameters.S_L);
+    DeclareParameter(&mt->adsr_parameters.R_R);
+    DeclareParameter(&mt->adsr_parameters.VS);
     DeclareParameter(TagFor(gennum_, TAG_LFO_TYPE, mt->target),
                      &mt->lfo_parameters.type, 0, kNumLFOTypes - 1);
     DeclareParameter(&mt->lfo_parameters.amplitude);
@@ -253,7 +255,8 @@ void GeneratorPatch::BeginParameterChange(
 
   auto key = ParamKeyFor(param_id);
   const auto &param_it = parameters_.find(key);
-  if (param_it == parameters_.end()) return;
+  if (param_it == parameters_.end())
+    return;
   auto param = param_it->second;
   if (param.sa) {
     param.v.sv->beginChanges(p_queue);
@@ -332,17 +335,9 @@ ParamValue GeneratorPatch::portamento() const {
   return portamento_.getValue();
 }
 
-std::optional<GeneratorPatch::ModulationParameters>
+GeneratorPatch::ModTarget *
 GeneratorPatch::ModulationParams(TargetTag destination) const {
-  if (ModTypeFor(destination) == ModType::ADSR_ENVELOPE) {
-    return mod_targets_[destination]->envelope_parameters;
-  }
-
-  if (ModTypeFor(destination) == ModType::LFO) {
-    return mod_targets_[destination]->lfo_parameters;
-  }
-
-  return std::nullopt;
+  return mod_targets_[destination].get();
 }
 
 ModType GeneratorPatch::ModTypeFor(TargetTag destination) const {

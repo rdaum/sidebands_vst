@@ -1,8 +1,8 @@
 #pragma once
 
+#include <deque>
 #include <pluginterfaces/vst/ivstparameterchanges.h>
 #include <pluginterfaces/vst/vsttypes.h>
-#include <deque>
 
 #include <functional>
 #include <mutex>
@@ -58,10 +58,14 @@ public:
     SampleAccurateValue amplitude;
     SampleAccurateValue velocity_sensivity;
   };
-  using ModulationParameters = std::variant<ADSREnvelopeValues, LFOValues>;
+  struct ModTarget {
+    TargetTag target;
+    ParamValue mod_type;
+    ADSREnvelopeValues adsr_parameters;
+    LFOValues lfo_parameters;
+  };
 
-  std::optional<ModulationParameters>
-  ModulationParams(TargetTag destination) const;
+  GeneratorPatch::ModTarget *ModulationParams(TargetTag destination) const;
   ModType ModTypeFor(TargetTag destination) const;
 
   std::function<double()> ParameterGetterFor(TargetTag dest) const;
@@ -77,12 +81,7 @@ private:
 
   ParamValue on_;
   SampleAccurateValue c_, a_, m_, k_, r_, s_, portamento_;
-  struct ModTarget {
-    TargetTag target;
-    ParamValue mod_type;
-    ADSREnvelopeValues envelope_parameters;
-    LFOValues lfo_parameters;
-  };
+
   std::unique_ptr<ModTarget> mod_targets_[NUM_TARGETS];
 
   struct Param {

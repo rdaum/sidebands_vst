@@ -8,11 +8,11 @@ namespace {
 
 constexpr double kPi2 = std::numbers::pi * 2.0;
 
-}  // namespace
+} // namespace
 
-void Oscillator::Perform(uint32_t sample_rate, OscBuffer &buffer,
-                         OscParam &note_freq, OscParam &C, OscParam &M,
-                         OscParam &R, OscParam &S, OscParam &K) {
+void Oscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
+                         OscBuffer &buffer, OscParam &note_freq, OscParam &C,
+                         OscParam &M, OscParam &R, OscParam &S, OscParam &K) {
   auto buffer_size = buffer.size();
 
   // Accumulate the time multiplier based on current phase.
@@ -41,4 +41,4 @@ void Oscillator::Perform(uint32_t sample_rate, OscBuffer &buffer,
   ;
 }
 
-}  // namespace sidebands
+} // namespace sidebands

@@ -4,8 +4,8 @@
 
 #include <cmath>
 
-#include "processor/synthesis/modulation_source.h"
 #include "processor/patch_processor.h"
+#include "processor/synthesis/modulation_source.h"
 
 namespace sidebands {
 
@@ -13,14 +13,11 @@ using Steinberg::Vst::ParamValue;
 using Steinberg::Vst::SampleRate;
 
 class ADSREnvelopeGenerator : public IModulationSource {
- public:
+public:
   explicit ADSREnvelopeGenerator()
-      : minimum_level_(0.0001),
-        stage_(ENVELOPE_STAGE_OFF),
-        current_level_(minimum_level_),
-        coefficient_(1.0),
-        current_sample_index_(0),
-        next_stage_sample_index_(0){};
+      : minimum_level_(0.0001), stage_(ENVELOPE_STAGE_OFF),
+        current_level_(minimum_level_), coefficient_(1.0),
+        current_sample_index_(0), next_stage_sample_index_(0){};
 
   enum EnvelopeStage {
     ENVELOPE_STAGE_OFF = 0,
@@ -35,17 +32,16 @@ class ADSREnvelopeGenerator : public IModulationSource {
 
   // IModulationSource overrides
   void On(SampleRate sample_rate,
-          const GeneratorPatch::ModulationParameters &parameters) override;
+          const GeneratorPatch::ModTarget *parameters) override;
   void Release(SampleRate sample_rate,
-               const GeneratorPatch::ModulationParameters &parameters) override;
+               const GeneratorPatch::ModTarget *parameters) override;
   void Reset() override;
-  ParamValue NextSample(
-      SampleRate sample_rate, ParamValue velocity,
-      const GeneratorPatch::ModulationParameters &parameters) override;
+  ParamValue NextSample(SampleRate sample_rate, ParamValue velocity,
+                        const GeneratorPatch::ModTarget *parameters) override;
   bool Playing() const override { return stage_ != ENVELOPE_STAGE_OFF; }
   ModType mod_type() const override;
 
- private:
+private:
   void EnterStage(SampleRate sample_rate, EnvelopeStage new_stage,
                   const GeneratorPatch::ADSREnvelopeValues &envelope);
 
@@ -57,4 +53,4 @@ class ADSREnvelopeGenerator : public IModulationSource {
   size_t next_stage_sample_index_;
 };
 
-}  // namespace sidebands
+} // namespace sidebands

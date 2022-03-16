@@ -10,7 +10,7 @@
 
 namespace sidebands {
 
-Generator::Generator() {}
+Generator::Generator() = default;
 
 void Generator::Produce(SampleRate sample_rate, GeneratorPatch &patch,
                         OscParam &buffer, TargetTag target) {
@@ -19,15 +19,18 @@ void Generator::Produce(SampleRate sample_rate, GeneratorPatch &patch,
   auto mod_opt = patch.ModulationParams(target);
   if (mod_opt) {
     OscBuffer mod_a(buffer.size());
-    std::generate(std::begin(mod_a), std::end(mod_a),
-                  [sample_rate, &mod_opt, &patch, target, this]() {
-                    auto mod = ModulatorFor(patch, target);
-                    return mod->NextSample(sample_rate, velocity_,
-                                           mod_opt.value());
-                  });
-    buffer *= mod_a;
+    auto mod = ModulatorFor(patch, target);
+    if (mod) {
+      std::generate(std::begin(mod_a), std::end(mod_a),
+                    [sample_rate, &mod, &mod_opt, &patch, target, this]() {
+                      return mod->NextSample(sample_rate, velocity_,
+                                             mod_opt);
+                    });
+      VmulInplace(buffer, mod_a);
+    }
   }
 }
+
 void Generator::Perform(SampleRate sample_rate, GeneratorPatch &patch,
                         OscBuffer &out_buffer,
                         Steinberg::Vst::ParamValue base_freq) {
@@ -63,7 +66,7 @@ void Generator::NoteOn(
   for (auto dest : kModulationTargets) {
     auto *modulator = ModulatorFor(patch, dest);
     if (modulator) {
-      modulator->On(sample_rate, patch.ModulationParams(dest).value());
+      modulator->On(sample_rate, patch.ModulationParams(dest));
     }
   }
 }
@@ -73,7 +76,7 @@ void Generator::NoteOff(SampleRate sample_rate, const GeneratorPatch &patch,
   for (auto dest : kModulationTargets) {
     auto *modulator = ModulatorFor(patch, dest);
     if (modulator) {
-      modulator->Release(sample_rate, patch.ModulationParams(dest).value());
+      modulator->Release(sample_rate, patch.ModulationParams(dest));
     }
   }
 }
