@@ -14,8 +14,8 @@ Generator::Generator() = default;
 
 void Generator::Produce(SampleRate sample_rate, GeneratorPatch &patch,
                         OscParam &buffer, TargetTag target) {
-  std::generate(std::begin(buffer), std::end(buffer),
-                patch.ParameterGetterFor(target));
+  auto value = patch.ParameterGetterFor(target)();
+  std::fill(std::begin(buffer), std::end(buffer), value);
   auto mod_opt = patch.ModulationParams(target);
   if (mod_opt) {
     OscBuffer mod_a(buffer.size());
@@ -23,8 +23,7 @@ void Generator::Produce(SampleRate sample_rate, GeneratorPatch &patch,
     if (mod) {
       std::generate(std::begin(mod_a), std::end(mod_a),
                     [sample_rate, &mod, &mod_opt, &patch, target, this]() {
-                      return mod->NextSample(sample_rate, velocity_,
-                                             mod_opt);
+                      return mod->NextSample(sample_rate, velocity_, mod_opt);
                     });
       VmulInplace(buffer, mod_a);
     }
