@@ -13,13 +13,13 @@ using Steinberg::Vst::SampleRate;
 class IModulationSource {
 public:
   virtual void On(SampleRate sample_rate,
-                  const GeneratorPatch::ModTarget *parameters) = 0;
+                  const GeneratorPatch::ModParams *parameters) = 0;
   virtual void Release(SampleRate sample_rate,
-                       const GeneratorPatch::ModTarget *parameters) = 0;
+                       const GeneratorPatch::ModParams *parameters) = 0;
   virtual void Reset() = 0;
   virtual void Amplitudes(SampleRate sample_rate, OscBuffer &buffer,
                           ParamValue velocity,
-                          const GeneratorPatch::ModTarget *parameters) = 0;
+                          const GeneratorPatch::ModParams *parameters) = 0;
   virtual bool Playing() const = 0;
   virtual ModType mod_type() const = 0;
 };

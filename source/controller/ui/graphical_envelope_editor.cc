@@ -3,6 +3,7 @@
 #include <glog/logging.h>
 
 #include "controller/sidebands_controller.h"
+#include "globals.h"
 
 using VSTGUI::CPoint;
 
@@ -90,11 +91,23 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
   context->setLineWidth(5);
   context->setDrawMode(VSTGUI::kAntiAliasing | VSTGUI::kNonIntegralMode);
   auto path = VSTGUI::owned(context->createGraphicsPath());
-  if (path == nullptr) return;
-  path->beginSubpath(getViewSize().getBottomLeft());
+  if (path == nullptr)
+    return;
+  const auto bottom_left = getViewSize().getBottomLeft();
+
+  path->beginSubpath(bottom_left);
+  VSTGUI::CCoord x = 0;
   for (auto &s : segments_) {
-    path->addLine(s.start_point);
-    path->addLine(s.end_point);
+    double level = s.start_level;
+    if (level == 0) level = 0.01;
+    double end_level = s.end_level;
+    if (end_level == 0) end_level = 0.01;
+    auto co = EnvelopeRampCoefficient(level, end_level, s.width);
+    for (int i = 0; i < s.width; i++) {
+      level *= co;
+      path->addLine(bottom_left.x + (x++),
+                    bottom_left.y - (level * getViewSize().getHeight()));
+    }
   }
   context->drawGraphicsPath(path, VSTGUI::CDrawContext::kPathStroked);
 
@@ -106,8 +119,9 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
   setDirty(false);
 }
 
-VSTGUI::CMouseEventResult GraphicalEnvelopeEditorView::onMouseDown(
-    CPoint &where, const VSTGUI::CButtonState &buttons) {
+VSTGUI::CMouseEventResult
+GraphicalEnvelopeEditorView::onMouseDown(CPoint &where,
+                                         const VSTGUI::CButtonState &buttons) {
   if (buttons.isLeftButton() && !dragging_)
     for (auto &s : segments_) {
       if (s.drag_box.pointInside(where)) {
@@ -122,8 +136,9 @@ VSTGUI::CMouseEventResult GraphicalEnvelopeEditorView::onMouseDown(
   return VSTGUI::kMouseEventNotHandled;
 }
 
-VSTGUI::CMouseEventResult GraphicalEnvelopeEditorView::onMouseMoved(
-    CPoint &where, const VSTGUI::CButtonState &buttons) {
+VSTGUI::CMouseEventResult
+GraphicalEnvelopeEditorView::onMouseMoved(CPoint &where,
+                                          const VSTGUI::CButtonState &buttons) {
   if (!dragging_ || !buttons.isLeftButton())
     return VSTGUI::kMouseEventNotHandled;
 
@@ -148,8 +163,9 @@ VSTGUI::CMouseEventResult GraphicalEnvelopeEditorView::onMouseMoved(
   return VSTGUI::kMouseEventNotHandled;
 }
 
-VSTGUI::CMouseEventResult GraphicalEnvelopeEditorView::onMouseUp(
-    CPoint &where, const VSTGUI::CButtonState &buttons) {
+VSTGUI::CMouseEventResult
+GraphicalEnvelopeEditorView::onMouseUp(CPoint &where,
+                                       const VSTGUI::CButtonState &buttons) {
   if (buttons.isLeftButton() && dragging_) {
     dragging_ = nullptr;
     getFrame()->setCursor(VSTGUI::kCursorDefault);
@@ -175,19 +191,23 @@ bool GraphicalEnvelopeEditorView::getFocusPath(VSTGUI::CGraphicsPath &outPath) {
 }
 
 void GraphicalEnvelopeEditorView::SwitchGenerator(int new_generator) {
-  if (a_) a_->removeDependent(this);
-  if (d_) d_->removeDependent(this);
-  if (s_) s_->removeDependent(this);
-  if (r_) r_->removeDependent(this);
+  if (a_)
+    a_->removeDependent(this);
+  if (d_)
+    d_->removeDependent(this);
+  if (s_)
+    s_->removeDependent(this);
+  if (r_)
+    r_->removeDependent(this);
 
   a_ = edit_controller()->FindRangedParameter(new_generator, TAG_ENV_A,
-                           target());
+                                              target());
   d_ = edit_controller()->FindRangedParameter(new_generator, TAG_ENV_D,
-                           target());
+                                              target());
   s_ = edit_controller()->FindRangedParameter(new_generator, TAG_ENV_S,
-                           target());
+                                              target());
   r_ = edit_controller()->FindRangedParameter(new_generator, TAG_ENV_R,
-                           target());
+                                              target());
   a_->addDependent(this);
   d_->addDependent(this);
   s_->addDependent(this);
@@ -197,5 +217,5 @@ void GraphicalEnvelopeEditorView::SwitchGenerator(int new_generator) {
   setDirty(true);
 }
 
-}  // namespace ui
-}  // namespace sidebands
+} // namespace ui
+} // namespace sidebands

@@ -9,13 +9,13 @@ constexpr double kTwoPi = 2.0 * std::numbers::pi;
 }  // namespace
 
 void LFO::On(SampleRate sample_rate,
-             const GeneratorPatch::ModTarget *parameters) {
+             const GeneratorPatch::ModParams *parameters) {
   phase_ = 0.0;
   playing_ = true;
 }
 
 void LFO::Release(SampleRate sample_rate,
-                  const GeneratorPatch::ModTarget *parameters) {
+                  const GeneratorPatch::ModParams *parameters) {
   Reset();
 }
 
@@ -27,7 +27,7 @@ void LFO::Reset() {
 
 void LFO::Amplitudes(SampleRate sample_rate, OscBuffer &buffer,
                      ParamValue velocity,
-                     const GeneratorPatch::ModTarget *parameters) {
+                     const GeneratorPatch::ModParams *parameters) {
   const auto buffer_size = buffer.size();
   const auto &lfo_values = parameters->lfo_parameters;
   const auto freq = lfo_values.frequency.getValue();

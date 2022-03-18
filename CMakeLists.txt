@@ -93,6 +93,7 @@ smtg_enable_vst3_sdk()
 smtg_add_vst3plugin(sidebands
         source/constants.h
         source/globals.h
+        source/globals.cc
         source/tags.h
         source/tags.cc
         source/version.h

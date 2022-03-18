@@ -58,14 +58,14 @@ public:
     SampleAccurateValue amplitude;
     SampleAccurateValue velocity_sensivity;
   };
-  struct ModTarget {
+  struct ModParams {
     TargetTag target;
     ParamValue mod_type;
     ADSREnvelopeValues adsr_parameters;
     LFOValues lfo_parameters;
   };
 
-  GeneratorPatch::ModTarget *ModulationParams(TargetTag destination) const;
+  GeneratorPatch::ModParams *ModulationParams(TargetTag destination) const;
   ModType ModTypeFor(TargetTag destination) const;
 
   std::function<double()> ParameterGetterFor(TargetTag dest) const;
@@ -82,7 +82,7 @@ private:
   ParamValue on_;
   SampleAccurateValue c_, a_, m_, k_, r_, s_, portamento_;
 
-  std::unique_ptr<ModTarget> mod_targets_[NUM_TARGETS];
+  std::unique_ptr<ModParams> mod_targets_[NUM_TARGETS];
 
   struct Param {
     union {

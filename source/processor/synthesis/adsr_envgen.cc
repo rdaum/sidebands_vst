@@ -2,17 +2,13 @@
 
 #include <glog/logging.h>
 
-namespace sidebands {
+#include "globals.h"
 
-double Coefficient(double start_level, double end_level,
-                   size_t length_in_samples) {
-  return 1.0 + (std::log(end_level) - std::log(start_level)) /
-                   ((ParamValue)length_in_samples);
-}
+namespace sidebands {
 
 void ADSREnvelopeGenerator::Amplitudes(
     SampleRate sample_rate, OscBuffer &buffer, ParamValue velocity,
-    const GeneratorPatch::ModTarget *parameters) {
+    const GeneratorPatch::ModParams *parameters) {
   const auto &ev = parameters->adsr_parameters;
 
   for (int i = 0; i < buffer.size(); i++) {
@@ -60,12 +56,12 @@ void ADSREnvelopeGenerator::EnterStage(
     break;
   case ENVELOPE_STAGE_ATTACK:
     current_level_ = minimum_level_;
-    coefficient_ = Coefficient(current_level_, envelope.A_L.getValue(),
-                               next_stage_sample_index_);
+    coefficient_ = EnvelopeRampCoefficient(
+        current_level_, envelope.A_L.getValue(), next_stage_sample_index_);
     break;
   case ENVELOPE_STAGE_DECAY:
     current_level_ = envelope.A_L.getValue();
-    coefficient_ = Coefficient(
+    coefficient_ = EnvelopeRampCoefficient(
         current_level_,
         std::max(stage_rates[ENVELOPE_STAGE_SUSTAIN], minimum_level_),
         next_stage_sample_index_);
@@ -75,8 +71,8 @@ void ADSREnvelopeGenerator::EnterStage(
     coefficient_ = 1.0f;
     break;
   case ENVELOPE_STAGE_RELEASE:
-    coefficient_ =
-        Coefficient(current_level_, minimum_level_, next_stage_sample_index_);
+    coefficient_ = EnvelopeRampCoefficient(current_level_, minimum_level_,
+                                           next_stage_sample_index_);
     break;
   default:
     break;
@@ -84,12 +80,12 @@ void ADSREnvelopeGenerator::EnterStage(
 }
 
 void ADSREnvelopeGenerator::On(SampleRate sample_rate,
-                               const GeneratorPatch::ModTarget *parameters) {
+                               const GeneratorPatch::ModParams *parameters) {
   EnterStage(sample_rate, ENVELOPE_STAGE_ATTACK, parameters->adsr_parameters);
 }
 
 void ADSREnvelopeGenerator::Release(
-    SampleRate sample_rate, const GeneratorPatch::ModTarget *parameters) {
+    SampleRate sample_rate, const GeneratorPatch::ModParams *parameters) {
   EnterStage(sample_rate, ENVELOPE_STAGE_RELEASE, parameters->adsr_parameters);
 }
 

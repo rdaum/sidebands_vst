@@ -206,7 +206,7 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
         SampleAccurateValue(TagFor(gennum_, TAG_LFO_AMP, target), 0.5, 0, 1),
         SampleAccurateValue(TagFor(gennum_, TAG_LFO_VS, target), 1, 0, 1),
     };
-    auto mod_target = std::make_unique<ModTarget>(target, mod_type,
+    auto mod_target = std::make_unique<ModParams>(target, mod_type,
                                                   envelope_values, lfo_values);
     mod_targets_[target] = std::move(mod_target);
   };
@@ -335,7 +335,7 @@ ParamValue GeneratorPatch::portamento() const {
   return portamento_.getValue();
 }
 
-GeneratorPatch::ModTarget *
+GeneratorPatch::ModParams *
 GeneratorPatch::ModulationParams(TargetTag destination) const {
   return mod_targets_[destination].get();
 }
