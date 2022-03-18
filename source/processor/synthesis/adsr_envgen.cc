@@ -20,84 +20,87 @@ void ADSREnvelopeGenerator::Amplitudes(
   VmulInplace(buffer, velocity_scale);
 }
 
+void ADSREnvelopeGenerator::SetStage(off_t stage_number) {
+  off_t old_stage = stage_idx_;
+  stage_idx_ = stage_number;
+  current_sample_index_ = 0;
+  if (stage_idx_ >= stages_.size())
+    stage_idx_ = 0;
+  LOG(INFO) << "Advanced to stage: " << stage_idx_ << " ("
+            << stages_[stage_idx_].name << ")"
+            << " from: " << old_stage << " (" << stages_[old_stage].name
+            << ") duration: " << stages_[stage_idx_].duration
+            << " samples; coefficent: " << stages_[stage_idx_].coefficient;
+}
+
 ParamValue ADSREnvelopeGenerator::NextSample(
     SampleRate sample_rate, const GeneratorPatch::ADSREnvelopeValues &ev) {
-  if (stage_ == ENVELOPE_STAGE_OFF)
+  // Off or sustain...
+  if (stages_[stage_idx_].type == Stage::Type::OFF ||
+      stages_[stage_idx_].type == Stage::Type::LEVEL)
     return current_level_;
 
-  if (stage_ == ENVELOPE_STAGE_SUSTAIN)
-    return current_level_;
-
-  if (current_sample_index_ >= next_stage_sample_index_) {
-    auto next_stage =
-        static_cast<EnvelopeStage>((stage_ + 1) % kNumEnvelopeStages);
-    EnterStage(sample_rate, next_stage, ev);
+  // If we've passed the duration of the current stage, advance.
+  if (stages_[stage_idx_].type == Stage::Type::RATE &&
+      current_sample_index_ >= stages_[stage_idx_].duration) {
+    SetStage(stage_idx_ + 1);
   }
 
-  current_level_ *= coefficient_;
+  current_level_ *= stages_[stage_idx_].coefficient;
   current_sample_index_++;
   return current_level_;
 }
 
-void ADSREnvelopeGenerator::EnterStage(
-    SampleRate sample_rate, EnvelopeStage new_stage,
-    const GeneratorPatch::ADSREnvelopeValues &envelope) {
-  const ParamValue stage_rates[]{
-      0.0, envelope.A_R.getValue(), envelope.D_R.getValue(),
-      envelope.S_L.getValue(), envelope.R_R.getValue()};
-  stage_ = new_stage;
-  current_sample_index_ = 0;
-  if (stage_ != ENVELOPE_STAGE_OFF && stage_ != ENVELOPE_STAGE_SUSTAIN) {
-    next_stage_sample_index_ = stage_rates[stage_] * sample_rate;
-  }
-  switch (new_stage) {
-  case ENVELOPE_STAGE_OFF:
-    Reset();
-    break;
-  case ENVELOPE_STAGE_ATTACK:
-    current_level_ = minimum_level_;
-    coefficient_ = EnvelopeRampCoefficient(
-        current_level_, envelope.A_L.getValue(), next_stage_sample_index_);
-    break;
-  case ENVELOPE_STAGE_DECAY:
-    current_level_ = envelope.A_L.getValue();
-    coefficient_ = EnvelopeRampCoefficient(
-        current_level_,
-        std::max(stage_rates[ENVELOPE_STAGE_SUSTAIN], minimum_level_),
-        next_stage_sample_index_);
-    break;
-  case ENVELOPE_STAGE_SUSTAIN:
-    current_level_ = stage_rates[ENVELOPE_STAGE_SUSTAIN];
-    coefficient_ = 1.0f;
-    break;
-  case ENVELOPE_STAGE_RELEASE:
-    coefficient_ = EnvelopeRampCoefficient(current_level_, minimum_level_,
-                                           next_stage_sample_index_);
-    break;
-  default:
-    break;
-  }
+off_t ADSREnvelopeGenerator::AddStage(double sample_rate,
+                                      const std::string &name, Stage::Type type,
+                                      double start_level, double end_level,
+                                      double duration) {
+  off_t idx = stages_.size();
+  double duration_samples = duration * sample_rate;
+  stages_.push_back(
+      {name, type, start_level, end_level,
+       EnvelopeRampCoefficient(start_level, end_level, duration_samples),
+       duration_samples});
+  return idx;
 }
 
 void ADSREnvelopeGenerator::On(SampleRate sample_rate,
                                const GeneratorPatch::ModParams *parameters) {
-  EnterStage(sample_rate, ENVELOPE_STAGE_ATTACK, parameters->adsr_parameters);
+  stages_.clear();
+  const auto &env = parameters->adsr_parameters;
+
+  stages_ = {
+      Stage{"OFF", Stage::Type::OFF, minimum_level_, minimum_level_, 0, 0},
+  };
+  AddStage(sample_rate, "Attack", Stage::Type::RATE, minimum_level_,
+           env.A_L.getValue(), env.A_R.getValue());
+  AddStage(sample_rate, "Decay", Stage::Type::RATE, env.A_L.getValue(),
+           env.S_L.getValue(), env.D_R.getValue());
+  AddStage(sample_rate, "Sustain", Stage::Type::LEVEL, env.S_L.getValue(),
+           env.S_L.getValue(), 0);
+  release_stage_idx_ =
+      AddStage(sample_rate, "Release", Stage::Type::RATE, env.S_L.getValue(),
+               minimum_level_, env.R_R.getValue());
+  SetStage(1);
+  current_level_ = minimum_level_;
 }
 
 void ADSREnvelopeGenerator::Release(
     SampleRate sample_rate, const GeneratorPatch::ModParams *parameters) {
-  EnterStage(sample_rate, ENVELOPE_STAGE_RELEASE, parameters->adsr_parameters);
+  SetStage(release_stage_idx_);
 }
 
 void ADSREnvelopeGenerator::Reset() {
   current_sample_index_ = 0;
-  current_level_ = 0.0;
-  coefficient_ = 1.0f;
-  stage_ = ENVELOPE_STAGE_OFF;
+  current_level_ = minimum_level_;
+
+  SetStage(0);
 }
 
 ModType ADSREnvelopeGenerator::mod_type() const {
   return ModType::ADSR_ENVELOPE;
 }
+
+bool ADSREnvelopeGenerator::Playing() const { return stage_idx_ != 0; }
 
 } // namespace sidebands

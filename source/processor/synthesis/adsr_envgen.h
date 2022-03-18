@@ -4,9 +4,9 @@
 
 #include <cmath>
 
+#include "dsp.h"
 #include "processor/patch_processor.h"
 #include "processor/synthesis/modulation_source.h"
-#include "dsp.h"
 
 namespace sidebands {
 
@@ -15,16 +15,13 @@ using Steinberg::Vst::SampleRate;
 
 namespace ui {
 class GraphicalEnvelopeEditorView;
-}  // namespace ui
+} // namespace ui
 
 class ADSREnvelopeGenerator : public IModulationSource {
 public:
   explicit ADSREnvelopeGenerator()
-      : minimum_level_(0.0001), stage_(ENVELOPE_STAGE_OFF),
-        current_level_(minimum_level_), coefficient_(1.0),
-        current_sample_index_(0), next_stage_sample_index_(0){};
-
-
+      : minimum_level_(0.0001), stage_idx_(0), current_level_(minimum_level_),
+        current_sample_index_(0) {}
 
   // IModulationSource overrides
   void On(SampleRate sample_rate,
@@ -33,33 +30,34 @@ public:
                const GeneratorPatch::ModParams *parameters) override;
   void Reset() override;
   void Amplitudes(SampleRate sample_rate, OscBuffer &buffer,
-                          ParamValue velocity,
-                          const GeneratorPatch::ModParams *parameters) override;
-  bool Playing() const override { return stage_ != ENVELOPE_STAGE_OFF; }
+                  ParamValue velocity,
+                  const GeneratorPatch::ModParams *parameters) override;
+  bool Playing() const override;
   ModType mod_type() const override;
 
 private:
-  enum EnvelopeStage {
-    ENVELOPE_STAGE_OFF = 0,
-    ENVELOPE_STAGE_ATTACK,
-    ENVELOPE_STAGE_DECAY,
-    ENVELOPE_STAGE_SUSTAIN,
-    ENVELOPE_STAGE_RELEASE,
-    kNumEnvelopeStages
-  };
-
-  void EnterStage(SampleRate sample_rate, EnvelopeStage new_stage,
-                  const GeneratorPatch::ADSREnvelopeValues &envelope);
   ParamValue NextSample(SampleRate sample_rate,
-                        const GeneratorPatch::ADSREnvelopeValues &ev) ;
-  inline EnvelopeStage stage() const { return stage_; };
+                        const GeneratorPatch::ADSREnvelopeValues &ev);
+
+  struct Stage {
+    std::string name;
+    enum class Type { OFF, RATE, LEVEL } type;
+    double start_level;
+    double end_level;
+    double coefficient;
+    double duration;
+  };
+  off_t AddStage(double sample_rate, const std::string &name, Stage::Type type,
+                 double start_level, double end_level, double duration);
+  void SetStage(off_t stage_number);
+
+  std::vector<Stage> stages_;
+  off_t stage_idx_ = 0;
+  off_t release_stage_idx_ = 0;
 
   const ParamValue minimum_level_;
-  EnvelopeStage stage_;
   double current_level_;
-  double coefficient_;
   size_t current_sample_index_;
-  size_t next_stage_sample_index_;
 };
 
 } // namespace sidebands
