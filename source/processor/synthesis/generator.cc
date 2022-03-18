@@ -21,10 +21,7 @@ void Generator::Produce(SampleRate sample_rate, GeneratorPatch &patch,
     OscBuffer mod_a(buffer.size());
     auto mod = ModulatorFor(patch, target);
     if (mod) {
-      std::generate(std::begin(mod_a), std::end(mod_a),
-                    [sample_rate, &mod, &mod_opt, &patch, target, this]() {
-                      return mod->NextSample(sample_rate, velocity_, mod_opt);
-                    });
+      mod->Amplitudes(sample_rate, mod_a, velocity_, mod_opt);
       VmulInplace(buffer, mod_a);
     }
   }

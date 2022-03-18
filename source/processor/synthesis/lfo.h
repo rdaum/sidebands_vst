@@ -12,8 +12,10 @@ public:
   void Release(SampleRate sample_rate,
                const GeneratorPatch::ModTarget *parameters) override;
   void Reset() override;
-  ParamValue NextSample(SampleRate sample_rate, ParamValue velocity,
-                        const GeneratorPatch::ModTarget *parameters) override;
+  void Amplitudes(SampleRate sample_rate, OscBuffer &buffer,
+                  ParamValue velocity,
+                  const GeneratorPatch::ModTarget *parameters) override;
+
   bool Playing() const override;
   ModType mod_type() const override;
 

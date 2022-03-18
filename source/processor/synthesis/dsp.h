@@ -27,8 +27,15 @@ OscBuffer Vdiv(const OscBuffer &l, double r);
 OscBuffer Vsub(const OscBuffer &l, double r);
 OscBuffer Vadd(const OscBuffer &l, double r);
 
+void VaddInplace(OscBuffer &l, double r);
+void VmulInplace(OscBuffer &l, double r);
+void VdivInplace(OscBuffer &l, double r);
+void VsubInplace(OscBuffer &l, double r);
+
 void ToFloat(const OscBuffer &src, float *out);
 
 void linspace(OscBuffer &linspaced, double start, double end, size_t num);
+
+OscBuffer weighted_exp(size_t N, double start, double end, double weight);
 
 }  // namespace sidebands

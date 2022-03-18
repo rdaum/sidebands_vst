@@ -37,6 +37,18 @@ void VapplyBinaryInplace(
   }
 }
 
+void VapplyBinaryInplace(
+    OscBuffer &l, double r,
+    const std::function<Vec8d(const Vec8d &, double)> &f) {
+  size_t size(l.size());
+  Vec8d l_vec, dst_vec;
+  for (int i = 0; i < size; i += 8) {
+    l_vec.load(&(l[i]));
+    dst_vec = f(l_vec, r);
+    dst_vec.store(&(l[i]));
+  }
+}
+
 OscBuffer VapplyBinary(
     const OscBuffer &l, const OscBuffer &r,
     const std::function<Vec8d(const Vec8d &, const Vec8d &)> &f) {
@@ -134,6 +146,26 @@ void VsubInplace(OscBuffer &l, const OscBuffer &r) {
                       [](const Vec8d &l, const Vec8d &r) { return l - r; });
 }
 
+void VaddInplace(OscBuffer &l, double r) {
+  VapplyBinaryInplace(l, r,
+                      [](const Vec8d &l, const Vec8d &r) { return l + r; });
+}
+
+void VmulInplace(OscBuffer &l, double r) {
+  VapplyBinaryInplace(l, r,
+                      [](const Vec8d &l, const Vec8d &r) { return l * r; });
+}
+
+void VdivInplace(OscBuffer &l, double r) {
+  VapplyBinaryInplace(l, r,
+                      [](const Vec8d &l, const Vec8d &r) { return l / r; });
+}
+
+void VsubInplace(OscBuffer &l, double r) {
+  VapplyBinaryInplace(l, r,
+                      [](const Vec8d &l, const Vec8d &r) { return l - r; });
+}
+
 void ToFloat(const OscBuffer &src, float *out_buffer) {
   size_t size(src.size());
   OscBuffer dest(size);
@@ -150,6 +182,14 @@ void linspace(OscBuffer &linspaced, double start, double end, size_t num) {
   int x = 0;
   std::generate(std::begin(linspaced), std::end(linspaced),
                 [&x, start, delta]() { return (start + delta * x++); });
+}
+
+OscBuffer weighted_exp(size_t N, double start, double end, double weight) {
+  OscBuffer t(N);
+  linspace(t, start, end, N);
+  OscBuffer E = exp(t * weight) - 1;
+  E /= E.max();
+  return E;
 }
 
 }  // namespace sidebands

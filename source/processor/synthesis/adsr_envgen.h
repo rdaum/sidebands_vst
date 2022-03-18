@@ -6,6 +6,7 @@
 
 #include "processor/patch_processor.h"
 #include "processor/synthesis/modulation_source.h"
+#include "dsp.h"
 
 namespace sidebands {
 
@@ -36,15 +37,17 @@ public:
   void Release(SampleRate sample_rate,
                const GeneratorPatch::ModTarget *parameters) override;
   void Reset() override;
-  ParamValue NextSample(SampleRate sample_rate, ParamValue velocity,
-                        const GeneratorPatch::ModTarget *parameters) override;
+  void Amplitudes(SampleRate sample_rate, OscBuffer &buffer,
+                          ParamValue velocity,
+                          const GeneratorPatch::ModTarget *parameters) override;
   bool Playing() const override { return stage_ != ENVELOPE_STAGE_OFF; }
   ModType mod_type() const override;
 
 private:
   void EnterStage(SampleRate sample_rate, EnvelopeStage new_stage,
                   const GeneratorPatch::ADSREnvelopeValues &envelope);
-
+  ParamValue NextSample(SampleRate sample_rate,
+                        const GeneratorPatch::ADSREnvelopeValues &ev) ;
   const ParamValue minimum_level_;
   EnvelopeStage stage_;
   double current_level_;
