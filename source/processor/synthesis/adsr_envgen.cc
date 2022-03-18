@@ -9,6 +9,7 @@ namespace sidebands {
 void ADSREnvelopeGenerator::Amplitudes(
     SampleRate sample_rate, OscBuffer &buffer, ParamValue velocity,
     const GeneratorPatch::ModParams *parameters) {
+  std::lock_guard<std::mutex> stages_lock(stages_mutex_);
   const auto &ev = parameters->adsr_parameters;
 
   for (int i = 0; i < buffer.size(); i++) {
@@ -21,32 +22,34 @@ void ADSREnvelopeGenerator::Amplitudes(
 }
 
 void ADSREnvelopeGenerator::SetStage(off_t stage_number) {
-  off_t old_stage = stage_idx_;
-  stage_idx_ = stage_number;
+  off_t old_stage = current_stage_;
+  current_stage_ = stage_number;
   current_sample_index_ = 0;
-  if (stage_idx_ >= stages_.size())
-    stage_idx_ = 0;
-  LOG(INFO) << "Advanced to stage: " << stage_idx_ << " ("
-            << stages_[stage_idx_].name << ")"
+  if (current_stage_ >= stages_.size())
+    current_stage_ = 0;
+  LOG(INFO) << "Advanced to stage: " << current_stage_ << " ("
+            << stages_[current_stage_].name << ")"
             << " from: " << old_stage << " (" << stages_[old_stage].name
-            << ") duration: " << stages_[stage_idx_].duration
-            << " samples; coefficent: " << stages_[stage_idx_].coefficient;
+            << ") duration: " << stages_[current_stage_].duration
+            << " samples; coefficent: " << stages_[current_stage_].coefficient
+            << " current level: " << current_level_;
 }
 
 ParamValue ADSREnvelopeGenerator::NextSample(
     SampleRate sample_rate, const GeneratorPatch::ADSREnvelopeValues &ev) {
   // Off or sustain...
-  if (stages_[stage_idx_].type == Stage::Type::OFF ||
-      stages_[stage_idx_].type == Stage::Type::LEVEL)
+  if (stages_[current_stage_].type == Stage::Type::OFF ||
+      stages_[current_stage_].type == Stage::Type::LEVEL)
     return current_level_;
 
+  auto c = stages_[current_stage_].coefficient;
   // If we've passed the duration of the current stage, advance.
-  if (stages_[stage_idx_].type == Stage::Type::RATE &&
-      current_sample_index_ >= stages_[stage_idx_].duration) {
-    SetStage(stage_idx_ + 1);
+  if (stages_[current_stage_].type == Stage::Type::RATE &&
+      current_sample_index_ >= stages_[current_stage_].duration) {
+    SetStage(current_stage_ + 1);
   }
 
-  current_level_ *= stages_[stage_idx_].coefficient;
+  current_level_ *= c;
   current_sample_index_++;
   return current_level_;
 }
@@ -66,6 +69,7 @@ off_t ADSREnvelopeGenerator::AddStage(double sample_rate,
 
 void ADSREnvelopeGenerator::On(SampleRate sample_rate,
                                const GeneratorPatch::ModParams *parameters) {
+  std::lock_guard<std::mutex> stages_lock(stages_mutex_);
   stages_.clear();
   const auto &env = parameters->adsr_parameters;
 
@@ -78,7 +82,7 @@ void ADSREnvelopeGenerator::On(SampleRate sample_rate,
            env.S_L.getValue(), env.D_R.getValue());
   AddStage(sample_rate, "Sustain", Stage::Type::LEVEL, env.S_L.getValue(),
            env.S_L.getValue(), 0);
-  release_stage_idx_ =
+  release_stage_ =
       AddStage(sample_rate, "Release", Stage::Type::RATE, env.S_L.getValue(),
                minimum_level_, env.R_R.getValue());
   SetStage(1);
@@ -87,20 +91,26 @@ void ADSREnvelopeGenerator::On(SampleRate sample_rate,
 
 void ADSREnvelopeGenerator::Release(
     SampleRate sample_rate, const GeneratorPatch::ModParams *parameters) {
-  SetStage(release_stage_idx_);
+  std::lock_guard<std::mutex> stages_lock(stages_mutex_);
+
+  SetStage(release_stage_);
 }
 
 void ADSREnvelopeGenerator::Reset() {
+  std::lock_guard<std::mutex> stages_lock(stages_mutex_);
+
   current_sample_index_ = 0;
   current_level_ = minimum_level_;
-
-  SetStage(0);
+  current_stage_ = 0;
 }
 
 ModType ADSREnvelopeGenerator::mod_type() const {
   return ModType::ADSR_ENVELOPE;
 }
 
-bool ADSREnvelopeGenerator::Playing() const { return stage_idx_ != 0; }
+bool ADSREnvelopeGenerator::Playing() const {
+  std::lock_guard<std::mutex> stages_lock(stages_mutex_);
+  return current_stage_ != 0;
+}
 
 } // namespace sidebands
