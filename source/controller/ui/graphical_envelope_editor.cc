@@ -11,6 +11,8 @@ namespace sidebands {
 namespace ui {
 
 constexpr double kSustainDuration = 0.10;
+constexpr double kDragboxWidthHeight = 5;
+constexpr double kDragboxHalfWidthHeight = kDragboxWidthHeight / 2;
 
 Steinberg::Vst::ParamValue ValueOf(Steinberg::Vst::RangeParameter *p) {
   return p ? p->toPlain(p->getNormalized()) : 0;
@@ -45,11 +47,12 @@ void GraphicalEnvelopeEditorView::UpdateSegments() {
 
   double total_duration = 0.0f;
   for (auto s : segments_) {
-    auto duration = s.rate_param ? ValueOf(s.rate_param) : 0;
+    bool is_sustain = s.start_level_param &&
+                      ParamFor(s.start_level_param->getInfo().id) == TAG_ENV_SL;
+    auto duration = is_sustain ? kSustainDuration : ValueOf(s.rate_param);
 
     total_duration += duration;
   }
-  total_duration += kSustainDuration;
 
   double xpos = getViewSize().left;
   double bottom = getViewSize().bottom;
@@ -59,12 +62,13 @@ void GraphicalEnvelopeEditorView::UpdateSegments() {
 
   for (auto &s : segments_) {
     bool is_sustain = s.start_level_param &&
-                      ParamFor(s.start_level_param->getInfo().id) == TAG_ENV_SL;
+                      ParamFor(s.start_level_param->getInfo().id) == TAG_ENV_SL && s.rate_param == nullptr;
     auto duration = is_sustain ? kSustainDuration : ValueOf(s.rate_param);
-    s.width = (((duration)) / total_duration) * width;
+    s.width = ((duration)) / total_duration * width;
 
     auto start_level = ValueOf(s.start_level_param);
     auto end_level = ValueOf(s.end_level_param);
+
     float yleft = bottom - (start_level * height);
     float yright = bottom - (end_level * height);
 
@@ -72,8 +76,10 @@ void GraphicalEnvelopeEditorView::UpdateSegments() {
     xpos += s.width;
     s.end_point = {xpos, yright};
 
-    s.drag_box = {s.end_point.x - 5, s.end_point.y - 5, s.end_point.x + 5,
-                  s.end_point.y + 5};
+    s.drag_box = {s.end_point.x - kDragboxHalfWidthHeight,
+                  s.end_point.y - kDragboxHalfWidthHeight,
+                  s.end_point.x + kDragboxHalfWidthHeight,
+                  s.end_point.y + kDragboxHalfWidthHeight};
   }
 }
 
