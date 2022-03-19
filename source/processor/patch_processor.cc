@@ -193,11 +193,16 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
 
     ParamValue mod_type(default_mod_type);
     ADSREnvelopeValues envelope_values{
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_A, target), 0.1, 0, 5),
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_AL, target), 1, 0, 1),
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_D, target), 0.1, 0, 5),
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_S, target), 0.2, 0, 1),
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_R, target), 0.2, 0, 5),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_HT, target), 0.0, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_AR, target), 0.67, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_AL, target), 0.9, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_DR1, target), 0.50, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_DL1, target), 0.9, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_DR2, target), 0.10, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_SL, target), 0.20, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_RR1, target), 0.10, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_RL1, target), 0.10, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_RR2, target), 0.10, 0, 1),
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_VS, target), 1, 0, 1),
     };
     LFOValues lfo_values{
@@ -218,11 +223,15 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
       continue;
     DeclareParameter(TagFor(gennum_, TAG_MOD_TYPE, mt->target), &mt->mod_type,
                      0, kNumModTypes - 1);
-    DeclareParameter(&mt->adsr_parameters.A_R);
-    DeclareParameter(&mt->adsr_parameters.A_L);
-    DeclareParameter(&mt->adsr_parameters.D_R);
-    DeclareParameter(&mt->adsr_parameters.S_L);
-    DeclareParameter(&mt->adsr_parameters.R_R);
+    DeclareParameter(&mt->adsr_parameters.HT);
+    DeclareParameter(&mt->adsr_parameters.AL);
+    DeclareParameter(&mt->adsr_parameters.AR);
+    DeclareParameter(&mt->adsr_parameters.DL1);
+    DeclareParameter(&mt->adsr_parameters.DR1);
+    DeclareParameter(&mt->adsr_parameters.DR2);
+    DeclareParameter(&mt->adsr_parameters.SL);
+    DeclareParameter(&mt->adsr_parameters.RR1);
+    DeclareParameter(&mt->adsr_parameters.RR2);
     DeclareParameter(&mt->adsr_parameters.VS);
     DeclareParameter(TagFor(gennum_, TAG_LFO_TYPE, mt->target),
                      &mt->lfo_parameters.type, 0, kNumLFOTypes - 1);

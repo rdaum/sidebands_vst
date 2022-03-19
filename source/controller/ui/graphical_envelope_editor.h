@@ -42,22 +42,21 @@ class GraphicalEnvelopeEditorView : public VSTGUI::CView,
  private:
   void UpdateSegments();
 
+  Steinberg::Vst::RangeParameter *Param(uint16_t generator, ParamTag param);
+  Steinberg::Vst::RangeParameter *Param(ParamTag param);
+
   struct Segment {
-    Steinberg::Vst::RangeParameter *param;
-    enum class Type { RATE, LEVEL } type;
-    double start_level;
-    double end_level;
-    double duration;
+    Steinberg::Vst::RangeParameter *rate_param;
+    Steinberg::Vst::RangeParameter *start_level_param;
+    Steinberg::Vst::RangeParameter *end_level_param;
 
     VSTGUI::CCoord width;
     VSTGUI::CPoint start_point;
     VSTGUI::CPoint end_point;
     VSTGUI::CRect drag_box;
   };
-  Steinberg::Vst::RangeParameter *a_ = nullptr;
-  Steinberg::Vst::RangeParameter *d_ = nullptr;
-  Steinberg::Vst::RangeParameter *s_ = nullptr;
-  Steinberg::Vst::RangeParameter *r_ = nullptr;
+
+  std::vector<Steinberg::Vst::RangeParameter*> envelope_parameters;
   std::vector<Segment> segments_;
   Segment *dragging_ = nullptr;
 };

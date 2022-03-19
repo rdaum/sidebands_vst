@@ -11,7 +11,7 @@ namespace sidebands {
 namespace ui {
 
 Steinberg::Vst::ParamValue ValueOf(Steinberg::Vst::RangeParameter *p) {
-  return p->toPlain(p->getNormalized());
+  return p ? p->toPlain(p->getNormalized()) : 0;
 }
 
 GraphicalEnvelopeEditorView::GraphicalEnvelopeEditorView(
@@ -31,17 +31,23 @@ void GraphicalEnvelopeEditorView::update(Steinberg::FUnknown *unknown,
 }
 
 void GraphicalEnvelopeEditorView::UpdateSegments() {
-  segments_ = {{a_, Segment::Type::RATE, 0, 1, ValueOf(a_)},
-               {d_, Segment::Type::RATE, 1, ValueOf(s_), ValueOf(d_)},
-               {s_, Segment::Type::LEVEL, ValueOf(s_), ValueOf(s_),
-                0.5f /* fixed sustain duration */},
-               {r_, Segment::Type::RATE, ValueOf(s_), 0, ValueOf(r_)}};
+  segments_ = {
+      Segment{Param(TAG_ENV_HT), nullptr, nullptr},
+      Segment{Param(TAG_ENV_AR), nullptr, Param(TAG_ENV_AL)},
+      Segment{Param(TAG_ENV_DR1), Param(TAG_ENV_AL), Param(TAG_ENV_DL1)},
+      Segment{Param(TAG_ENV_DR2), Param(TAG_ENV_DL1), Param(TAG_ENV_SL)},
+      Segment{nullptr, Param(TAG_ENV_SL), Param(TAG_ENV_SL)},
+      Segment{Param(TAG_ENV_RR1), Param(TAG_ENV_SL), Param(TAG_ENV_RL1)},
+      Segment{Param(TAG_ENV_RR2), Param(TAG_ENV_RL1), nullptr},
+  };
 
   double total_duration = 0.0f;
-  double min_duration = 0.1f;
   for (auto s : segments_) {
-    total_duration += s.duration + min_duration;
+    auto duration = s.rate_param ? ValueOf(s.rate_param) : 0;
+
+    total_duration += duration;
   }
+  total_duration += 0.5; // Add sustain.
 
   double xpos = getViewSize().left;
   double bottom = getViewSize().bottom;
@@ -50,23 +56,22 @@ void GraphicalEnvelopeEditorView::UpdateSegments() {
   double height = getHeight();
 
   for (auto &s : segments_) {
-    s.width = ((s.duration + min_duration) / total_duration) * width;
+    bool is_sustain = s.start_level_param &&
+                      ParamFor(s.start_level_param->getInfo().id) == TAG_ENV_SL;
+    auto duration = is_sustain ? 0.5 : ValueOf(s.rate_param);
+    s.width = (((duration)) / total_duration) * width;
 
-    float yleft = bottom - (s.start_level * height);
-    float yright = bottom - (s.end_level * height);
+    auto start_level = ValueOf(s.start_level_param);
+    auto end_level = ValueOf(s.end_level_param);
+    float yleft = bottom - (start_level * height);
+    float yright = bottom - (end_level * height);
 
     s.start_point = {xpos, yleft};
     xpos += s.width;
     s.end_point = {xpos, yright};
 
-    if (s.type == Segment::Type::RATE)
-      s.drag_box = {s.end_point.x - 5, s.end_point.y - 5, s.end_point.x + 5,
-                    s.end_point.y + 5};
-    else {
-      auto x = s.start_point.x + ((s.end_point.x - s.start_point.x) / 2);
-
-      s.drag_box = {x - 5, s.end_point.y - 5, x + 5, s.end_point.y + 5};
-    }
+    s.drag_box = {s.end_point.x - 5, s.end_point.y - 5, s.end_point.x + 5,
+                  s.end_point.y + 5};
   }
 }
 
@@ -85,6 +90,8 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
       context == nullptr)
     return;
 
+  LOG(INFO) << "Draw: " << dirtyRect.getWidth();
+
   context->setFrameColor(VSTGUI::CColor(100, 0, 0));
   context->setFillColor(VSTGUI::CColor(100, 0, 0));
   context->setLineStyle(VSTGUI::kLineSolid);
@@ -98,15 +105,17 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
   path->beginSubpath(bottom_left);
   VSTGUI::CCoord x = 0;
   for (auto &s : segments_) {
-    double level = s.start_level;
-    if (level == 0) level = 0.01;
-    double end_level = s.end_level;
-    if (end_level == 0) end_level = 0.01;
+    double level = ValueOf(s.start_level_param);
+    if (level == 0)
+      level = 0.001;
+    double end_level = ValueOf(s.end_level_param);
+    if (end_level == 0)
+      end_level = 0.001;
     auto co = EnvelopeRampCoefficient(level, end_level, s.width);
     for (int i = 0; i < s.width; i++) {
       level *= co;
-      path->addLine(bottom_left.x + (x++),
-                    bottom_left.y - (level * getViewSize().getHeight()));
+      double height = level * getViewSize().getHeight();
+      path->addLine(bottom_left.x + (x++), bottom_left.y - height);
     }
   }
   context->drawGraphicsPath(path, VSTGUI::CDrawContext::kPathStroked);
@@ -126,9 +135,6 @@ GraphicalEnvelopeEditorView::onMouseDown(CPoint &where,
     for (auto &s : segments_) {
       if (s.drag_box.pointInside(where)) {
         dragging_ = &s;
-        getFrame()->setCursor(s.type == Segment::Type::RATE
-                                  ? VSTGUI::kCursorHSize
-                                  : VSTGUI::kCursorVSize);
         return VSTGUI::kMouseEventHandled;
       }
     }
@@ -142,19 +148,16 @@ GraphicalEnvelopeEditorView::onMouseMoved(CPoint &where,
   if (!dragging_ || !buttons.isLeftButton())
     return VSTGUI::kMouseEventNotHandled;
 
-  if (dragging_ && dragging_->type == Segment::Type::RATE) {
+  if (dragging_) {
     float change_x = where.x - dragging_->end_point.x;
-    float change_r = change_x / dragging_->width;
-    dragging_->param->setNormalized(
-        std::max(dragging_->param->getNormalized() * change_r, 0.01));
-    UpdateSegments();
-    setDirty(true);
-    return VSTGUI::kMouseEventHandled;
-  }
-
-  if (dragging_ && dragging_->type == Segment::Type::LEVEL) {
     float change_n = 1.0 - (where.y / getHeight());
-    dragging_->param->setNormalized(change_n);
+    float change_r = change_x / dragging_->width;
+    if (dragging_->rate_param)
+      dragging_->rate_param->setNormalized(
+          std::max(dragging_->rate_param->getNormalized() * change_r, 0.01));
+    if (dragging_->end_level_param)
+      dragging_->end_level_param->setNormalized(change_n);
+
     UpdateSegments();
     setDirty(true);
     return VSTGUI::kMouseEventHandled;
@@ -191,30 +194,33 @@ bool GraphicalEnvelopeEditorView::getFocusPath(VSTGUI::CGraphicsPath &outPath) {
 }
 
 void GraphicalEnvelopeEditorView::SwitchGenerator(int new_generator) {
-  if (a_)
-    a_->removeDependent(this);
-  if (d_)
-    d_->removeDependent(this);
-  if (s_)
-    s_->removeDependent(this);
-  if (r_)
-    r_->removeDependent(this);
-
-  a_ = edit_controller()->FindRangedParameter(new_generator, TAG_ENV_A,
-                                              target());
-  d_ = edit_controller()->FindRangedParameter(new_generator, TAG_ENV_D,
-                                              target());
-  s_ = edit_controller()->FindRangedParameter(new_generator, TAG_ENV_S,
-                                              target());
-  r_ = edit_controller()->FindRangedParameter(new_generator, TAG_ENV_R,
-                                              target());
-  a_->addDependent(this);
-  d_->addDependent(this);
-  s_->addDependent(this);
-  r_->addDependent(this);
-
+  for (auto *param : envelope_parameters) {
+    if (param)
+      param->removeDependent(this);
+  }
+  envelope_parameters = {
+      Param(new_generator, TAG_ENV_HT),  Param(new_generator, TAG_ENV_AR),
+      Param(new_generator, TAG_ENV_DR1), Param(new_generator, TAG_ENV_DR2),
+      Param(new_generator, TAG_ENV_RR1), Param(new_generator, TAG_ENV_RR2),
+      Param(new_generator, TAG_ENV_AL),  Param(new_generator, TAG_ENV_DL1),
+      Param(new_generator, TAG_ENV_SL),  Param(new_generator, TAG_ENV_RL1),
+  };
+  for (auto *param : envelope_parameters) {
+    param->addDependent(this);
+  }
   UpdateSegments();
+
   setDirty(true);
+}
+
+Steinberg::Vst::RangeParameter *
+GraphicalEnvelopeEditorView::Param(uint16_t generator, ParamTag param) {
+  return edit_controller()->FindRangedParameter(generator, param, target());
+}
+
+Steinberg::Vst::RangeParameter *
+GraphicalEnvelopeEditorView::Param(ParamTag param) {
+  return Param(edit_controller()->SelectedGenerator(), param);
 }
 
 } // namespace ui

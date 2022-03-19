@@ -1,9 +1,10 @@
 #include "controller/ui/envelope_editor_view.h"
 
-#include "tags.h"
 #include "controller/sidebands_controller.h"
 #include "controller/ui/graphical_envelope_editor.h"
+#include "controller/ui/gui_constants.h"
 #include "controller/ui/parameter_editor_view.h"
+#include "tags.h"
 
 namespace sidebands {
 namespace ui {
@@ -12,7 +13,7 @@ EnvelopeEditorView::EnvelopeEditorView(const VSTGUI::CRect &size,
                                        SidebandsController *edit_controller,
                                        TargetTag target)
     : VSTGUI::CRowColumnView(
-          size, VSTGUI::CRowColumnView::kColumnStyle,
+          size, VSTGUI::CRowColumnView::kRowStyle,
           VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2),
       ModulatorEditorView(edit_controller, target) {
   setBackgroundColor(VSTGUI::kTransparentCColor);
@@ -20,41 +21,65 @@ EnvelopeEditorView::EnvelopeEditorView(const VSTGUI::CRect &size,
   int selected_generator = edit_controller->SelectedGenerator();
 
   VSTGUI::CRect column_size{0, 0, 40, getHeight()};
-  a_slider_ =
+  sliders_ = {
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_A, target),
-                              this, "A");
-  d_slider_ =
+                                  selected_generator, TAG_ENV_HT, target),
+                              this, "HT"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_D, target),
-                              this, "D");
-  s_slider_ =
+                                  selected_generator, TAG_ENV_AR, target),
+                              this, "AR"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_S, target),
-                              this, "S");
-  r_slider_ =
+                                  selected_generator, TAG_ENV_AL, target),
+                              this, "AL"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_R, target),
-                              this, "R");
-  vs_slider_ =
+                                  selected_generator, TAG_ENV_DR1, target),
+                              this, "DR1"),
+      new ParameterEditorView(column_size,
+                              edit_controller->FindRangedParameter(
+                                  selected_generator, TAG_ENV_DL1, target),
+                              this, "DL1"),
+      new ParameterEditorView(column_size,
+                              edit_controller->FindRangedParameter(
+                                  selected_generator, TAG_ENV_DR2, target),
+                              this, "DR2"),
+      new ParameterEditorView(column_size,
+                              edit_controller->FindRangedParameter(
+                                  selected_generator, TAG_ENV_SL, target),
+                              this, "S"),
+      new ParameterEditorView(column_size,
+                              edit_controller->FindRangedParameter(
+                                  selected_generator, TAG_ENV_RR1, target),
+                              this, "RR1"),
+      new ParameterEditorView(column_size,
+                              edit_controller->FindRangedParameter(
+                                  selected_generator, TAG_ENV_RL1, target),
+                              this, "RL1"),
+      new ParameterEditorView(column_size,
+                              edit_controller->FindRangedParameter(
+                                  selected_generator, TAG_ENV_RR2, target),
+                              this, "RR2"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_VS, target),
-                              this, "VS");
+                              this, "VS"),
+  };
 
   envelope_editor_ = new GraphicalEnvelopeEditorView(
-      {0, 0, 400, getHeight()}, this, edit_controller, selected_generator,
-      target);
+      {0, 0, 200, 100}, this, edit_controller,
+      selected_generator, target);
 
-  addView(a_slider_);
-  addView(d_slider_);
-  addView(s_slider_);
-  addView(r_slider_);
-  addView(vs_slider_);
+  auto *slider_row = new VSTGUI::CRowColumnView(
+      VSTGUI::CRect{0, 0, getWidth(), kModRowHeight}, kColumnStyle);
+  slider_row->setBackgroundColor(VSTGUI::kTransparentCColor);
+  addView(slider_row);
+
+  for (auto *slider : sliders_) {
+    slider_row->addView(slider);
+  }
   addView(envelope_editor_);
 }
 
@@ -68,21 +93,11 @@ void EnvelopeEditorView::valueChanged(VSTGUI::CControl *control) {
 void EnvelopeEditorView::SwitchGenerator(int new_generator) {
   envelope_editor_->SwitchGenerator(new_generator);
 
-  a_slider_->UpdateControlParameters(edit_controller(),
-                                     edit_controller()->FindRangedParameter(
-                                         new_generator, TAG_ENV_A, target()));
-  d_slider_->UpdateControlParameters(edit_controller(),
-                                     edit_controller()->FindRangedParameter(
-                                         new_generator, TAG_ENV_D, target()));
-  s_slider_->UpdateControlParameters(edit_controller(),
-                                     edit_controller()->FindRangedParameter(
-                                         new_generator, TAG_ENV_S, target()));
-  r_slider_->UpdateControlParameters(edit_controller(),
-                                     edit_controller()->FindRangedParameter(
-                                         new_generator, TAG_ENV_R, target()));
-  vs_slider_->UpdateControlParameters(edit_controller(),
-                                      edit_controller()->FindRangedParameter(
-                                          new_generator, TAG_ENV_VS, target()));
+  for (auto &slider : sliders_) {
+    slider->UpdateControlParameters(
+        edit_controller(), edit_controller()->FindRangedParameter(
+                               new_generator, slider->tag(), target()));
+  }
 }
 
 } // namespace ui

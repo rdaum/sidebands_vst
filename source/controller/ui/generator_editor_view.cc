@@ -74,14 +74,14 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
 
   a_target_view_ = new ModulatorTargetView(
       VSTGUI::CRect(0, 0, modulator_rows->getWidth() - c_slider_->getWidth(),
-                    kModRowHeight),
+                    kModRowHeight * 2),
       edit_controller, TARGET_A);
 
   k_target_view_ = new ModulatorTargetView(
       VSTGUI::CRect(0, 0,
                     modulator_rows->getWidth() - m_slider_->getWidth() -
                         k_slider_->getWidth(),
-                    kModRowHeight),
+                    kModRowHeight * 2),
       edit_controller, TARGET_K);
 
   auto *analysis_area = new VSTGUI::CRowColumnView(

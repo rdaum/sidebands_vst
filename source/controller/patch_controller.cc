@@ -146,15 +146,31 @@ void PatchController::AppendParameters(ParameterContainer *container) {
       const std::string env_name =
           absl::StrFormat("%s Env ", kTargetNames[target]);
       container->addParameter(EnvelopeParameter(
-          unit_id, env_name + " A", TAG_ENV_A, target, generator, 0, 5));
+          unit_id, env_name + " HT", TAG_ENV_HT, target, generator, 0, 1));
+
+      container->addParameter(EnvelopeParameter(
+          unit_id, env_name + " AR", TAG_ENV_AR, target, generator, 0, 1));
       container->addParameter(EnvelopeParameter(
           unit_id, env_name + " AL", TAG_ENV_AL, target, generator, 0, 1));
+
       container->addParameter(EnvelopeParameter(
-          unit_id, env_name + " D", TAG_ENV_D, target, generator, 0, 5));
+          unit_id, env_name + " DR1", TAG_ENV_DR1, target, generator, 0, 1));
       container->addParameter(EnvelopeParameter(
-          unit_id, env_name + " S", TAG_ENV_S, target, generator, 0, 1));
+          unit_id, env_name + " DL1", TAG_ENV_DL1, target, generator, 0, 1));
+
       container->addParameter(EnvelopeParameter(
-          unit_id, env_name + " R", TAG_ENV_R, target, generator, 0, 1));
+          unit_id, env_name + " DR2", TAG_ENV_DR2, target, generator, 0, 1));
+      container->addParameter(EnvelopeParameter(
+          unit_id, env_name + " SL", TAG_ENV_SL, target, generator, 0, 1));
+
+      container->addParameter(EnvelopeParameter(
+          unit_id, env_name + " RR1", TAG_ENV_RR1, target, generator, 0, 1));
+      container->addParameter(EnvelopeParameter(
+          unit_id, env_name + " RL1", TAG_ENV_RL1, target, generator, 0, 1));
+
+      container->addParameter(EnvelopeParameter(
+          unit_id, env_name + " RR2", TAG_ENV_RR2, target, generator, 0, 1));
+
       container->addParameter(EnvelopeParameter(
           unit_id, env_name + " VS", TAG_ENV_VS, target, generator, 0, 1));
 

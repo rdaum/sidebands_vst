@@ -41,13 +41,12 @@ private:
 
   struct Stage {
     std::string name;
-    enum class Type { OFF, RATE, LEVEL } type;
     double start_level;
     double end_level;
     double coefficient;
     double duration;
   };
-  off_t AddStage(double sample_rate, const std::string &name, Stage::Type type,
+  off_t AddStage(double sample_rate, const std::string &name,
                  double start_level, double end_level, double duration);
   void SetStage(off_t stage_number);
 
@@ -55,6 +54,7 @@ private:
   std::vector<Stage> stages_;
   off_t current_stage_ = 0;
   off_t release_stage_ = 0;
+  off_t sustain_stage_ = 0;
 
   const ParamValue minimum_level_;
   double current_level_;

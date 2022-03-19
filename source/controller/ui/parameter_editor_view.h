@@ -32,6 +32,9 @@ class ParameterEditorView : public VSTGUI::CRowColumnView,
   // IDependent overrides
   void update(Steinberg::FUnknown *unknown, Steinberg::int32 int_32) override;
 
+  TargetTag target() const;
+  ParamTag tag() const;
+
  private:
   std::vector<VSTGUI::CControl *> controls_;
   Steinberg::Vst::RangeParameter *parameter_;

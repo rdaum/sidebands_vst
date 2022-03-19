@@ -44,12 +44,9 @@ public:
   ParamValue s() const;
   ParamValue portamento() const;
 
-  struct ADSREnvelopeValues {
-    SampleAccurateValue A_R; // attack rate
-    SampleAccurateValue A_L; // attack peak level
-    SampleAccurateValue D_R; // decay rate
-    SampleAccurateValue S_L; // sustain level
-    SampleAccurateValue R_R; // release rate
+    struct ADSREnvelopeValues {
+    SampleAccurateValue HT, AR, DR1, DR2, RR1, RR2;
+    SampleAccurateValue     AL, DL1, SL, RL1;
     SampleAccurateValue VS;  // velocity sensitivity
   };
   struct LFOValues {

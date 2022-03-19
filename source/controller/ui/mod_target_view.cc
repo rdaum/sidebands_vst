@@ -3,6 +3,7 @@
 #include "controller/sidebands_controller.h"
 #include "controller/ui/envelope_editor_view.h"
 #include "controller/ui/lfo_editor_view.h"
+#include "controller/ui/gui_constants.h"
 
 namespace sidebands {
 namespace ui {
@@ -38,7 +39,7 @@ ModulatorTargetView::ModulatorTargetView(const VSTGUI::CRect &size,
   envelope_editor_view_ = new EnvelopeEditorView(
       VSTGUI::CRect(0, 0, getWidth(), getHeight()), edit_controller, target);
   lfo_editor_view_ = new LFOEditorView(
-      VSTGUI::CRect(0, 0, getWidth(), getHeight()), edit_controller, target);
+      VSTGUI::CRect(0, 0, getWidth(), kModRowHeight), edit_controller, target);
 
   addView(envelope_editor_view_);
   addView(lfo_editor_view_);

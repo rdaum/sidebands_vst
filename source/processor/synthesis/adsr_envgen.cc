@@ -38,14 +38,12 @@ void ADSREnvelopeGenerator::SetStage(off_t stage_number) {
 ParamValue ADSREnvelopeGenerator::NextSample(
     SampleRate sample_rate, const GeneratorPatch::ADSREnvelopeValues &ev) {
   // Off or sustain...
-  if (stages_[current_stage_].type == Stage::Type::OFF ||
-      stages_[current_stage_].type == Stage::Type::LEVEL)
+  if (current_stage_ == 0 || current_stage_ == sustain_stage_)
     return current_level_;
 
   auto c = stages_[current_stage_].coefficient;
   // If we've passed the duration of the current stage, advance.
-  if (stages_[current_stage_].type == Stage::Type::RATE &&
-      current_sample_index_ >= stages_[current_stage_].duration) {
+  if (current_sample_index_ >= stages_[current_stage_].duration) {
     SetStage(current_stage_ + 1);
   }
 
@@ -55,13 +53,13 @@ ParamValue ADSREnvelopeGenerator::NextSample(
 }
 
 off_t ADSREnvelopeGenerator::AddStage(double sample_rate,
-                                      const std::string &name, Stage::Type type,
+                                      const std::string &name,
                                       double start_level, double end_level,
                                       double duration) {
   off_t idx = stages_.size();
-  double duration_samples = duration * sample_rate;
+  double duration_samples = (1-duration) * sample_rate;
   stages_.push_back(
-      {name, type, start_level, end_level,
+      {name, start_level, end_level,
        EnvelopeRampCoefficient(start_level, end_level, duration_samples),
        duration_samples});
   return idx;
@@ -74,17 +72,20 @@ void ADSREnvelopeGenerator::On(SampleRate sample_rate,
   const auto &env = parameters->adsr_parameters;
 
   stages_ = {
-      Stage{"OFF", Stage::Type::OFF, minimum_level_, minimum_level_, 0, 0},
+      Stage{"OFF", minimum_level_, minimum_level_, 0, 0},
   };
-  AddStage(sample_rate, "Attack", Stage::Type::RATE, minimum_level_,
-           env.A_L.getValue(), env.A_R.getValue());
-  AddStage(sample_rate, "Decay", Stage::Type::RATE, env.A_L.getValue(),
-           env.S_L.getValue(), env.D_R.getValue());
-  AddStage(sample_rate, "Sustain", Stage::Type::LEVEL, env.S_L.getValue(),
-           env.S_L.getValue(), 0);
-  release_stage_ =
-      AddStage(sample_rate, "Release", Stage::Type::RATE, env.S_L.getValue(),
-               minimum_level_, env.R_R.getValue());
+  AddStage(sample_rate, "HT", minimum_level_, minimum_level_,
+           env.HT.getValue());
+  AddStage(sample_rate, "Attack", minimum_level_, env.AL.getValue(),
+           env.AR.getValue());
+  AddStage(sample_rate, "Decay1", env.AL.getValue(), env.DL1.getValue(),
+           env.DR1.getValue());
+  AddStage(sample_rate, "Decay2", env.DL1.getValue(), env.SL.getValue(),
+           env.DR2.getValue());
+  sustain_stage_ =
+      AddStage(sample_rate, "SUSTAIN", env.SL.getValue(), env.SL.getValue(), 0);
+  release_stage_ = AddStage(sample_rate, "Release1", env.SL.getValue(), env.RL1.getValue(),
+           env.RR1.getValue());
   SetStage(1);
   current_level_ = minimum_level_;
 }

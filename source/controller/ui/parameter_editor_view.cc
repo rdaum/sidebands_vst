@@ -137,5 +137,13 @@ void ParameterEditorView::UpdateControlParameters(
   setDirty(true);
 }
 
+TargetTag ParameterEditorView::target() const {
+  return TargetFor(parameter_->getInfo().id);
+}
+
+ParamTag ParameterEditorView::tag() const {
+  return ParamFor(parameter_->getInfo().id);
+}
+
 }  // namespace ui
 }  // namespace sidebands
