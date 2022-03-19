@@ -10,7 +10,7 @@ void EnvelopeGenerator::Amplitudes(
     SampleRate sample_rate, OscBuffer &buffer, ParamValue velocity,
     const GeneratorPatch::ModParams *parameters) {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
-  const auto &ev = parameters->adsr_parameters;
+  const auto &ev = parameters->envelope_parameters;
 
   for (int i = 0; i < buffer.size(); i++) {
     buffer[i] = NextSample(sample_rate, ev);
@@ -30,7 +30,7 @@ void EnvelopeGenerator::SetStage(off_t stage_number) {
   LOG(INFO) << "Advanced to stage: " << current_stage_ << " ("
             << stages_[current_stage_].name << ")"
             << " from: " << old_stage << " (" << stages_[old_stage].name
-            << ") duration: " << stages_[current_stage_].duration
+            << ") duration: " << stages_[current_stage_].duration_samples
             << " samples; coefficent: " << stages_[current_stage_].coefficient
             << " current level: " << current_level_;
 }
@@ -44,11 +44,12 @@ EnvelopeGenerator::NextSample(
 
   auto c = stages_[current_stage_].coefficient;
   // If we've passed the duration of the current stage, advance.
-  if (current_sample_index_ >= stages_[current_stage_].duration) {
+  if (current_sample_index_ >= stages_[current_stage_].duration_samples) {
     SetStage(current_stage_ + 1);
   }
 
-  current_level_ *= c;
+  if (c)
+    current_level_ *= c;
   current_sample_index_++;
   return current_level_;
 }
@@ -59,9 +60,11 @@ off_t EnvelopeGenerator::AddStage(double sample_rate,
                                   double duration) {
   off_t idx = stages_.size();
   double duration_samples = duration * sample_rate;
+  start_level = std::max(start_level, minimum_level_);
+  end_level = std::max(end_level, minimum_level_);
   stages_.push_back(
       {name, start_level, end_level,
-       EnvelopeRampCoefficient(start_level, end_level, duration_samples),
+       duration_samples ? EnvelopeRampCoefficient(start_level, end_level, duration_samples) : 0,
        duration_samples});
   return idx;
 }
@@ -70,7 +73,7 @@ void EnvelopeGenerator::On(SampleRate sample_rate,
                            const GeneratorPatch::ModParams *parameters) {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
   stages_.clear();
-  const auto &env = parameters->adsr_parameters;
+  const auto &env = parameters->envelope_parameters;
 
   stages_ = {
       Stage{"OFF", minimum_level_, minimum_level_, 0, 0},
@@ -87,6 +90,7 @@ void EnvelopeGenerator::On(SampleRate sample_rate,
       AddStage(sample_rate, "SUSTAIN", env.SL.getValue(), env.SL.getValue(), 0);
   release_stage_ = AddStage(sample_rate, "Release1", env.SL.getValue(), env.RL1.getValue(),
                             env.RR1.getValue());
+  AddStage(sample_rate, "Release2", env.RL1.getValue(), minimum_level_, env.RR2.getValue());
   SetStage(1);
   current_level_ = minimum_level_;
 }

@@ -10,6 +10,8 @@ using VSTGUI::CPoint;
 namespace sidebands {
 namespace ui {
 
+constexpr double kSustainDuration = 0.10;
+
 Steinberg::Vst::ParamValue ValueOf(Steinberg::Vst::RangeParameter *p) {
   return p ? p->toPlain(p->getNormalized()) : 0;
 }
@@ -47,7 +49,7 @@ void GraphicalEnvelopeEditorView::UpdateSegments() {
 
     total_duration += duration;
   }
-  total_duration += 0.5; // Add sustain.
+  total_duration += kSustainDuration;
 
   double xpos = getViewSize().left;
   double bottom = getViewSize().bottom;
@@ -58,7 +60,7 @@ void GraphicalEnvelopeEditorView::UpdateSegments() {
   for (auto &s : segments_) {
     bool is_sustain = s.start_level_param &&
                       ParamFor(s.start_level_param->getInfo().id) == TAG_ENV_SL;
-    auto duration = is_sustain ? 0.5 : ValueOf(s.rate_param);
+    auto duration = is_sustain ? kSustainDuration : ValueOf(s.rate_param);
     s.width = (((duration)) / total_duration) * width;
 
     auto start_level = ValueOf(s.start_level_param);
@@ -90,12 +92,10 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
       context == nullptr)
     return;
 
-  LOG(INFO) << "Draw: " << dirtyRect.getWidth();
-
   context->setFrameColor(VSTGUI::CColor(100, 0, 0));
   context->setFillColor(VSTGUI::CColor(100, 0, 0));
   context->setLineStyle(VSTGUI::kLineSolid);
-  context->setLineWidth(5);
+  context->setLineWidth(1);
   context->setDrawMode(VSTGUI::kAntiAliasing | VSTGUI::kNonIntegralMode);
   auto path = VSTGUI::owned(context->createGraphicsPath());
   if (path == nullptr)

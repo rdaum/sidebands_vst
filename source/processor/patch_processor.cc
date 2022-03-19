@@ -223,16 +223,16 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
       continue;
     DeclareParameter(TagFor(gennum_, TAG_MOD_TYPE, mt->target), &mt->mod_type,
                      0, kNumModTypes - 1);
-    DeclareParameter(&mt->adsr_parameters.HT);
-    DeclareParameter(&mt->adsr_parameters.AL);
-    DeclareParameter(&mt->adsr_parameters.AR);
-    DeclareParameter(&mt->adsr_parameters.DL1);
-    DeclareParameter(&mt->adsr_parameters.DR1);
-    DeclareParameter(&mt->adsr_parameters.DR2);
-    DeclareParameter(&mt->adsr_parameters.SL);
-    DeclareParameter(&mt->adsr_parameters.RR1);
-    DeclareParameter(&mt->adsr_parameters.RR2);
-    DeclareParameter(&mt->adsr_parameters.VS);
+    DeclareParameter(&mt->envelope_parameters.HT);
+    DeclareParameter(&mt->envelope_parameters.AL);
+    DeclareParameter(&mt->envelope_parameters.AR);
+    DeclareParameter(&mt->envelope_parameters.DL1);
+    DeclareParameter(&mt->envelope_parameters.DR1);
+    DeclareParameter(&mt->envelope_parameters.DR2);
+    DeclareParameter(&mt->envelope_parameters.SL);
+    DeclareParameter(&mt->envelope_parameters.RR1);
+    DeclareParameter(&mt->envelope_parameters.RR2);
+    DeclareParameter(&mt->envelope_parameters.VS);
     DeclareParameter(TagFor(gennum_, TAG_LFO_TYPE, mt->target),
                      &mt->lfo_parameters.type, 0, kNumLFOTypes - 1);
     DeclareParameter(&mt->lfo_parameters.amplitude);

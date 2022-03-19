@@ -44,7 +44,7 @@ private:
     double start_level;
     double end_level;
     double coefficient;
-    double duration;
+    double duration_samples;
   };
   off_t AddStage(double sample_rate, const std::string &name,
                  double start_level, double end_level, double duration);
@@ -58,7 +58,7 @@ private:
 
   const ParamValue minimum_level_;
   double current_level_;
-  size_t current_sample_index_;
+  off_t current_sample_index_;
 };
 
 } // namespace sidebands

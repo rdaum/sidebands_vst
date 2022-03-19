@@ -44,9 +44,8 @@ public:
   ParamValue s() const;
   ParamValue portamento() const;
 
-    struct EnvelopeValues {
-    SampleAccurateValue HT, AR, DR1, DR2, RR1, RR2;
-    SampleAccurateValue     AL, DL1, SL, RL1;
+  struct EnvelopeValues {
+    SampleAccurateValue HT, AR, AL, DR1, DL1, DR2, SL, RR1, RL1, RR2;
     SampleAccurateValue VS;  // velocity sensitivity
   };
   struct LFOValues {
@@ -58,7 +57,7 @@ public:
   struct ModParams {
     TargetTag target;
     ParamValue mod_type;
-    EnvelopeValues adsr_parameters;
+    EnvelopeValues envelope_parameters;
     LFOValues lfo_parameters;
   };
 
