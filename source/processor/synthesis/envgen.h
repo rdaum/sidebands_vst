@@ -17,9 +17,9 @@ namespace ui {
 class GraphicalEnvelopeEditorView;
 } // namespace ui
 
-class ADSREnvelopeGenerator : public IModulationSource {
+class EnvelopeGenerator : public IModulationSource {
 public:
-  explicit ADSREnvelopeGenerator()
+  explicit EnvelopeGenerator()
       : minimum_level_(0.0001), current_stage_(0), current_level_(minimum_level_),
         current_sample_index_(0) {}
 

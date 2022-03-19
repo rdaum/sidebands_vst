@@ -1,4 +1,4 @@
-#include "adsr_envgen.h"
+#include "envgen.h"
 
 #include <glog/logging.h>
 
@@ -6,7 +6,7 @@
 
 namespace sidebands {
 
-void ADSREnvelopeGenerator::Amplitudes(
+void EnvelopeGenerator::Amplitudes(
     SampleRate sample_rate, OscBuffer &buffer, ParamValue velocity,
     const GeneratorPatch::ModParams *parameters) {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
@@ -21,7 +21,7 @@ void ADSREnvelopeGenerator::Amplitudes(
   VmulInplace(buffer, velocity_scale);
 }
 
-void ADSREnvelopeGenerator::SetStage(off_t stage_number) {
+void EnvelopeGenerator::SetStage(off_t stage_number) {
   off_t old_stage = current_stage_;
   current_stage_ = stage_number;
   current_sample_index_ = 0;
@@ -35,7 +35,8 @@ void ADSREnvelopeGenerator::SetStage(off_t stage_number) {
             << " current level: " << current_level_;
 }
 
-ParamValue ADSREnvelopeGenerator::NextSample(
+ParamValue
+EnvelopeGenerator::NextSample(
     SampleRate sample_rate, const GeneratorPatch::ADSREnvelopeValues &ev) {
   // Off or sustain...
   if (current_stage_ == 0 || current_stage_ == sustain_stage_)
@@ -52,12 +53,12 @@ ParamValue ADSREnvelopeGenerator::NextSample(
   return current_level_;
 }
 
-off_t ADSREnvelopeGenerator::AddStage(double sample_rate,
-                                      const std::string &name,
-                                      double start_level, double end_level,
-                                      double duration) {
+off_t EnvelopeGenerator::AddStage(double sample_rate,
+                                  const std::string &name,
+                                  double start_level, double end_level,
+                                  double duration) {
   off_t idx = stages_.size();
-  double duration_samples = (1-duration) * sample_rate;
+  double duration_samples = duration * sample_rate;
   stages_.push_back(
       {name, start_level, end_level,
        EnvelopeRampCoefficient(start_level, end_level, duration_samples),
@@ -65,8 +66,8 @@ off_t ADSREnvelopeGenerator::AddStage(double sample_rate,
   return idx;
 }
 
-void ADSREnvelopeGenerator::On(SampleRate sample_rate,
-                               const GeneratorPatch::ModParams *parameters) {
+void EnvelopeGenerator::On(SampleRate sample_rate,
+                           const GeneratorPatch::ModParams *parameters) {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
   stages_.clear();
   const auto &env = parameters->adsr_parameters;
@@ -85,19 +86,19 @@ void ADSREnvelopeGenerator::On(SampleRate sample_rate,
   sustain_stage_ =
       AddStage(sample_rate, "SUSTAIN", env.SL.getValue(), env.SL.getValue(), 0);
   release_stage_ = AddStage(sample_rate, "Release1", env.SL.getValue(), env.RL1.getValue(),
-           env.RR1.getValue());
+                            env.RR1.getValue());
   SetStage(1);
   current_level_ = minimum_level_;
 }
 
-void ADSREnvelopeGenerator::Release(
+void EnvelopeGenerator::Release(
     SampleRate sample_rate, const GeneratorPatch::ModParams *parameters) {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
 
   SetStage(release_stage_);
 }
 
-void ADSREnvelopeGenerator::Reset() {
+void EnvelopeGenerator::Reset() {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
 
   current_sample_index_ = 0;
@@ -105,11 +106,11 @@ void ADSREnvelopeGenerator::Reset() {
   current_stage_ = 0;
 }
 
-ModType ADSREnvelopeGenerator::mod_type() const {
+ModType EnvelopeGenerator::mod_type() const {
   return ModType::ADSR_ENVELOPE;
 }
 
-bool ADSREnvelopeGenerator::Playing() const {
+bool EnvelopeGenerator::Playing() const {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
   return current_stage_ != 0;
 }

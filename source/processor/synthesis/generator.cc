@@ -105,7 +105,7 @@ void Generator::ConfigureModulators(const GeneratorPatch &patch) {
         break;
       case ModType::ADSR_ENVELOPE:
         modulators_[target][off_t(mod_type)] =
-            std::make_unique<ADSREnvelopeGenerator>();
+            std::make_unique<EnvelopeGenerator>();
         break;
       case ModType::LFO:
         modulators_[target][off_t(mod_type)] = std::make_unique<LFO>();

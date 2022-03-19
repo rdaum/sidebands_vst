@@ -194,15 +194,15 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
     ParamValue mod_type(default_mod_type);
     ADSREnvelopeValues envelope_values{
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_HT, target), 0.0, 0, 1),
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_AR, target), 0.67, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_AR, target), 0.19, 0, 1),
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_AL, target), 0.9, 0, 1),
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_DR1, target), 0.50, 0, 1),
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_DL1, target), 0.9, 0, 1),
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_DR2, target), 0.10, 0, 1),
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_SL, target), 0.20, 0, 1),
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_RR1, target), 0.10, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_DR1, target), 0.2, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_DL1, target), 0.5, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_DR2, target), 0.5, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_SL, target), 0.3, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_RR1, target), 0.6, 0, 1),
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_RL1, target), 0.10, 0, 1),
-        SampleAccurateValue(TagFor(gennum_, TAG_ENV_RR2, target), 0.10, 0, 1),
+        SampleAccurateValue(TagFor(gennum_, TAG_ENV_RR2, target), 0.15, 0, 1),
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_VS, target), 1, 0, 1),
     };
     LFOValues lfo_values{

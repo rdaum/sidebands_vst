@@ -109,8 +109,8 @@ smtg_add_vst3plugin(sidebands
 
         source/processor/synthesis/dsp.cc
         source/processor/synthesis/dsp.h
-        source/processor/synthesis/adsr_envgen.h
-        source/processor/synthesis/adsr_envgen.cc
+        source/processor/synthesis/envgen.h
+        source/processor/synthesis/envgen.cc
         source/processor/synthesis/lfo.h
         source/processor/synthesis/lfo.cc
         source/processor/synthesis/oscillator.h
