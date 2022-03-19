@@ -192,7 +192,7 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
                                 : (int)ModType::NONE;
 
     ParamValue mod_type(default_mod_type);
-    ADSREnvelopeValues envelope_values{
+    EnvelopeValues envelope_values{
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_HT, target), 0.0, 0, 1),
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_AR, target), 0.19, 0, 1),
         SampleAccurateValue(TagFor(gennum_, TAG_ENV_AL, target), 0.9, 0, 1),

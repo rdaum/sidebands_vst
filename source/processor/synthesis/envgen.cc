@@ -37,7 +37,7 @@ void EnvelopeGenerator::SetStage(off_t stage_number) {
 
 ParamValue
 EnvelopeGenerator::NextSample(
-    SampleRate sample_rate, const GeneratorPatch::ADSREnvelopeValues &ev) {
+    SampleRate sample_rate, const GeneratorPatch::EnvelopeValues &ev) {
   // Off or sustain...
   if (current_stage_ == 0 || current_stage_ == sustain_stage_)
     return current_level_;

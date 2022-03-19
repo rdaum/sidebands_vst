@@ -37,7 +37,7 @@ public:
 
 private:
   ParamValue NextSample(SampleRate sample_rate,
-                        const GeneratorPatch::ADSREnvelopeValues &ev);
+                        const GeneratorPatch::EnvelopeValues &ev);
 
   struct Stage {
     std::string name;
