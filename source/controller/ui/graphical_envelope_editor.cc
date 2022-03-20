@@ -10,8 +10,8 @@ using VSTGUI::CPoint;
 namespace sidebands {
 namespace ui {
 
-constexpr double kSustainDuration = 0.10;
-constexpr double kDragboxWidthHeight = 5;
+constexpr double kSustainDuration = 0.25;
+constexpr double kDragboxWidthHeight = 8;
 constexpr double kDragboxHalfWidthHeight = kDragboxWidthHeight / 2;
 
 Steinberg::Vst::ParamValue ValueOf(Steinberg::Vst::RangeParameter *p) {
@@ -47,8 +47,10 @@ void GraphicalEnvelopeEditorView::UpdateSegments() {
 
   double total_duration = 0.0f;
   for (auto s : segments_) {
-    bool is_sustain = s.start_level_param &&
-                      ParamFor(s.start_level_param->getInfo().id) == TAG_ENV_SL;
+    bool is_sustain =
+        s.start_level_param &&
+        ParamFor(s.start_level_param->getInfo().id) == TAG_ENV_SL &&
+        s.rate_param == nullptr;
     auto duration = is_sustain ? kSustainDuration : ValueOf(s.rate_param);
 
     total_duration += duration;
@@ -61,8 +63,10 @@ void GraphicalEnvelopeEditorView::UpdateSegments() {
   double height = getHeight();
 
   for (auto &s : segments_) {
-    bool is_sustain = s.start_level_param &&
-                      ParamFor(s.start_level_param->getInfo().id) == TAG_ENV_SL && s.rate_param == nullptr;
+    bool is_sustain =
+        s.start_level_param &&
+        ParamFor(s.start_level_param->getInfo().id) == TAG_ENV_SL &&
+        s.rate_param == nullptr;
     auto duration = is_sustain ? kSustainDuration : ValueOf(s.rate_param);
     s.width = ((duration)) / total_duration * width;
 
@@ -76,10 +80,11 @@ void GraphicalEnvelopeEditorView::UpdateSegments() {
     xpos += s.width;
     s.end_point = {xpos, yright};
 
-    s.drag_box = {s.end_point.x - kDragboxHalfWidthHeight,
-                  s.end_point.y - kDragboxHalfWidthHeight,
-                  s.end_point.x + kDragboxHalfWidthHeight,
-                  s.end_point.y + kDragboxHalfWidthHeight};
+    if (s.rate_param || s.start_level_param)
+      s.drag_box = {s.end_point.x - kDragboxHalfWidthHeight,
+                    s.end_point.y - kDragboxHalfWidthHeight,
+                    s.end_point.x + kDragboxHalfWidthHeight,
+                    s.end_point.y + kDragboxHalfWidthHeight};
   }
 }
 
@@ -129,7 +134,8 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
   context->setFrameColor(VSTGUI::CColor(0, 0, 100));
   context->setLineWidth(1);
   for (auto &s : segments_) {
-    context->drawRect(s.drag_box);
+    if ((s.rate_param || s.end_level_param) && s.drag_box.top != 0)
+      context->drawRect(s.drag_box);
   }
   setDirty(false);
 }
@@ -137,10 +143,12 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
 VSTGUI::CMouseEventResult
 GraphicalEnvelopeEditorView::onMouseDown(CPoint &where,
                                          const VSTGUI::CButtonState &buttons) {
-  if (buttons.isLeftButton() && !dragging_)
+  if (buttons.isLeftButton() && !dragging_segment_)
     for (auto &s : segments_) {
       if (s.drag_box.pointInside(where)) {
-        dragging_ = &s;
+        if (s.rate_param || s.start_level_param)
+          dragging_segment_ = &s;
+        getFrame()->setCursor(VSTGUI::kCursorSizeAll);
         return VSTGUI::kMouseEventHandled;
       }
     }
@@ -151,18 +159,22 @@ GraphicalEnvelopeEditorView::onMouseDown(CPoint &where,
 VSTGUI::CMouseEventResult
 GraphicalEnvelopeEditorView::onMouseMoved(CPoint &where,
                                           const VSTGUI::CButtonState &buttons) {
-  if (!dragging_ || !buttons.isLeftButton())
+  if (!dragging_segment_ || !buttons.isLeftButton()) {
     return VSTGUI::kMouseEventNotHandled;
+  }
 
-  if (dragging_) {
-    float change_x = where.x - dragging_->end_point.x;
-    float change_n = 1.0 - (where.y / getHeight());
-    float change_r = change_x / dragging_->width;
-    if (dragging_->rate_param)
-      dragging_->rate_param->setNormalized(
-          std::max(dragging_->rate_param->getNormalized() * change_r, 0.01));
-    if (dragging_->end_level_param)
-      dragging_->end_level_param->setNormalized(change_n);
+  double y = where.y - getViewSize().top;
+  LOG(INFO) << "X: " << where.x << " Y:" << y << " vs: " << getViewSize().left << " " << getViewSize().top;
+  if (dragging_segment_) {
+    float change_x = where.x - dragging_segment_->end_point.x;
+    float change_r = change_x / dragging_segment_->width;
+    if (dragging_segment_->rate_param)
+      dragging_segment_->rate_param->setNormalized(std::max(
+          dragging_segment_->rate_param->getNormalized() * change_r, 0.01));
+
+    float change_n = 1 - (y / getHeight());
+    if (dragging_segment_->end_level_param)
+      dragging_segment_->end_level_param->setNormalized(change_n);
 
     UpdateSegments();
     setDirty(true);
@@ -175,8 +187,8 @@ GraphicalEnvelopeEditorView::onMouseMoved(CPoint &where,
 VSTGUI::CMouseEventResult
 GraphicalEnvelopeEditorView::onMouseUp(CPoint &where,
                                        const VSTGUI::CButtonState &buttons) {
-  if (buttons.isLeftButton() && dragging_) {
-    dragging_ = nullptr;
+  if (buttons.isLeftButton() && dragging_segment_) {
+    dragging_segment_ = nullptr;
     getFrame()->setCursor(VSTGUI::kCursorDefault);
     return VSTGUI::kMouseEventHandled;
   }

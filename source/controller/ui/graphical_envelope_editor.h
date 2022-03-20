@@ -58,7 +58,7 @@ class GraphicalEnvelopeEditorView : public VSTGUI::CView,
 
   std::vector<Steinberg::Vst::RangeParameter*> envelope_parameters;
   std::vector<Segment> segments_;
-  Segment *dragging_ = nullptr;
+  Segment *dragging_segment_ = nullptr;
 };
 
 }  // namespace ui

@@ -27,12 +27,6 @@ void EnvelopeGenerator::SetStage(off_t stage_number) {
   current_sample_index_ = 0;
   if (current_stage_ >= stages_.size())
     current_stage_ = 0;
-  LOG(INFO) << "Advanced to stage: " << current_stage_ << " ("
-            << stages_[current_stage_].name << ")"
-            << " from: " << old_stage << " (" << stages_[old_stage].name
-            << ") duration: " << stages_[current_stage_].duration_samples
-            << " samples; coefficent: " << stages_[current_stage_].coefficient
-            << " current level: " << current_level_;
 }
 
 ParamValue
