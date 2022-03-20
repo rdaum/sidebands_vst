@@ -26,9 +26,9 @@ ModulatorTargetView::ModulatorTargetView(const VSTGUI::CRect &size,
       VSTGUI::CRowColumnView::kColumnStyle,
       VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2);
 
-  std::string title = absl::StrFormat("%s modulation", kTargetNames[target]);
+  std::string title = absl::StrFormat("%s modulation", kTargetLongNames[target]);
   title_row->addView(new VSTGUI::CTextLabel(
-      VSTGUI::CRect(0, 0, 100, kTitleBarHeight), title.c_str()));
+      VSTGUI::CRect(0, 0, 200, kTitleBarHeight), title.c_str()));
 
   if (target != TARGET_A) {
     mod_source_selector_ = new VSTGUI::COptionMenu(

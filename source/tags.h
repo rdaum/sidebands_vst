@@ -35,11 +35,10 @@ enum ParamTag {
   TAG_LFO_AMP,
   TAG_LFO_VS,
   TAG_LFO_TYPE,
-  TAG_SELECTED_GENERATOR,  // valid only with "0" for generator and TARGET_NA
+  TAG_SELECTED_GENERATOR, // valid only with "0" for generator and TARGET_NA
   TAG_MOD_TYPE,
   TAG_NUM_TAGS
 };
-
 
 constexpr const char *kParamNames[]{
     "SELECT",  "TOGGLE", "OSC",      "ENV_A",         "ENV_AL",
@@ -60,6 +59,10 @@ enum TargetTag {
 
 constexpr const char *kTargetNames[]{"NONE", "C", "A", "M",
                                      "K",    "R", "S", "PORTAMENTO"};
+
+constexpr const char *kTargetLongNames[]{
+    "None", "Carrier ratio", "Amplitude", "FM ratio", "FM level", "R",
+    "S",    "Portamento"};
 
 constexpr const TargetTag kModulationTargets[]{
     TARGET_C, TARGET_A, TARGET_M, TARGET_K, TARGET_R, TARGET_S,
@@ -90,5 +93,4 @@ std::string TagStr(Steinberg::Vst::ParamID tag);
 Steinberg::Vst::ParamID TagFor(uint8_t generator, ParamTag param,
                                TargetTag target);
 
-
-}  // namespace sidebands
+} // namespace sidebands
