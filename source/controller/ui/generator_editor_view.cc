@@ -49,39 +49,39 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_C),
-                              this, "C");
+                              this,ParameterEditorStyle::VERTICAL_SHORT,  "C");
 
   m_slider_ =
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_M),
-                              this, "M");
+                              this, ParameterEditorStyle::VERTICAL_SHORT, "M");
   k_slider_ =
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_K),
-                              this, "K");
+                              this,ParameterEditorStyle::VERTICAL_SHORT,  "K");
   r_slider_ =
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_R),
-                              this, "R");
+                              this, ParameterEditorStyle::VERTICAL_SHORT, "R");
   s_slider_ =
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_S),
-                              this, "S");
+                              this,ParameterEditorStyle::VERTICAL_SHORT,  "S");
 
   a_target_view_ = new ModulatorTargetView(
       VSTGUI::CRect(0, 0, modulator_rows->getWidth() - c_slider_->getWidth(),
-                    kModRowHeight * 2),
+                    kModRowHeight),
       edit_controller, TARGET_A);
 
   k_target_view_ = new ModulatorTargetView(
       VSTGUI::CRect(0, 0,
                     modulator_rows->getWidth() - m_slider_->getWidth() -
                         k_slider_->getWidth(),
-                    kModRowHeight * 2),
+                    kModRowHeight),
       edit_controller, TARGET_K);
 
   auto *analysis_area = new VSTGUI::CRowColumnView(

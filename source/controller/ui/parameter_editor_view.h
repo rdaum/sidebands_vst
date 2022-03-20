@@ -12,6 +12,12 @@ class SidebandsController;
 
 namespace ui {
 
+enum class ParameterEditorStyle {
+  VERTICAL_TALL,
+  VERTICAL_SHORT,
+  HORIZONTAL_SHORT
+};
+
 // Combination of a slider and numeric text editor and possibly other things.
 // Tied to a single parameter and updating itself in response to parameter
 // changes.
@@ -21,6 +27,7 @@ class ParameterEditorView : public VSTGUI::CRowColumnView,
   ParameterEditorView(const VSTGUI::CRect &size,
                       Steinberg::Vst::RangeParameter *parameter,
                       VSTGUI::IControlListener *listener,
+                       ParameterEditorStyle style = ParameterEditorStyle::VERTICAL_TALL,
                       const std::string &label = "");
   ~ParameterEditorView() override;
 

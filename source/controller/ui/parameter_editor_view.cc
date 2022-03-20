@@ -13,19 +13,28 @@ namespace ui {
 
 namespace {
 
+VSTGUI::CControl *
+MakeVerticalSlider(Steinberg::Vst::RangeParameter *range_parameter,
+                   VSTGUI::IControlListener *listener,
+                   ParameterEditorStyle style) {
+  SliderDesc slider_desc;
+  switch (style) {
+  case ParameterEditorStyle::VERTICAL_TALL:
+    slider_desc = kVerticalSliderTallDimensions;
+    break;
+  case ParameterEditorStyle::VERTICAL_SHORT:
+    slider_desc = kVerticalSliderShortDimensions;
+    break;
+  case ParameterEditorStyle::HORIZONTAL_SHORT:
+    slider_desc = kHorizontalSliderShortDimensions;
+    break;
+  }
 
-
-VSTGUI::CResourceDescription kSliderBackground("slider_rail.png");
-VSTGUI::CResourceDescription kSliderHandle("slider_handle.png");
-
-VSTGUI::CControl *MakeVerticalSlider(
-    Steinberg::Vst::RangeParameter *range_parameter,
-    VSTGUI::IControlListener *listener) {
   auto *slider_control = new VSTGUI::CVerticalSlider(
-      VSTGUI::CRect(0, 0, kSliderWidth, kSliderHeight), listener,
-      range_parameter->getInfo().id, 0, kSliderMaxPos,
-      new VSTGUI::CBitmap(kSliderHandle),
-      new VSTGUI::CBitmap(kSliderBackground));
+      VSTGUI::CRect(0, 0, slider_desc.width, slider_desc.height),
+      listener, range_parameter->getInfo().id, 0, slider_desc.max_pos,
+      new VSTGUI::CBitmap(slider_desc.handle),
+      new VSTGUI::CBitmap(slider_desc.background));
   slider_control->setBackgroundOffset(VSTGUI::CPoint(-7.5, 0));
   slider_control->setOffsetHandle(VSTGUI::CPoint(4, 0));
   slider_control->setMax(range_parameter->getMax());
@@ -35,11 +44,12 @@ VSTGUI::CControl *MakeVerticalSlider(
   return slider_control;
 }
 
-VSTGUI::CControl *MakeNumericEditor(
-    Steinberg::Vst::RangeParameter *range_parameter,
-    VSTGUI::IControlListener *listener) {
+VSTGUI::CControl *
+MakeNumericEditor(Steinberg::Vst::RangeParameter *range_parameter,
+                  VSTGUI::IControlListener *listener) {
+
   auto *edit_control = new VSTGUI::CTextEdit(
-      VSTGUI::CRect(0, 0, kSliderWidth, kNumericEditHeight), listener,
+      VSTGUI::CRect(0, 0, kNumericEditWidth, kNumericEditHeight), listener,
       range_parameter->getInfo().id);
   edit_control->setMax(range_parameter->getMax());
   edit_control->setMin(range_parameter->getMin());
@@ -48,7 +58,7 @@ VSTGUI::CControl *MakeNumericEditor(
   edit_control->setFontColor(VSTGUI::kBlackCColor);
   edit_control->setFrameWidth(0);
   edit_control->setFont(VSTGUI::kNormalFontSmall);
-  
+
   VSTGUI::CTextEdit::StringToValueFunction str_function =
       [](VSTGUI::UTF8StringPtr txt, float &result,
          VSTGUI::CTextEdit *textEdit) -> bool {
@@ -65,11 +75,12 @@ VSTGUI::CControl *MakeNumericEditor(
   return edit_control;
 }
 
-}  // namespace
+} // namespace
 
 ParameterEditorView::ParameterEditorView(
     const VSTGUI::CRect &size, Steinberg::Vst::RangeParameter *parameter,
-    VSTGUI::IControlListener *listener, const std::string &label)
+    VSTGUI::IControlListener *listener, ParameterEditorStyle style,
+    const std::string &label)
     : VSTGUI::CRowColumnView(
           size, VSTGUI::CRowColumnView::kRowStyle,
           VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2),
@@ -78,7 +89,7 @@ ParameterEditorView::ParameterEditorView(
 
   parameter->addDependent(this);
 
-  controls_ = {MakeVerticalSlider(parameter, listener),
+  controls_ = {MakeVerticalSlider(parameter, listener, style),
                MakeNumericEditor(parameter, listener)};
   if (!label.empty()) {
     VSTGUI::CTextLabel *column_label = new VSTGUI::CTextLabel(
@@ -100,13 +111,15 @@ ParameterEditorView::~ParameterEditorView() {
 
 void ParameterEditorView::update(Steinberg::FUnknown *unknown,
                                  Steinberg::int32 message) {
-  if (message != IDependent::kChanged) return;
+  if (message != IDependent::kChanged)
+    return;
   Steinberg::Vst::Parameter *changed_param;
   if (unknown->queryInterface(Steinberg::Vst::Parameter::iid,
                               (void **)&changed_param) != Steinberg::kResultOk)
     return;
 
-  if (changed_param != parameter_) return;
+  if (changed_param != parameter_)
+    return;
 
   // Make sure all values are updated.
   for (auto *control : controls_) {
@@ -145,5 +158,5 @@ ParamTag ParameterEditorView::tag() const {
   return ParamFor(parameter_->getInfo().id);
 }
 
-}  // namespace ui
-}  // namespace sidebands
+} // namespace ui
+} // namespace sidebands

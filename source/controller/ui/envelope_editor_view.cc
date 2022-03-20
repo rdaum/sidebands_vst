@@ -13,7 +13,7 @@ EnvelopeEditorView::EnvelopeEditorView(const VSTGUI::CRect &size,
                                        SidebandsController *edit_controller,
                                        TargetTag target)
     : VSTGUI::CRowColumnView(
-          size, VSTGUI::CRowColumnView::kRowStyle,
+          size, VSTGUI::CRowColumnView::kColumnStyle,
           VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2),
       ModulatorEditorView(edit_controller, target) {
   setBackgroundColor(VSTGUI::kTransparentCColor);
@@ -25,61 +25,61 @@ EnvelopeEditorView::EnvelopeEditorView(const VSTGUI::CRect &size,
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_HT, target),
-                              this, "HT"),
+                              this, ParameterEditorStyle::VERTICAL_SHORT, "HT"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_AR, target),
-                              this, "AR"),
+                              this, ParameterEditorStyle::VERTICAL_SHORT, "AR"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_AL, target),
-                              this, "AL"),
+                              this, ParameterEditorStyle::VERTICAL_SHORT, "AL"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_DR1, target),
-                              this, "DR1"),
+                              this, ParameterEditorStyle::VERTICAL_SHORT,
+                              "DR1"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_DL1, target),
-                              this, "DL1"),
+                              this, ParameterEditorStyle::VERTICAL_SHORT,
+                              "DL1"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_DR2, target),
-                              this, "DR2"),
+                              this, ParameterEditorStyle::VERTICAL_SHORT,
+                              "DR2"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_SL, target),
-                              this, "S"),
+                              this, ParameterEditorStyle::VERTICAL_SHORT, "S"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_RR1, target),
-                              this, "RR1"),
+                              this, ParameterEditorStyle::VERTICAL_SHORT,
+                              "RR1"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_RL1, target),
-                              this, "RL1"),
+                              this, ParameterEditorStyle::VERTICAL_SHORT,
+                              "RL1"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_RR2, target),
-                              this, "RR2"),
+                              this, ParameterEditorStyle::VERTICAL_SHORT,
+                              "RR2"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_ENV_VS, target),
-                              this, "VS"),
+                              this, ParameterEditorStyle::VERTICAL_SHORT, "VS"),
   };
 
-  envelope_editor_ = new GraphicalEnvelopeEditorView(
-      {0, 0, 200, 100}, this, edit_controller,
-      selected_generator, target);
-
-  auto *slider_row = new VSTGUI::CRowColumnView(
-      VSTGUI::CRect{0, 0, getWidth(), kModRowHeight}, kColumnStyle);
-  slider_row->setBackgroundColor(VSTGUI::kTransparentCColor);
-  addView(slider_row);
-
   for (auto *slider : sliders_) {
-    slider_row->addView(slider);
+    addView(slider);
   }
+  envelope_editor_ = new GraphicalEnvelopeEditorView(
+      {0, 0, 200, getHeight()}, this, edit_controller, selected_generator, target);
+
   addView(envelope_editor_);
 }
 

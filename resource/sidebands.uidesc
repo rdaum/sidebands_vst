@@ -2,14 +2,14 @@
   "vstgui-ui-description": {
     "version": "1",
     "bitmaps": {
-      "background": {
-        "path": "background.png"
+      "slider_rail_horizontal_small": {
+        "path": "slider_rail_horizontal_small.png"
       },
-      "switches": {
-        "path": "switches.png"
+      "slider_rail_vertical_small": {
+        "path": "slider_rail_vertical_small.png"
       },
-      "slider_background": {
-        "path": "slider_rail.png"
+      "slider_rail_vertical_large": {
+        "path": "slider_rail_vertical_large.png"
       },
       "slider_handle": {
         "path": "slider_handle.png"
@@ -20,17 +20,14 @@
       "metallic_knob_handle": {
         "path": "metallic_knob_handle.png"
       },
-      "knob": {
-        "path": "knob2.png"
-      },
       "select": {
         "path": "select.png"
       },
       "on-off": {
         "path": "on-off.png"
       },
-      "toggle": {
-        "path": "toggle.png"
+      "toggle_switch": {
+        "path": "toggle_switch.png"
       }
     },
     "fonts": {},

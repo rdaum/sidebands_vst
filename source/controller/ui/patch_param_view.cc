@@ -43,42 +43,5 @@ class ParameterChangeListener : public Steinberg::FObject {
 
 }  // namespace
 
-void PatchParameterView::RmDependent(int tag_id) {
-  Steinberg::Vst::Parameter *param =
-      edit_controller_->getParameterObject(tag_id);
-  if (param) param->removeDependent(this);
-}
-
-VSTGUI::CControl *PatchParameterView::NewKnob(uint16_t generator,
-                                              ParamTag param, TargetTag sp) {
-  Steinberg::Vst::RangeParameter *ranged_parameter =
-      edit_controller()->FindRangedParameter(generator, param, sp);
-
-  auto *control =
-      new VSTGUI::CAnimKnob(VSTGUI::CRect(0, 0, kKnobWidth, kKnobHeight), this,
-                            ranged_parameter->getInfo().id, kKnobSubpixmaps,
-                            kKnobHeight, new VSTGUI::CBitmap(kKnob));
-  control->setValue(ranged_parameter->getNormalized());
-  control->setMax(ranged_parameter->getMax());
-  control->setMin(ranged_parameter->getMin());
-  ranged_parameter->addDependent(this);
-
-  return control;
-}
-
-VSTGUI::CControl *PatchParameterView::NewToggle(uint16_t generator,
-                                                ParamTag param, TargetTag sp) {
-  ParamID tag = TagFor(generator, param, sp);
-  auto *param_obj = edit_controller_->getParameterObject(tag);
-  auto *control = new VSTGUI::COnOffButton(
-      VSTGUI::CRect(0, 0, kToggleButtonWidth, 15), this,
-      TagFor(generator, param, sp), new VSTGUI::CBitmap(kToggleSwitch));
-  control->setValue(param_obj->getNormalized());
-  param_obj->addDependent(this);
-  param_obj->addDependent(new ParameterChangeListener(param_obj, control));
-
-  return control;
-}
-
 }  // namespace ui
 }  // namespace sidebands

@@ -168,10 +168,10 @@ if (SMTG_ADD_VSTGUI)
     smtg_target_add_plugin_resources(sidebands
             RESOURCES
             "resource/sidebands.uidesc"
-            "resource/slider_rail.png"
+            "resource/slider_rail_horizontal_small.png"
+            "resource/slider_rail_vertical_small.png"
+            "resource/slider_rail_vertical_large.png"
             "resource/slider_handle.png"
-            "resource/switches.png"
-            "resource/knob2.png"
             "resource/toggle_switch.png"
             "resource/on-off.png"
             "resource/select.png"

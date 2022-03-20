@@ -22,21 +22,22 @@ DrawbarView::DrawbarView(const VSTGUI::CRect &size,
   setBackgroundColor(VSTGUI::kTransparentCColor);
 
   auto *label_column = new VSTGUI::CRowColumnView(
-      VSTGUI::CRect(0, 0, 40, kSliderHeight + kToggleButtonHeight + kToggleButtonHeight), VSTGUI::CRowColumnView::kRowStyle,
+      VSTGUI::CRect(0, 0, 40,
+                    kVerticalSliderTallDimensions.height + kToggleButtonHeight + kToggleButtonHeight), VSTGUI::CRowColumnView::kRowStyle,
       VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2);
   label_column->setBackgroundColor(VSTGUI::kTransparentCColor);
   auto *on_off_label =
-      new VSTGUI::CView(VSTGUI::CRect(0, 0, 36, kToggleButtonHeight));
+      new VSTGUI::CView(VSTGUI::CRect(0, 0, kToggleButtonWidth, kToggleButtonHeight));
   on_off_label->setBackground(new VSTGUI::CBitmap(kOnOff));
 
   label_column->addView(on_off_label);
 
   // spacer
   label_column->addView(new VSTGUI::CView(
-      VSTGUI::CRect(0, 0, 36, kSliderHeight)));
+      VSTGUI::CRect(0, 0, 36, kVerticalSliderTallDimensions.height)));
 
   auto *select_label =
-      new VSTGUI::CView(VSTGUI::CRect(0, 0, 36, kToggleButtonHeight));
+      new VSTGUI::CView(VSTGUI::CRect(0, 0, kToggleButtonWidth, kToggleButtonHeight));
   select_label->setBackground(new VSTGUI::CBitmap(kSelect));
   label_column->addView(select_label);
 
@@ -45,7 +46,8 @@ DrawbarView::DrawbarView(const VSTGUI::CRect &size,
   int selected_generator = edit_controller->SelectedGenerator();
   for (int drawbar_num = 0; drawbar_num < kNumGenerators; drawbar_num++) {
     auto *column = new VSTGUI::CRowColumnView(
-        VSTGUI::CRect(0, 0, kDrawbarWidth, kSliderHeight + kNumericEditHeight + kToggleButtonHeight + kToggleButtonHeight),
+        VSTGUI::CRect(0, 0, kDrawbarWidth,
+                      kVerticalSliderTallDimensions.height + kNumericEditHeight + kToggleButtonHeight + kToggleButtonHeight),
         VSTGUI::CRowColumnView::kRowStyle,
         VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2);
     column->setBackgroundColor(VSTGUI::kTransparentCColor);
@@ -57,7 +59,8 @@ DrawbarView::DrawbarView(const VSTGUI::CRect &size,
         TagFor(drawbar_num, TAG_GENERATOR_TOGGLE, TARGET_NA)));
     column->addView(toggle_buttons_[drawbar_num]);
     column->addView(new ParameterEditorView(
-        VSTGUI::CRect{0, 0, 40, kSliderHeight + kNumericEditHeight},
+        VSTGUI::CRect{0, 0, 40,
+                      kVerticalSliderTallDimensions.height + kNumericEditHeight},
         edit_controller->FindRangedParameter(drawbar_num, TAG_OSC, TARGET_A),
         this));
 

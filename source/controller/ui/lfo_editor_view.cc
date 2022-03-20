@@ -22,17 +22,17 @@ LFOEditorView::LFOEditorView(const VSTGUI::CRect &size,
       column_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_LFO_FREQ,
                           target),
-      this, "Freq");
+      this, ParameterEditorStyle::VERTICAL_SHORT, "Freq");
   amplitude_slider_ = new ParameterEditorView(
       column_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_LFO_AMP,
                           target),
-      this, "Amp");
+      this, ParameterEditorStyle::VERTICAL_SHORT, "Amp");
   vel_sens_slider_ = new ParameterEditorView(
       column_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_LFO_VS,
                           target),
-      this, "VS");
+      this, ParameterEditorStyle::VERTICAL_SHORT, "VS");
   addView(frequency_slider_);
   addView(amplitude_slider_);
   addView(vel_sens_slider_);

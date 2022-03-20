@@ -2,8 +2,8 @@
 
 #include "controller/sidebands_controller.h"
 #include "controller/ui/envelope_editor_view.h"
-#include "controller/ui/lfo_editor_view.h"
 #include "controller/ui/gui_constants.h"
+#include "controller/ui/lfo_editor_view.h"
 
 namespace sidebands {
 namespace ui {
@@ -19,27 +19,34 @@ ModulatorTargetView::ModulatorTargetView(const VSTGUI::CRect &size,
 
   setBackgroundColor(VSTGUI::kTransparentCColor);
 
+  auto *title_row = new VSTGUI::CRowColumnView(
+      VSTGUI::CRect(0, 0, getWidth(), kTitleBarHeight),
+      VSTGUI::CRowColumnView::kColumnStyle,
+      VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2);
+
   if (target != TARGET_A) {
-    auto *modulation_selector_row = new VSTGUI::CRowColumnView(
-        VSTGUI::CRect(0, 0, getWidth(), 15),
-        VSTGUI::CRowColumnView::kColumnStyle,
-        VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2);
-    modulation_selector_row->addView(
-        new VSTGUI::CTextLabel(VSTGUI::CRect(0, 0, 100, 15), "Modulation"));
+    title_row->addView(new VSTGUI::CTextLabel(
+        VSTGUI::CRect(0, 0, 100, kTitleBarHeight), "Modulation"));
     mod_source_selector_ = new VSTGUI::COptionMenu(
-        VSTGUI::CRect(0, 0, 100, 15), this,
+        VSTGUI::CRect(0, 0, 100, kTitleBarHeight), this,
         TagFor(selected_generator, TAG_MOD_TYPE, target));
     mod_source_selector_->addEntry(new VSTGUI::CMenuItem("Constant"));
     mod_source_selector_->addEntry(new VSTGUI::CMenuItem("Envelope"));
     mod_source_selector_->addEntry(new VSTGUI::CMenuItem("LFO"));
-    modulation_selector_row->addView(mod_source_selector_);
-    addView(modulation_selector_row);
+    title_row->addView(mod_source_selector_);
+  } else {
+    title_row->addView(new VSTGUI::CTextLabel(
+        VSTGUI::CRect(0, 0, 100, kTitleBarHeight), "Envelope"));
   }
 
+  addView(title_row);
+
   envelope_editor_view_ = new EnvelopeEditorView(
-      VSTGUI::CRect(0, 0, getWidth(), getHeight()), edit_controller, target);
+      VSTGUI::CRect(0, 0, getWidth(), size.getHeight() - kTitleBarHeight - kModRowPadding),
+      edit_controller, target);
   lfo_editor_view_ = new LFOEditorView(
-      VSTGUI::CRect(0, 0, getWidth(), kModRowHeight), edit_controller, target);
+      VSTGUI::CRect(0, 0, getWidth(), size.getHeight() - kTitleBarHeight - kModRowPadding),
+      edit_controller, target);
 
   addView(envelope_editor_view_);
   addView(lfo_editor_view_);
@@ -81,8 +88,7 @@ void ModulatorTargetView::SwitchGenerator(int new_generator) {
 void ModulatorTargetView::SwitchViewVisibility() {
   auto mod_type_v = edit_controller()->getParamNormalized(
       TagFor(edit_controller()->SelectedGenerator(), TAG_MOD_TYPE, target()));
-  auto mod_type = kModTypes[int(
-      mod_type_v * (kNumModTypes - 1))];
+  auto mod_type = kModTypes[int(mod_type_v * (kNumModTypes - 1))];
 
   if (mod_type != ModType::LFO) {
     lfo_editor_view_->setVisible(false);
@@ -108,5 +114,5 @@ void ModulatorTargetView::SwitchViewVisibility() {
   setDirty(true);
 }
 
-}  // namespace ui
-}  //  namespace sidebands
+} // namespace ui
+} //  namespace sidebands
