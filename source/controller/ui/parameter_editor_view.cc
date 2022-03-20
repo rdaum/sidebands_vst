@@ -19,24 +19,36 @@ MakeVerticalSlider(Steinberg::Vst::RangeParameter *range_parameter,
                    ParameterEditorStyle style) {
   SliderDesc slider_desc;
   switch (style) {
-  case ParameterEditorStyle::VERTICAL_TALL:
+  case ParameterEditorStyle::SLIDER_VERTICAL_TALL:
     slider_desc = kVerticalSliderTallDimensions;
     break;
-  case ParameterEditorStyle::VERTICAL_SHORT:
+  case ParameterEditorStyle::SLIDER_VERTICAL_SHORT:
     slider_desc = kVerticalSliderShortDimensions;
     break;
-  case ParameterEditorStyle::HORIZONTAL_SHORT:
+  case ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT:
     slider_desc = kHorizontalSliderShortDimensions;
     break;
   }
 
-  auto *slider_control = new VSTGUI::CVerticalSlider(
-      VSTGUI::CRect(0, 0, slider_desc.width, slider_desc.height),
-      listener, range_parameter->getInfo().id, 0, slider_desc.max_pos,
-      new VSTGUI::CBitmap(slider_desc.handle),
-      new VSTGUI::CBitmap(slider_desc.background));
-  slider_control->setBackgroundOffset(VSTGUI::CPoint(-7.5, 0));
-  slider_control->setOffsetHandle(VSTGUI::CPoint(4, 0));
+  VSTGUI::CSlider *slider_control;
+  if (style == ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT) {
+    slider_control = new VSTGUI::CHorizontalSlider(
+        VSTGUI::CRect(0, 0, slider_desc.width, slider_desc.height), listener,
+        range_parameter->getInfo().id, 0, slider_desc.max_pos,
+        new VSTGUI::CBitmap(slider_desc.handle),
+        new VSTGUI::CBitmap(slider_desc.background), {0,0}, VSTGUI::CSlider::kLeft);
+    slider_control->setBackgroundOffset(VSTGUI::CPoint(0, -7.5));
+    slider_control->setOffsetHandle(VSTGUI::CPoint(0, 4));
+
+  } else {
+    slider_control = new VSTGUI::CVerticalSlider(
+        VSTGUI::CRect(0, 0, slider_desc.width, slider_desc.height), listener,
+        range_parameter->getInfo().id, 0, slider_desc.max_pos,
+        new VSTGUI::CBitmap(slider_desc.handle),
+        new VSTGUI::CBitmap(slider_desc.background));
+    slider_control->setBackgroundOffset(VSTGUI::CPoint(-7.5, 0));
+    slider_control->setOffsetHandle(VSTGUI::CPoint(4, 0));
+  }
   slider_control->setMax(range_parameter->getMax());
   slider_control->setMin(range_parameter->getMin());
   slider_control->setValueNormalized(range_parameter->getNormalized());
@@ -54,8 +66,8 @@ MakeNumericEditor(Steinberg::Vst::RangeParameter *range_parameter,
   edit_control->setMax(range_parameter->getMax());
   edit_control->setMin(range_parameter->getMin());
   edit_control->setValueNormalized(range_parameter->getNormalized());
-  edit_control->setBackColor(VSTGUI::kTransparentCColor);
-  edit_control->setFontColor(VSTGUI::kBlackCColor);
+  edit_control->setBackColor(VSTGUI::kBlackCColor);
+  edit_control->setFontColor(VSTGUI::kWhiteCColor);
   edit_control->setFrameWidth(0);
   edit_control->setFont(VSTGUI::kNormalFontSmall);
 
@@ -89,8 +101,11 @@ ParameterEditorView::ParameterEditorView(
 
   parameter->addDependent(this);
 
-  controls_ = {MakeVerticalSlider(parameter, listener, style),
-               MakeNumericEditor(parameter, listener)};
+  if (style != ParameterEditorStyle::NUMERIC_ENTRY) {
+    controls_ = {MakeVerticalSlider(parameter, listener, style)};
+  }
+  controls_.push_back(MakeNumericEditor(parameter, listener));
+
   if (!label.empty()) {
     VSTGUI::CTextLabel *column_label = new VSTGUI::CTextLabel(
         VSTGUI::CRect(0, 0, getWidth(), kColumnLabelHeight), label.c_str());

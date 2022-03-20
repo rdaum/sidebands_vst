@@ -1,5 +1,7 @@
 #include "controller/ui/mod_target_view.h"
 
+#include <absl/strings/str_format.h>
+
 #include "controller/sidebands_controller.h"
 #include "controller/ui/envelope_editor_view.h"
 #include "controller/ui/gui_constants.h"
@@ -24,9 +26,11 @@ ModulatorTargetView::ModulatorTargetView(const VSTGUI::CRect &size,
       VSTGUI::CRowColumnView::kColumnStyle,
       VSTGUI::CRowColumnView::LayoutStyle::kLeftTopEqualy, 2);
 
+  std::string title = absl::StrFormat("%s modulation", kTargetNames[target]);
+  title_row->addView(new VSTGUI::CTextLabel(
+      VSTGUI::CRect(0, 0, 100, kTitleBarHeight), title.c_str()));
+
   if (target != TARGET_A) {
-    title_row->addView(new VSTGUI::CTextLabel(
-        VSTGUI::CRect(0, 0, 100, kTitleBarHeight), "Modulation"));
     mod_source_selector_ = new VSTGUI::COptionMenu(
         VSTGUI::CRect(0, 0, 100, kTitleBarHeight), this,
         TagFor(selected_generator, TAG_MOD_TYPE, target));
@@ -34,9 +38,6 @@ ModulatorTargetView::ModulatorTargetView(const VSTGUI::CRect &size,
     mod_source_selector_->addEntry(new VSTGUI::CMenuItem("Envelope"));
     mod_source_selector_->addEntry(new VSTGUI::CMenuItem("LFO"));
     title_row->addView(mod_source_selector_);
-  } else {
-    title_row->addView(new VSTGUI::CTextLabel(
-        VSTGUI::CRect(0, 0, 100, kTitleBarHeight), "Envelope"));
   }
 
   addView(title_row);

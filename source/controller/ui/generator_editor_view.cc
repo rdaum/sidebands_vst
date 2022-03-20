@@ -49,28 +49,28 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_C),
-                              this,ParameterEditorStyle::VERTICAL_SHORT,  "C");
+                              this,ParameterEditorStyle::SLIDER_VERTICAL_SHORT,  "C");
 
   m_slider_ =
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_M),
-                              this, ParameterEditorStyle::VERTICAL_SHORT, "M");
+                              this, ParameterEditorStyle::SLIDER_VERTICAL_SHORT, "M");
   k_slider_ =
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_K),
-                              this,ParameterEditorStyle::VERTICAL_SHORT,  "K");
+                              this,ParameterEditorStyle::SLIDER_VERTICAL_SHORT,  "K");
   r_slider_ =
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_R),
-                              this, ParameterEditorStyle::VERTICAL_SHORT, "R");
+                              this, ParameterEditorStyle::SLIDER_VERTICAL_SHORT, "R");
   s_slider_ =
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_S),
-                              this,ParameterEditorStyle::VERTICAL_SHORT,  "S");
+                              this,ParameterEditorStyle::SLIDER_VERTICAL_SHORT,  "S");
 
   a_target_view_ = new ModulatorTargetView(
       VSTGUI::CRect(0, 0, modulator_rows->getWidth() - c_slider_->getWidth(),

@@ -34,8 +34,7 @@ constexpr double kColumnLabelHeight = 15;
 constexpr double kTitleBarHeight = 15;
 constexpr double kModRowPadding = 30;
 
-constexpr double kModRowHeight = kVerticalSliderShortDimensions.height +
-                                 kNumericEditHeight + kColumnLabelHeight + kTitleBarHeight + kModRowPadding;
+constexpr double kModRowHeight = 165;
 
 constexpr double kDrawbarWidth = 24;
 constexpr double kToggleButtonWidth = 36;

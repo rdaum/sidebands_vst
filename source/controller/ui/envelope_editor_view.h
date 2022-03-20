@@ -25,7 +25,7 @@ public:
   void valueChanged(VSTGUI::CControl *control) override;
 
 private:
-  std::vector<ParameterEditorView*> sliders_;
+  std::vector<ParameterEditorView*> value_editors_;
   GraphicalEnvelopeEditorView *envelope_editor_;
 };
 
