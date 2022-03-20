@@ -110,6 +110,7 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
   auto path = VSTGUI::owned(context->createGraphicsPath());
   if (path == nullptr)
     return;
+  const auto top_left = getViewSize().getTopLeft();
   const auto bottom_left = getViewSize().getBottomLeft();
   const auto bottom_right = getViewSize().getBottomRight();
 
@@ -132,7 +133,6 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
   path->addLine(bottom_right.x, bottom_right.y);
   path->closeSubpath();
   context->drawGraphicsPath(path, VSTGUI::CDrawContext::kPathFilled);
-
   context->setFrameColor(VSTGUI::CColor(0, 0, 100));
   context->drawGraphicsPath(path, VSTGUI::CDrawContext::kPathStroked);
   context->setLineWidth(1);
@@ -140,6 +140,15 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
     if ((s.rate_param || s.end_level_param) && s.drag_box.top != 0)
       context->drawRect(s.drag_box);
   }
+  context->setFrameColor(VSTGUI::CColor(0, 100, 0));
+  context->setFillColor(VSTGUI::CColor(0, 200, 0, 50));
+  for (int s_num = 0; s_num < segments_.size(); s_num++) {
+    if (s_num != playing_segment_) continue;
+    auto s = segments_[s_num];
+    auto hilight_box = VSTGUI::CRect(s.start_point.x, top_left.y, s.end_point.x, bottom_left.y);
+    context->drawRect(hilight_box, VSTGUI::CDrawStyle::kDrawFilledAndStroked);
+  }
+
   setDirty(false);
 }
 
@@ -239,6 +248,16 @@ GraphicalEnvelopeEditorView::Param(uint16_t generator, ParamTag param) {
 Steinberg::Vst::RangeParameter *
 GraphicalEnvelopeEditorView::Param(ParamTag param) {
   return Param(edit_controller()->SelectedGenerator(), param);
+}
+
+void GraphicalEnvelopeEditorView::RefreshState(
+    const PlayerState::VoiceState::GeneratorState::ModulationState
+        &player_state) {
+  if (player_state.current_envelope_segment != playing_segment_) {
+    // rendered segment #s differ from the envgen's # for them by 1
+    playing_segment_ = player_state.current_envelope_segment - 1;
+    setDirty(true);
+  }
 }
 
 } // namespace ui

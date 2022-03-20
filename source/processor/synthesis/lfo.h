@@ -18,9 +18,11 @@ public:
 
   bool Playing() const override;
   ModType mod_type() const override;
+  void UpdateState( PlayerState::VoiceState::GeneratorState::ModulationState *state) const ;
 
 private:
   double phase_ = 0.0;
+  double last_level_ = 0.0;
   bool playing_ = false;
 };
 

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "constants.h"
+#include "globals.h"
 
 namespace sidebands {
 
@@ -44,6 +45,10 @@ class Voice {
   // generators are active).
   bool Playing() const;
 
+  // Populate the current player state with information about this currently
+  // playing voice and its generators, etc.
+  void UpdateState(PlayerState::VoiceState *voice_state);
+
   int16_t note() const { return note_; }
   std::chrono::high_resolution_clock::time_point on_time() const {
     return on_time_;
@@ -56,6 +61,8 @@ class Voice {
   int16_t note_;
   ParamValue velocity_;
   ParamValue note_frequency_;
+
+  PlayerState::VoiceState current_state;
 };
 
 }  // namespace sidebands

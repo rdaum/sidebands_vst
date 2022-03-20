@@ -14,7 +14,7 @@ ParamValue NoteToFreq(ParamValue note) {
   return kNoteConversionMultiplier * std::pow(2.0f, ((note - 9.0f) / 12.0f));
 }
 
-}  // namespace
+} // namespace
 
 Voice::Voice() : note_frequency_(0), note_(0), velocity_(0) {
   for (int x = 0; x < kNumGenerators; x++) {
@@ -26,7 +26,8 @@ bool Voice::Playing() const {
   std::lock_guard<std::mutex> generators_lock(generators_mutex_);
 
   for (const auto &g : generators_) {
-    if (g->Playing()) return true;
+    if (g->Playing())
+      return true;
   }
   return false;
 }
@@ -52,13 +53,15 @@ void Voice::NoteOn(SampleRate sample_rate, PatchProcessor *patch,
   }
 }
 
-void Voice::NoteOff(SampleRate sample_rate, PatchProcessor *patch, int16_t note) {
+void Voice::NoteOff(SampleRate sample_rate, PatchProcessor *patch,
+                    int16_t note) {
   auto &g_patches = patch->generators_;
 
   std::lock_guard<std::mutex> generators_lock(generators_mutex_);
   for (int g_num = 0; g_num < kNumGenerators; g_num++) {
     auto &g = generators_[g_num];
-    if (!g->Playing()) continue;
+    if (!g->Playing())
+      continue;
     auto &gp = g_patches[g_num];
     g->NoteOff(sample_rate, *gp, note);
   }
@@ -66,7 +69,8 @@ void Voice::NoteOff(SampleRate sample_rate, PatchProcessor *patch, int16_t note)
 
 MixBuffers Voice::Perform(SampleRate sample_rate, size_t frames_per_buffer,
                           PatchProcessor *patch) {
-  if (!Playing()) return {};
+  if (!Playing())
+    return {};
   auto g_patches = patch->generators_;
 
   // Copy references to the generators that we need to use, and create a mix
@@ -74,9 +78,12 @@ MixBuffers Voice::Perform(SampleRate sample_rate, size_t frames_per_buffer,
   std::vector<std::pair<GeneratorPatch *, Generator *>> generators;
   {
     std::lock_guard<std::mutex> generators_lock(generators_mutex_);
+    current_state.active_generators.reset();
     for (int g_num = 0; g_num < kNumGenerators; g_num++) {
       auto &g = generators_[g_num];
-      if (!g->Playing() || !g_patches[g_num]->on()) continue;
+      if (!g->Playing() || !g_patches[g_num]->on())
+        continue;
+      current_state.active_generators[g_num] = true;
       generators.emplace_back(std::make_pair(g_patches[g_num].get(), g.get()));
     }
   }
@@ -93,6 +100,11 @@ MixBuffers Voice::Perform(SampleRate sample_rate, size_t frames_per_buffer,
                                          *mix_buffer.get(), note_frequency_);
                    return mix_buffer;
                  });
+
+  current_state.level = 0;
+  for (const auto &mix_buffer : mix_buffers) {
+    current_state.level += (*mix_buffer)[0];
+  }
   return mix_buffers;
 }
 
@@ -103,4 +115,18 @@ void Voice::Reset() {
   }
 }
 
-}  // namespace sidebands
+void Voice::UpdateState(PlayerState::VoiceState *voice_state) {
+  // Poll generators for active state.
+  for (int g_num = 0; g_num < kNumGenerators; g_num++) {
+    if (current_state.active_generators.test(g_num)) {
+      std::lock_guard<std::mutex> generators_lock(generators_mutex_);
+      const auto &generator = generators_[g_num];
+      generator->UpdateState(&current_state.generator_states[g_num]);
+    }
+  }
+
+  // Copy over.
+  *voice_state = current_state;
+}
+
+} // namespace sidebands

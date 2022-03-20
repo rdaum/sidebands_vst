@@ -41,56 +41,56 @@ EnvelopeEditorView::EnvelopeEditorView(const VSTGUI::CRect &size,
   editors_area->setBackgroundColor(VSTGUI::kTransparentCColor);
 
   VSTGUI::CRect editor_size{0, 0, kValueEditorWidth, kValueEditorHeight};
-  ParameterEditorView *ht_editor =
-      new ParameterEditorView(editor_size,
-                              edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_HT, target),
-                              this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "HT");
-  ParameterEditorView *ar_editor =
-      new ParameterEditorView(editor_size,
-                              edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_AR, target),
-                              this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "AR");
-  ParameterEditorView *al_editor =
-      new ParameterEditorView(editor_size,
-                              edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_AL, target),
-                              this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "AL");
-  ParameterEditorView *dr1_editor =
-      new ParameterEditorView(editor_size,
-                              edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_DR1, target),
-                              this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "DR1");
-  ParameterEditorView *dl1_editor =
-      new ParameterEditorView(editor_size,
-                              edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_DL1, target),
-                              this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "DL1");
-  ParameterEditorView *dr2_editor =
-      new ParameterEditorView(editor_size,
-                              edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_DR2, target),
-                              this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "DR2");
-  ParameterEditorView *s_editor =
-      new ParameterEditorView(editor_size,
-                              edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_SL, target),
-                              this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "S");
-  ParameterEditorView *rr1_editor =
-      new ParameterEditorView(editor_size,
-                              edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_RR1, target),
-                              this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "RR1");
-  ParameterEditorView *rl1_editor =
-      new ParameterEditorView(editor_size,
-                              edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_RL1, target),
-                              this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "RL1");
-  ParameterEditorView *rr2_editor =
-      new ParameterEditorView(editor_size,
-                              edit_controller->FindRangedParameter(
-                                  selected_generator, TAG_ENV_RR2, target),
-                              this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "RR2");
+  ParameterEditorView *ht_editor = new ParameterEditorView(
+      editor_size,
+      edit_controller->FindRangedParameter(selected_generator, TAG_ENV_HT,
+                                           target),
+      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "HT");
+  ParameterEditorView *ar_editor = new ParameterEditorView(
+      editor_size,
+      edit_controller->FindRangedParameter(selected_generator, TAG_ENV_AR,
+                                           target),
+      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "AR");
+  ParameterEditorView *al_editor = new ParameterEditorView(
+      editor_size,
+      edit_controller->FindRangedParameter(selected_generator, TAG_ENV_AL,
+                                           target),
+      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "AL");
+  ParameterEditorView *dr1_editor = new ParameterEditorView(
+      editor_size,
+      edit_controller->FindRangedParameter(selected_generator, TAG_ENV_DR1,
+                                           target),
+      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "DR1");
+  ParameterEditorView *dl1_editor = new ParameterEditorView(
+      editor_size,
+      edit_controller->FindRangedParameter(selected_generator, TAG_ENV_DL1,
+                                           target),
+      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "DL1");
+  ParameterEditorView *dr2_editor = new ParameterEditorView(
+      editor_size,
+      edit_controller->FindRangedParameter(selected_generator, TAG_ENV_DR2,
+                                           target),
+      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "DR2");
+  ParameterEditorView *s_editor = new ParameterEditorView(
+      editor_size,
+      edit_controller->FindRangedParameter(selected_generator, TAG_ENV_SL,
+                                           target),
+      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "S");
+  ParameterEditorView *rr1_editor = new ParameterEditorView(
+      editor_size,
+      edit_controller->FindRangedParameter(selected_generator, TAG_ENV_RR1,
+                                           target),
+      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "RR1");
+  ParameterEditorView *rl1_editor = new ParameterEditorView(
+      editor_size,
+      edit_controller->FindRangedParameter(selected_generator, TAG_ENV_RL1,
+                                           target),
+      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "RL1");
+  ParameterEditorView *rr2_editor = new ParameterEditorView(
+      editor_size,
+      edit_controller->FindRangedParameter(selected_generator, TAG_ENV_RR2,
+                                           target),
+      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "RR2");
   ParameterEditorView *vs_editor = new ParameterEditorView(
       {0, 0, kVerticalSliderShortDimensions.width, getHeight()},
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_VS,
@@ -135,6 +135,12 @@ void EnvelopeEditorView::SwitchGenerator(int new_generator) {
         edit_controller(), edit_controller()->FindRangedParameter(
                                new_generator, slider->tag(), target()));
   }
+}
+
+void EnvelopeEditorView::RefreshState(
+    const PlayerState::VoiceState::GeneratorState::ModulationState
+        &player_state) {
+  envelope_editor_->RefreshState(player_state);
 }
 
 } // namespace ui

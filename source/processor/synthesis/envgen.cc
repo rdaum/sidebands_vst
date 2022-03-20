@@ -22,7 +22,6 @@ void EnvelopeGenerator::Amplitudes(
 }
 
 void EnvelopeGenerator::SetStage(off_t stage_number) {
-  off_t old_stage = current_stage_;
   current_stage_ = stage_number;
   current_sample_index_ = 0;
   if (current_stage_ >= stages_.size())
@@ -111,6 +110,11 @@ ModType EnvelopeGenerator::mod_type() const {
 bool EnvelopeGenerator::Playing() const {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
   return current_stage_ != 0;
+}
+
+void EnvelopeGenerator::UpdateState(
+    PlayerState::VoiceState::GeneratorState::ModulationState *state) const {
+  state->current_envelope_segment = current_stage_;
 }
 
 } // namespace sidebands

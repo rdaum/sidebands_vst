@@ -4,6 +4,7 @@
 #include <vstgui/vstgui.h>
 
 #include "constants.h"
+#include "globals.h"
 #include "controller/ui/modulator_editor_view.h"
 #include "tags.h"
 
@@ -20,6 +21,7 @@ public:
   ~EnvelopeEditorView() override = default;
 
   void SwitchGenerator(int new_generator) override;
+  void RefreshState(const PlayerState::VoiceState::GeneratorState::ModulationState &player_state);
 
   // IDependent overloads
   void valueChanged(VSTGUI::CControl *control) override;

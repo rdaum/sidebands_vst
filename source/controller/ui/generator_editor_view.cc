@@ -198,5 +198,10 @@ void GeneratorEditorView::update(Steinberg::FUnknown *changedUnknown,
   }
 }
 
+void GeneratorEditorView::RefreshState(const PlayerState::VoiceState::GeneratorState &player_state) {
+  a_target_view_->RefreshState(player_state.modulation_states[TARGET_A]);
+  k_target_view_->RefreshState(player_state.modulation_states[TARGET_K]);
+}
+
 } // namespace ui
 } // namespace sidebands

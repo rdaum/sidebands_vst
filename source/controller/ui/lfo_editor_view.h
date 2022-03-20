@@ -3,6 +3,7 @@
 #include <public.sdk/source/vst/vsteditcontroller.h>
 #include <vstgui/vstgui.h>
 
+#include "globals.h"
 #include "constants.h"
 #include "tags.h"
 #include "controller/ui/modulator_editor_view.h"
@@ -19,6 +20,7 @@ class LFOEditorView : public VSTGUI::CRowColumnView,
   ~LFOEditorView() override = default;
 
   void SwitchGenerator(int new_generator) override;
+  void RefreshState(const PlayerState::VoiceState::GeneratorState::ModulationState &player_state);
 
   // IDependent overloads
   void valueChanged(VSTGUI::CControl *control) override;

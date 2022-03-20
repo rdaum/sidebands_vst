@@ -7,10 +7,11 @@
 #include <mutex>
 #include <vector>
 
-#include "envgen.h"
-#include "generator.h"
-#include "oscillator.h"
-#include "voice.h"
+#include "globals.h"
+#include "processor/synthesis/envgen.h"
+#include "processor/synthesis/generator.h"
+#include "processor/synthesis/oscillator.h"
+#include "processor/synthesis/voice.h"
 
 namespace sidebands {
 
@@ -18,12 +19,11 @@ using Steinberg::Vst::ParamValue;
 using Steinberg::Vst::Sample32;
 using Steinberg::Vst::Sample64;
 
+
 // Manages currently playing voices and dispatches note on/noteoff events, and
 // fills and mixes audio buffers from playing voices.
 class Player {
  public:
-  static constexpr int kNumVoices = 8;  // Must be power of 2.
-
   Player(PatchProcessor *patch, SampleRate sample_rate);
 
   // Fill the audio buffer.
@@ -38,6 +38,8 @@ class Player {
 
   // Signal note-off.
   void NoteOff(int32_t, int16_t pitch);
+
+  PlayerState CurrentPlayerState();
 
  private:
   // Allocate a new voice or steal one if necessary.

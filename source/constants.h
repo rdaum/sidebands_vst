@@ -9,6 +9,8 @@ namespace sidebands {
 // The number of generators (and drawbars) to configure.
 constexpr int32_t kNumGenerators = 16;
 
+constexpr int kNumVoices = 8;  // Must be power of 2.
+
 // Minimum 8.
 constexpr size_t kSampleAccurateChunkSizeSamples = 32;
 

@@ -6,6 +6,7 @@
 #include <mutex>
 #include <vector>
 
+#include "globals.h"
 #include "processor/synthesis/envgen.h"
 #include "processor/synthesis/oscillator.h"
 
@@ -32,6 +33,8 @@ class Generator {
 
   bool Playing() const;
   void Reset();
+
+  void UpdateState(PlayerState::VoiceState::GeneratorState *generator_state) const;
 
  private:
   void Produce(SampleRate sample_rate, GeneratorPatch &patch, OscParam &buffer, TargetTag target);

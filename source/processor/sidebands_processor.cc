@@ -142,6 +142,18 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
 
   patch_->EndParameterChanges();
 
+  // TODO: Do this less frequently.
+  const auto &current_state = player_->CurrentPlayerState();
+  if (current_state.active_voices) {
+    if (auto player_state_message = owned(allocateMessage())) {
+      player_state_message->setMessageID(kAttrPlayerStateMessageID);
+      CHECK_EQ(SetPlayerStateAttributes(player_state_message->getAttributes(),
+                                        current_state),
+               Steinberg::kResultOk);
+      CHECK_EQ(sendMessage(player_state_message), Steinberg::kResultOk);
+    }
+  }
+
   return kResultOk;
 }
 

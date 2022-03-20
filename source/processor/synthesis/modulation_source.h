@@ -2,8 +2,9 @@
 
 #include <pluginterfaces/vst/vsttypes.h>
 
-#include "dsp.h"
+#include "globals.h"
 #include "processor/patch_processor.h"
+#include "processor/synthesis/dsp.h"
 
 namespace sidebands {
 
@@ -22,6 +23,8 @@ public:
                           const GeneratorPatch::ModParams *parameters) = 0;
   virtual bool Playing() const = 0;
   virtual ModType mod_type() const = 0;
+  virtual void
+  UpdateState( PlayerState::VoiceState::GeneratorState::ModulationState *state) const = 0;
 };
 
 } // namespace sidebands

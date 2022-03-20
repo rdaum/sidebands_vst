@@ -3,6 +3,7 @@
 #include <public.sdk/source/vst/vsteditcontroller.h>
 #include <vstgui/vstgui.h>
 
+#include "globals.h"
 #include "controller/ui/modulator_editor_view.h"
 #include "controller/ui/patch_param_view.h"
 
@@ -19,6 +20,7 @@ class GraphicalEnvelopeEditorView : public VSTGUI::CView,
                               int selected_generator, TargetTag target);
 
   void SwitchGenerator(int new_generator) override;
+  void RefreshState(const PlayerState::VoiceState::GeneratorState::ModulationState &player_state);
 
   // IDependent overrides
   void update(FUnknown *unknown, Steinberg::int32 int_32) override;
@@ -59,6 +61,7 @@ class GraphicalEnvelopeEditorView : public VSTGUI::CView,
   std::vector<Steinberg::Vst::RangeParameter*> envelope_parameters;
   std::vector<Segment> segments_;
   Segment *dragging_segment_ = nullptr;
+  off_t playing_segment_ = 0;
 };
 
 }  // namespace ui

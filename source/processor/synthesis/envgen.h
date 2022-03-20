@@ -33,6 +33,7 @@ public:
                   ParamValue velocity,
                   const GeneratorPatch::ModParams *parameters) override;
   bool Playing() const override;
+  void UpdateState( PlayerState::VoiceState::GeneratorState::ModulationState *state) const ;
   ModType mod_type() const override;
 
 private:

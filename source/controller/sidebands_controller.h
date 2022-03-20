@@ -4,8 +4,13 @@
 #include <vstgui/plugin-bindings/vst3editor.h>
 
 #include "tags.h"
+#include "globals.h"
 
 namespace sidebands {
+
+namespace ui {
+class GeneratorEditorView;
+} // namespace ui
 
 class PatchController;
 class SidebandsController : public Steinberg::Vst::EditControllerEx1,
@@ -62,6 +67,9 @@ public:
   Steinberg::tresult PLUGIN_API beginEditFromHost (Steinberg::Vst::ParamID paramID) override;
   Steinberg::tresult PLUGIN_API endEditFromHost (Steinberg::Vst::ParamID paramID) override;
 
+  // IComponentBase overrides
+  Steinberg::tresult PLUGIN_API notify (Steinberg::Vst::IMessage* message) override;
+
   //---Interface---------
   DEFINE_INTERFACES
   DEF_INTERFACE(IUnitInfo)
@@ -73,7 +81,9 @@ public:
 
 private:
   VSTGUI::CView *analysis_view_ = nullptr;
+  ui::GeneratorEditorView *generator_view_ = nullptr;
   std::unique_ptr<PatchController> patch_controller_;
+  PlayerState player_state_ = {0};
 };
 
 //------------------------------------------------------------------------

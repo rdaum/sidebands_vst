@@ -7,13 +7,13 @@
 #include <vstgui/uidescription/uiattributes.h>
 #include <vstgui/vstgui.h>
 
-#include "globals.h"
-#include "sidebands_cids.h"
-#include "tags.h"
+#include "controller/patch_controller.h"
 #include "controller/ui/analysis_view.h"
 #include "controller/ui/drawbar_view.h"
 #include "controller/ui/generator_editor_view.h"
-#include "controller/patch_controller.h"
+#include "globals.h"
+#include "sidebands_cids.h"
+#include "tags.h"
 
 using namespace Steinberg;
 
@@ -74,9 +74,11 @@ tresult PLUGIN_API SidebandsController::terminate() {
 
 tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
   // Here you get the state of the component (Processor part)
-  if (!state) return kResultFalse;
+  if (!state)
+    return kResultFalse;
 
-  if (patch_controller_->LoadPatch(state, this) != kResultOk) return kResultFalse;
+  if (patch_controller_->LoadPatch(state, this) != kResultOk)
+    return kResultFalse;
 
   setParamNormalized(TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA), 0);
 
@@ -85,7 +87,8 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
 
 tresult PLUGIN_API SidebandsController::setState(IBStream *state) {
   // I'm not clear on what this method is for, appear to be called on load, not
-  // save, and after setComponentState has already been called, and with an empty stream.
+  // save, and after setComponentState has already been called, and with an
+  // empty stream.
   return kResultOk;
 }
 
@@ -144,7 +147,9 @@ VSTGUI::CView *SidebandsController::createCustomView(
     return new ui::DrawbarView(VSTGUI::CRect(origin, size), this);
   }
   if (view_name == "GeneratorEditor") {
-    return new ui::GeneratorEditorView(VSTGUI::CRect(origin, size), this);
+    generator_view_ =
+        new ui::GeneratorEditorView(VSTGUI::CRect(origin, size), this);
+    return generator_view_;
   }
   if (view_name == "AnalysisView") {
     analysis_view_ = new ui::AnalysisView(VSTGUI::CRect(origin, size), this);
@@ -188,7 +193,8 @@ int SidebandsController::SelectedGenerator() {
 Steinberg::Vst::ParamValue
 SidebandsController::GetParamValue(Steinberg::Vst::ParamID param_id) {
   auto *param_obj = getParameterObject(param_id);
-  if (!param_obj) return 0;
+  if (!param_obj)
+    return 0;
   Steinberg::Vst::RangeParameter *ranged_parameter;
   auto result = param_obj->queryInterface(Steinberg::Vst::RangeParameter::iid,
                                           (void **)&ranged_parameter);
@@ -204,6 +210,28 @@ SidebandsController::beginEditFromHost(Steinberg::Vst::ParamID paramID) {
 Steinberg::tresult
 SidebandsController::endEditFromHost(Steinberg::Vst::ParamID paramID) {
   return endEdit(paramID);
+}
+
+Steinberg::tresult
+SidebandsController::notify(Steinberg::Vst::IMessage *message) {
+  if (!FIDStringsEqual(message->getMessageID(), kAttrPlayerStateMessageID)) {
+    return ComponentBase::notify(message);
+  }
+  CHECK_EQ(GetPlayerStateAttributes(message->getAttributes(), &player_state_),
+           Steinberg::kResultOk);
+
+  int generator = SelectedGenerator();
+  int active_voices = player_state_.active_voices;
+  while (active_voices--) {
+    for (const auto &voice_state : player_state_.voice_states) {
+      for (int i = 0; i < kNumGenerators; i++) {
+        if (voice_state.active_generators[i] && i == generator) {
+          generator_view_->RefreshState(voice_state.generator_states[i]);
+        }
+      }
+    }
+  }
+  return Steinberg::kResultOk;
 }
 
 } // namespace sidebands

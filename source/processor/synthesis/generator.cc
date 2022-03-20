@@ -120,4 +120,16 @@ IModulationSource *Generator::ModulatorFor(const GeneratorPatch &patch,
   return modulators_[dest][off_t(patch.ModTypeFor(dest))].get();
 }
 
+void Generator::UpdateState(
+    PlayerState::VoiceState::GeneratorState *generator_state) const {
+  for (const auto &target : kModulationTargets) {
+    for (const auto &mod_type : kModTypes) {
+      auto &mod = modulators_[target][off_t(mod_type)];
+      if (mod) {
+        mod->UpdateState(&generator_state->modulation_states[target]);
+      }
+    }
+  }
+}
+
 } // namespace sidebands

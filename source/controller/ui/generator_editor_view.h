@@ -3,6 +3,7 @@
 #include <public.sdk/source/vst/vsteditcontroller.h>
 #include <vstgui/vstgui.h>
 
+#include "globals.h"
 #include "constants.h"
 #include "tags.h"
 #include "controller/ui/patch_param_view.h"
@@ -22,6 +23,8 @@ class GeneratorEditorView : public VSTGUI::CScrollView, Steinberg::FObject {
   GeneratorEditorView(const VSTGUI::CRect &size,
                       SidebandsController *edit_controller);
   ~GeneratorEditorView() override;
+
+  void RefreshState(const PlayerState::VoiceState::GeneratorState &player_state);
 
   // IControlListener overrides
   void valueChanged(VSTGUI::CControl *control) override;

@@ -46,6 +46,8 @@ void LFO::Amplitudes(SampleRate sample_rate, OscBuffer &buffer,
   buffer = kLFOTypes[off_t(lfo_values.type)] == LFOType::SIN ? Vsin(phases)
                                                              : Vcos(phases);
 
+  last_level_ = buffer[0];
+
   auto velocity_scale = (lfo_values.velocity_sensivity.getValue() * velocity) +
                         (1 - lfo_values.velocity_sensivity.getValue());
   auto amplitude = lfo_values.amplitude.getValue() * velocity_scale;
@@ -56,5 +58,9 @@ void LFO::Amplitudes(SampleRate sample_rate, OscBuffer &buffer,
 bool LFO::Playing() const { return playing_; }
 
 ModType LFO::mod_type() const { return ModType::LFO; }
+
+void LFO::UpdateState( PlayerState::VoiceState::GeneratorState::ModulationState *state) const {
+  state->lfo_level = last_level_;
+}
 
 } // namespace sidebands
