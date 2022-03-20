@@ -103,8 +103,8 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
       context == nullptr)
     return;
 
-  context->setFrameColor(VSTGUI::CColor(100, 0, 0));
-  context->setFillColor(VSTGUI::CColor(100, 0, 0));
+
+  context->setFillColor(VSTGUI::CColor(200, 0, 0, 127));
   context->setLineStyle(VSTGUI::kLineSolid);
   context->setLineWidth(1);
   context->setDrawMode(VSTGUI::kAntiAliasing | VSTGUI::kNonIntegralMode);
@@ -112,6 +112,7 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
   if (path == nullptr)
     return;
   const auto bottom_left = getViewSize().getBottomLeft();
+  const auto bottom_right = getViewSize().getBottomRight();
 
   path->beginSubpath(bottom_left);
   VSTGUI::CCoord x = 0;
@@ -129,9 +130,12 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
       path->addLine(bottom_left.x + (x++), bottom_left.y - height);
     }
   }
-  context->drawGraphicsPath(path, VSTGUI::CDrawContext::kPathStroked);
+  path->addLine(bottom_right.x, bottom_right.y);
+  path->closeSubpath();
+  context->drawGraphicsPath(path, VSTGUI::CDrawContext::kPathFilled);
 
   context->setFrameColor(VSTGUI::CColor(0, 0, 100));
+  context->drawGraphicsPath(path, VSTGUI::CDrawContext::kPathStroked);
   context->setLineWidth(1);
   for (auto &s : segments_) {
     if ((s.rate_param || s.end_level_param) && s.drag_box.top != 0)
