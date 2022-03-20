@@ -103,7 +103,6 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
       context == nullptr)
     return;
 
-
   context->setFillColor(VSTGUI::CColor(200, 0, 0, 127));
   context->setLineStyle(VSTGUI::kLineSolid);
   context->setLineWidth(1);
@@ -150,10 +149,12 @@ GraphicalEnvelopeEditorView::onMouseDown(CPoint &where,
   if (buttons.isLeftButton() && !dragging_segment_)
     for (auto &s : segments_) {
       if (s.drag_box.pointInside(where)) {
-        if (s.rate_param || s.start_level_param)
+        if (s.rate_param || s.start_level_param) {
           dragging_segment_ = &s;
-        getFrame()->setCursor(VSTGUI::kCursorSizeAll);
-        return VSTGUI::kMouseEventHandled;
+          getFrame()->setCursor(VSTGUI::kCursorSizeAll);
+          LOG(INFO) << "Begin edit: box x " << dragging_segment_->drag_box.getCenter().x << " r: " << ValueOf(dragging_segment_->rate_param) << " width: " << dragging_segment_->width;
+          return VSTGUI::kMouseEventHandled;
+        }
       }
     }
 
@@ -168,24 +169,19 @@ GraphicalEnvelopeEditorView::onMouseMoved(CPoint &where,
   }
 
   double y = where.y - getViewSize().top;
-  LOG(INFO) << "X: " << where.x << " Y:" << y << " vs: " << getViewSize().left << " " << getViewSize().top;
-  if (dragging_segment_) {
-    float change_x = where.x - dragging_segment_->end_point.x;
-    float change_r = change_x / dragging_segment_->width;
-    if (dragging_segment_->rate_param)
-      dragging_segment_->rate_param->setNormalized(std::max(
-          dragging_segment_->rate_param->getNormalized() * change_r, 0.01));
+  float delta_x = where.x - dragging_segment_->drag_box.getCenter().x;
+  float delta_r = delta_x / getWidth();
+  if (dragging_segment_->rate_param && delta_r)
+    dragging_segment_->rate_param->setNormalized(std::max(
+        dragging_segment_->rate_param->getNormalized() + delta_r, 0.00001));
 
-    float change_n = 1 - (y / getHeight());
-    if (dragging_segment_->end_level_param)
-      dragging_segment_->end_level_param->setNormalized(change_n);
+  float change_n = 1 - (y / getHeight());
+  if (dragging_segment_->end_level_param)
+    dragging_segment_->end_level_param->setNormalized(change_n);
 
-    UpdateSegments();
-    setDirty(true);
-    return VSTGUI::kMouseEventHandled;
-  }
-
-  return VSTGUI::kMouseEventNotHandled;
+  UpdateSegments();
+  setDirty(true);
+  return VSTGUI::kMouseEventHandled;
 }
 
 VSTGUI::CMouseEventResult

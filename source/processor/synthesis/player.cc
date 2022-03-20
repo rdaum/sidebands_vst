@@ -69,13 +69,9 @@ void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
                     int32_t note_id, ParamValue velocity, int16_t pitch) {
   std::lock_guard<std::mutex> player_lock(voices_mutex_);
 
-  LOG(INFO) << "Note on: " << note_id << " note id: " << pitch;
-
   // If we were sent a note ID of -1, it means the host is not capable of
   // delivering note ids (and the note-off event will be -1 to correspond.)
   if (note_id == -1) {
-    LOG(INFO) << "On note id: " << note_id << " for note: " << std::hex
-              << (int)pitch;
     note_id = pitch;
   }
   Voice *v = NewVoice(note_id);
