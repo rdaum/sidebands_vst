@@ -31,22 +31,19 @@ void Generator::Perform(SampleRate sample_rate, GeneratorPatch &patch,
                         OscBuffer &out_buffer,
                         Steinberg::Vst::ParamValue base_freq) {
   auto frames_per_buffer = out_buffer.size();
+  OscParams params(frames_per_buffer);
+
   OscParam A(frames_per_buffer);
-  OscParam K(frames_per_buffer);
-  OscParam C(frames_per_buffer);
-  OscParam R(frames_per_buffer);
-  OscParam S(frames_per_buffer);
-  OscParam M(frames_per_buffer);
-  OscParam freq(base_freq, frames_per_buffer);
 
+  params.note_freq = base_freq;
   Produce(sample_rate, patch, A, TARGET_A);
-  Produce(sample_rate, patch, K, TARGET_K);
-  Produce(sample_rate, patch, C, TARGET_C);
-  Produce(sample_rate, patch, R, TARGET_R);
-  Produce(sample_rate, patch, S, TARGET_S);
-  Produce(sample_rate, patch, M, TARGET_M);
+  Produce(sample_rate, patch, params.K, TARGET_K);
+  Produce(sample_rate, patch, params.C, TARGET_C);
+  Produce(sample_rate, patch, params.R, TARGET_R);
+  Produce(sample_rate, patch, params.S, TARGET_S);
+  Produce(sample_rate, patch, params.M, TARGET_M);
 
-  o_.Perform(sample_rate, out_buffer, freq, C, M, R, S, K);
+  o_->Perform(sample_rate, out_buffer, params);
 
   // Apply envelope.
   VmulInplace(out_buffer, A);
@@ -57,6 +54,9 @@ void Generator::NoteOn(
     std::chrono::high_resolution_clock::time_point start_time,
     ParamValue velocity, uint8_t note) {
   ConfigureModulators(patch);
+  if (!o_ || o_->osc_type() != patch.osc_type()) {
+    o_ = MakeOscillator(patch.osc_type());
+  }
 
   velocity_ = velocity;
   for (auto dest : kModulationTargets) {

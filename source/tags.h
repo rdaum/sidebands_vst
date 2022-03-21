@@ -54,15 +54,17 @@ enum TargetTag {
   TARGET_R,
   TARGET_S,
   TARGET_PORTAMENTO,
+  TARGET_OSC_TYPE,
   NUM_TARGETS
 };
 
 constexpr const char *kTargetNames[]{"NONE", "C", "A", "M",
-                                     "K",    "R", "S", "PORTAMENTO"};
+                                     "K",    "R", "S", "PORTAMENTO",
+                                     "OSC_TYPE"};
 
 constexpr const char *kTargetLongNames[]{
     "None", "Carrier ratio", "Amplitude", "FM ratio", "FM level", "R",
-    "S",    "Portamento"};
+    "S",    "Portamento", "Oscillar type"};
 
 constexpr const TargetTag kModulationTargets[]{
     TARGET_C, TARGET_A, TARGET_M, TARGET_K, TARGET_R, TARGET_S,

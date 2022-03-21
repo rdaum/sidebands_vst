@@ -29,31 +29,31 @@ void WaveformView::drawRect(VSTGUI::CDrawContext *context,
       *context, VSTGUI::CGraphicsTransform().translate(getViewSize().left,
                                                        getViewSize().top));
 
-  Oscillator o;
   auto buffer_size = 1024;
   for (int gen_num = 0; gen_num < generators_.size(); gen_num++) {
     if (!sidebands_controller_->getParamNormalized(
             TagFor(gen_num, TAG_GENERATOR_TOGGLE, TARGET_NA)))
       continue;
+    ParamValue osc_type_v = sidebands_controller_->GetParamValue(
+      TagFor(gen_num, TAG_OSC, TARGET_OSC_TYPE));
+    GeneratorPatch::OscType osc_type = static_cast<GeneratorPatch::OscType>(int(osc_type_v));
+    auto o = MakeOscillator(osc_type);
     OscBuffer buffer(buffer_size);
+    OscParams params(buffer_size);
 
-    OscParam c(sidebands_controller_->GetParamValue(
-                   TagFor(gen_num, TAG_OSC, TARGET_C)),
-               buffer_size);
-    OscParam m(sidebands_controller_->GetParamValue(
-                   TagFor(gen_num, TAG_OSC, TARGET_M)),
-               buffer_size);
-    OscParam r(sidebands_controller_->GetParamValue(
-                   TagFor(gen_num, TAG_OSC, TARGET_R)),
-               buffer_size);
-    OscParam s(sidebands_controller_->GetParamValue(
-                   TagFor(gen_num, TAG_OSC, TARGET_S)),
-               buffer_size);
-    OscParam k(sidebands_controller_->GetParamValue(
-                   TagFor(gen_num, TAG_OSC, TARGET_K)),
-               buffer_size);
+    params.C = sidebands_controller_->GetParamValue(
+        TagFor(gen_num, TAG_OSC, TARGET_C));
+    params.M =sidebands_controller_->GetParamValue(
+        TagFor(gen_num, TAG_OSC, TARGET_M));
+    params.R =sidebands_controller_->GetParamValue(
+        TagFor(gen_num, TAG_OSC, TARGET_R));
+    params.S = sidebands_controller_->GetParamValue(
+        TagFor(gen_num, TAG_OSC, TARGET_S));
+    params.K  =sidebands_controller_->GetParamValue(
+        TagFor(gen_num, TAG_OSC, TARGET_K));
+    params.note_freq = 440;
     OscParam freq(440, buffer_size);
-    o.Perform(48000, buffer, freq, c, m, r, s, k);
+    o->Perform(48000, buffer, params);
     buffer *= 0.9;
 
     auto max_point = buffer.max();

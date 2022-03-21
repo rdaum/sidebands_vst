@@ -84,6 +84,11 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
                     kModRowHeight),
       edit_controller, TARGET_K);
 
+  analog_mode_ = new VSTGUI::COnOffButton(
+      VSTGUI::CRect(0, 0, kToggleButtonWidth, kToggleButtonHeight), this,
+      TagFor(selected_generator, TAG_OSC, TARGET_OSC_TYPE),
+      new VSTGUI::CBitmap(kToggleSwitch));
+
   auto *analysis_area = new VSTGUI::CRowColumnView(
       VSTGUI::CRect(0, 0,
                     getWidth() - k_slider_->getWidth() - c_slider_->getWidth() -
@@ -110,11 +115,14 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
   osc_columns->setBackgroundColor(VSTGUI::kTransparentCColor);
   modulator_rows->addView(osc_columns);
 
+  osc_columns->addView(analog_mode_);
   osc_columns->addView(c_slider_);
   osc_columns->addView(m_slider_);
   osc_columns->addView(k_slider_);
   osc_columns->addView(r_slider_);
   osc_columns->addView(s_slider_);
+
+
   osc_columns->addView(analysis_area);
 
   auto *a_columns =
@@ -190,6 +198,8 @@ void GeneratorEditorView::update(Steinberg::FUnknown *changedUnknown,
       s_slider_->UpdateControlParameters(edit_controller_,
                                          edit_controller_->FindRangedParameter(
                                              new_generator, TAG_OSC, TARGET_S));
+
+      analog_mode_->setTag(TagFor(new_generator, TAG_OSC, TARGET_OSC_TYPE));
       selected_label_->setText(absl::StrFormat("#%d", new_generator).c_str());
       setDirty(true);
 

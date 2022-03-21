@@ -175,7 +175,8 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
       k_(TagFor(gennum_, TAG_OSC, TARGET_K), 1, 0, 10),
       r_(TagFor(gennum_, TAG_OSC, TARGET_R), 1, 0, 1),
       s_(TagFor(gennum_, TAG_OSC, TARGET_S), 0, -1, 1),
-      portamento_(TagFor(gennum_, TAG_OSC, TARGET_PORTAMENTO), 0, 0, 1) {
+      portamento_(TagFor(gennum_, TAG_OSC, TARGET_PORTAMENTO), 0, 0, 1),
+      osc_type_(0 /* MODFM */){
 
   DeclareParameter(TagFor(gen, TAG_GENERATOR_TOGGLE, TARGET_NA), &on_, 0, 1);
   DeclareParameter(&c_);
@@ -184,6 +185,7 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
   DeclareParameter(&k_);
   DeclareParameter(&r_);
   DeclareParameter(&s_);
+  DeclareParameter(TagFor(gennum_, TAG_OSC, TARGET_OSC_TYPE), &osc_type_, 0, 1);
   DeclareParameter(&portamento_);
 
   for (auto &target : kModulationTargets) {
@@ -342,6 +344,11 @@ ParamValue GeneratorPatch::s() const {
 ParamValue GeneratorPatch::portamento() const {
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
   return portamento_.getValue();
+}
+
+GeneratorPatch::OscType GeneratorPatch::osc_type() const {
+  std::lock_guard<std::mutex> params_lock(patch_mutex_);
+  return static_cast<OscType>(int(osc_type_));
 }
 
 GeneratorPatch::ModParams *

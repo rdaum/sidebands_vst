@@ -16,7 +16,7 @@ namespace sidebands {
 
 using Steinberg::Vst::SampleRate;
 
-// Each "generator" represents a single FM oscillator + associated envelope
+// Each "generator" represents a single oscillator + associated envelope
 // generators or other modulation sources.
 class Generator {
  public:
@@ -44,7 +44,7 @@ class Generator {
 
   std::unique_ptr<IModulationSource> modulators_[NUM_TARGETS][kNumModTypes];
   ParamValue velocity_ = 0;
-  Oscillator o_;
+  std::unique_ptr<IOscillator> o_;
 };
 
 }  // namespace sidebands

@@ -43,6 +43,11 @@ public:
   ParamValue r() const;
   ParamValue s() const;
   ParamValue portamento() const;
+  enum class OscType {
+    MOD_FM,
+    ANALOG
+  };
+  OscType osc_type() const;
 
   struct EnvelopeValues {
     SampleAccurateValue HT, AR, AL, DR1, DL1, DR2, SL, RR1, RL1, RR2;
@@ -77,6 +82,7 @@ private:
 
   ParamValue on_;
   SampleAccurateValue c_, a_, m_, k_, r_, s_, portamento_;
+  ParamValue osc_type_;
 
   std::unique_ptr<ModParams> mod_targets_[NUM_TARGETS];
 

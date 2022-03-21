@@ -118,31 +118,32 @@ void SpectrumView::drawRect(VSTGUI::CDrawContext *context,
       *context, VSTGUI::CGraphicsTransform().translate(getViewSize().left,
                                                        getViewSize().top));
 
-  Oscillator o;
   auto buffer_size = size_t(1024);
   for (int gen_num = 0; gen_num < generators_.size(); gen_num++) {
     if (!sidebands_controller_->getParamNormalized(
             TagFor(gen_num, TAG_GENERATOR_TOGGLE, TARGET_NA)))
       continue;
+    ParamValue osc_type_v = sidebands_controller_->GetParamValue(
+        TagFor(gen_num, TAG_OSC, TARGET_OSC_TYPE));
+    GeneratorPatch::OscType osc_type = static_cast<GeneratorPatch::OscType>(int(osc_type_v));
+    auto o = MakeOscillator(osc_type);
+
     OscBuffer osc_buffer(buffer_size);
 
-    OscParam c(sidebands_controller_->GetParamValue(
-                   TagFor(gen_num, TAG_OSC, TARGET_C)),
-               buffer_size);
-    OscParam m(sidebands_controller_->GetParamValue(
-                   TagFor(gen_num, TAG_OSC, TARGET_M)),
-               buffer_size);
-    OscParam r(sidebands_controller_->GetParamValue(
-                   TagFor(gen_num, TAG_OSC, TARGET_R)),
-               buffer_size);
-    OscParam s(sidebands_controller_->GetParamValue(
-                   TagFor(gen_num, TAG_OSC, TARGET_S)),
-               buffer_size);
-    OscParam k(sidebands_controller_->GetParamValue(
-                   TagFor(gen_num, TAG_OSC, TARGET_K)),
-               buffer_size);
-    OscParam freq(2048, buffer_size);
-    o.Perform(65536, osc_buffer, freq, c, m, r, s, k);
+    OscParams params(buffer_size);
+
+    params.C = sidebands_controller_->GetParamValue(
+                   TagFor(gen_num, TAG_OSC, TARGET_C));
+    params.M =sidebands_controller_->GetParamValue(
+                   TagFor(gen_num, TAG_OSC, TARGET_M));
+    params.R =sidebands_controller_->GetParamValue(
+                   TagFor(gen_num, TAG_OSC, TARGET_R));
+    params.S = sidebands_controller_->GetParamValue(
+                   TagFor(gen_num, TAG_OSC, TARGET_S));
+    params.K  =sidebands_controller_->GetParamValue(
+                   TagFor(gen_num, TAG_OSC, TARGET_K));
+    params.note_freq = 2048;
+    o->Perform(65536, osc_buffer, params);
 
     CArray fft_buffer(osc_buffer.size());
     ConvertToCArray(osc_buffer, fft_buffer);
@@ -151,7 +152,7 @@ void SpectrumView::drawRect(VSTGUI::CDrawContext *context,
 
     std::valarray<double> db_bins(buffer_size);
     for (int i = 0; i <= ((buffer_size)-1); i++) {
-      db_bins[i] = std::abs(fft_buffer[i].real());
+      db_bins[i] = fft_buffer[i].real();
     }
     // Get the bin for the carrier, and scale things based on that.
     double max_bin = db_bins[65536 / 2048];

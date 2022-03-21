@@ -40,6 +40,7 @@ private:
   ParameterEditorView *k_slider_;
   ParameterEditorView *r_slider_;  // TODO a dial, not slider
   ParameterEditorView *s_slider_;
+  VSTGUI::COnOffButton *analog_mode_;
 
   WaveformView *waveform_view_;
   SpectrumView *spectrum_view_;

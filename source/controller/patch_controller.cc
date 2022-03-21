@@ -69,7 +69,7 @@ IPtr<RangeParameter> OscillatorParameter(Steinberg::Vst::UnitID unit_id,
                                          uint32_t gen_num, ParamValue min,
                                          ParamValue max) {
   std::string full_name =
-      absl::StrFormat("Gen %d Oscillator %s", gen_num, name);
+      absl::StrFormat("Gen %d ModFMOscillator %s", gen_num, name);
 
   auto info = ParameterInfo{
       .id = TagFor(gen_num, TAG_OSC, sp),
@@ -139,6 +139,8 @@ void PatchController::AppendParameters(ParameterContainer *container) {
         OscillatorParameter(unit_id, "S", TARGET_S, generator, -1, 1));
     container->addParameter(OscillatorParameter(
         unit_id, "Portamento", TARGET_PORTAMENTO, generator, 0, 1));
+    container->addParameter(OscillatorParameter(
+        unit_id, "Oscillator type", TARGET_OSC_TYPE, generator, 0, 1));
 
     for (auto target : kModulationTargets) {
       container->addParameter(ModTypeParameter(unit_id, target, generator));

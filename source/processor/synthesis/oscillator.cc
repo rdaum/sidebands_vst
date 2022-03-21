@@ -10,9 +10,12 @@ constexpr double kPi2 = std::numbers::pi * 2.0;
 
 } // namespace
 
-void Oscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
-                         OscBuffer &buffer, OscParam &note_freq, OscParam &C,
-                         OscParam &M, OscParam &R, OscParam &S, OscParam &K) {
+OscParams::OscParams(size_t buffer_size)
+    : note_freq(buffer_size), C(buffer_size), M(buffer_size), R(buffer_size),
+      S(buffer_size), K(buffer_size) {}
+
+void ModFMOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
+                              OscBuffer &buffer, OscParams &params) {
   auto buffer_size = buffer.size();
 
   // Accumulate the time multiplier based on current phase.
@@ -21,24 +24,63 @@ void Oscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
            buffer_size);
   phase_ += buffer_size;
 
-  auto freq = Vmul(note_freq, C);
+  auto freq = Vmul(params.note_freq, params.C);
   auto omega_c = Vmul(freq, kPi2);
-  auto omega_m = Vmul(omega_c, M);
+  auto omega_m = Vmul(omega_c, params.M);
 
   VmulInplace(omega_c, T);
   VmulInplace(omega_m, T);
 
-  buffer = Vmul(Vexp(Vmul(Vmul(R, K), Vcos(omega_m))),
-                Vcos(Vadd(omega_c, Vmul(Vmul(S, K), Vsin(omega_m)))));
+  buffer = Vmul(Vexp(Vmul(Vmul(params.R, params.K), Vcos(omega_m))),
+                Vcos(Vadd(omega_c, Vmul(Vmul(params.S, params.K), Vsin(omega_m)))));
 
   // normalize for K by dividing out exp of K
-  VdivInplace(buffer, Vexp(K));
+  VdivInplace(buffer, Vexp(params.K));
 
   /*
   buffer =
       (exp(R * K * cos(omega_m)) * cos(omega_c + S * K * sin(omega_m))) /
       exp(K) /* normalize for K by dividing out exp of K */
   ;
+}
+
+void AnalogOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
+                              OscBuffer &buffer, OscParams &params) {
+  auto buffer_size = buffer.size();
+
+  // Accumulate the time multiplier based on current phase.
+  OscParam T(buffer_size);
+  linspace(T, phase_ / sample_rate, (phase_ + buffer_size) / sample_rate,
+           buffer_size);
+  phase_ += buffer_size;
+
+  auto freq = Vmul(params.note_freq, params.C);
+  auto omega_c = Vmul(freq, kPi2);
+  auto omega_m = Vmul(omega_c, params.M);
+
+  VmulInplace(omega_c, T);
+  VmulInplace(omega_m, T);
+
+  // We need larger values of than provided by the parameters.
+  VmulInplace(params.K, 5);
+
+  // We start by producing a pulse train using a variant of ModFM.
+  // Modulator ratio is hardcoded, so we only look at C and K and note_freq values from params.
+  // Modulation index controls width of pulse.
+  buffer = exp(params.K * cos(omega_m) -params.K) * cos(omega_c);
+
+  // To go to saw from pulse, we need to integrate and then dc block as per the paper.
+  int_.Filter(buffer);
+  dc_.Filter(buffer);
+}
+
+std::unique_ptr<IOscillator> MakeOscillator(GeneratorPatch::OscType type) {
+  switch (type) {
+  case GeneratorPatch::OscType::MOD_FM:
+    return std::make_unique<ModFMOscillator>();
+  case GeneratorPatch::OscType::ANALOG:
+    return std::make_unique<AnalogOscillator>();
+  }
 }
 
 } // namespace sidebands
