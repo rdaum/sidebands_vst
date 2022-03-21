@@ -19,7 +19,7 @@ class ModulatorTargetView;
 class WaveformView;
 class SpectrumView;
 class GeneratorEditorView : public VSTGUI::CScrollView, Steinberg::FObject {
- public:
+public:
   GeneratorEditorView(const VSTGUI::CRect &size,
                       SidebandsController *edit_controller);
   ~GeneratorEditorView() override;
@@ -35,11 +35,7 @@ class GeneratorEditorView : public VSTGUI::CScrollView, Steinberg::FObject {
 private:
   SidebandsController *edit_controller_;
   VSTGUI::CTextLabel *selected_label_;
-  ParameterEditorView *c_slider_;
-  ParameterEditorView *m_slider_;
-  ParameterEditorView *k_slider_;
-  ParameterEditorView *r_slider_;  // TODO a dial, not slider
-  ParameterEditorView *s_slider_;
+  std::vector<ParameterEditorView*> parameter_editors_;
   VSTGUI::COnOffButton *analog_mode_;
 
   WaveformView *waveform_view_;

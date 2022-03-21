@@ -45,43 +45,40 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
       absl::StrFormat("#%d", selected_generator).c_str());
 
   VSTGUI::CRect column_size{0, 0, 40, modulator_rows->getHeight()};
-  c_slider_ =
+  parameter_editors_ = {
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_C),
-                              this,ParameterEditorStyle::SLIDER_VERTICAL_SHORT,  "C");
-
-  m_slider_ =
+                              this, ParameterEditorStyle::SLIDER_VERTICAL_SHORT,
+                              "C"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_M),
-                              this, ParameterEditorStyle::SLIDER_VERTICAL_SHORT, "M");
-  k_slider_ =
+                              this, ParameterEditorStyle::SLIDER_VERTICAL_SHORT,
+                              "M"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_K),
-                              this,ParameterEditorStyle::SLIDER_VERTICAL_SHORT,  "K");
-  r_slider_ =
+                              this, ParameterEditorStyle::SLIDER_VERTICAL_SHORT,
+                              "K"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_R),
-                              this, ParameterEditorStyle::SLIDER_VERTICAL_SHORT, "R");
-  s_slider_ =
+                              this, ParameterEditorStyle::SLIDER_VERTICAL_SHORT,
+                              "R"),
       new ParameterEditorView(column_size,
                               edit_controller->FindRangedParameter(
                                   selected_generator, TAG_OSC, TARGET_S),
-                              this,ParameterEditorStyle::SLIDER_VERTICAL_SHORT,  "S");
+                              this, ParameterEditorStyle::SLIDER_VERTICAL_SHORT,
+                              "S"),
+  };
 
   a_target_view_ = new ModulatorTargetView(
-      VSTGUI::CRect(0, 0, modulator_rows->getWidth() - c_slider_->getWidth(),
-                    kModRowHeight),
+      VSTGUI::CRect(0, 0, modulator_rows->getWidth(), kModRowHeight),
       edit_controller, TARGET_A);
 
   k_target_view_ = new ModulatorTargetView(
-      VSTGUI::CRect(0, 0,
-                    modulator_rows->getWidth() - m_slider_->getWidth() -
-                        k_slider_->getWidth(),
-                    kModRowHeight),
+      VSTGUI::CRect(0, 0, modulator_rows->getWidth(), kModRowHeight),
       edit_controller, TARGET_K);
 
   analog_mode_ = new VSTGUI::COnOffButton(
@@ -89,12 +86,9 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
       TagFor(selected_generator, TAG_OSC, TARGET_OSC_TYPE),
       new VSTGUI::CBitmap(kToggleSwitch));
 
-  auto *analysis_area = new VSTGUI::CRowColumnView(
-      VSTGUI::CRect(0, 0,
-                    getWidth() - k_slider_->getWidth() - c_slider_->getWidth() -
-                        m_slider_->getWidth(),
-                    kModRowHeight),
-      VSTGUI::CRowColumnView::kRowStyle);
+  auto *analysis_area =
+      new VSTGUI::CRowColumnView(VSTGUI::CRect(0, 0, getWidth(), kModRowHeight),
+                                 VSTGUI::CRowColumnView::kRowStyle);
   analysis_area->setBackgroundColor(VSTGUI::kTransparentCColor);
   waveform_view_ = new WaveformView(
       VSTGUI::CRect(0, 0, analysis_area->getWidth(), kModRowHeight / 2),
@@ -116,13 +110,9 @@ GeneratorEditorView::GeneratorEditorView(const VSTGUI::CRect &size,
   modulator_rows->addView(osc_columns);
 
   osc_columns->addView(analog_mode_);
-  osc_columns->addView(c_slider_);
-  osc_columns->addView(m_slider_);
-  osc_columns->addView(k_slider_);
-  osc_columns->addView(r_slider_);
-  osc_columns->addView(s_slider_);
-
-
+  for (auto *editor : parameter_editors_) {
+    osc_columns->addView(editor);
+  }
   osc_columns->addView(analysis_area);
 
   auto *a_columns =
@@ -181,24 +171,11 @@ void GeneratorEditorView::update(Steinberg::FUnknown *changedUnknown,
       a_target_view_->SwitchGenerator(new_generator);
       waveform_view_->SetGenerators({new_generator});
 
-      c_slider_->UpdateControlParameters(edit_controller_,
-                                         edit_controller_->FindRangedParameter(
-                                             new_generator, TAG_OSC, TARGET_C));
-      m_slider_->UpdateControlParameters(edit_controller_,
-                                         edit_controller_->FindRangedParameter(
-                                             new_generator, TAG_OSC, TARGET_M));
-      k_slider_->UpdateControlParameters(edit_controller_,
-                                         edit_controller_->FindRangedParameter(
-                                             new_generator, TAG_OSC, TARGET_K));
-
-      r_slider_->UpdateControlParameters(edit_controller_,
-                                         edit_controller_->FindRangedParameter(
-                                             new_generator, TAG_OSC, TARGET_R));
-
-      s_slider_->UpdateControlParameters(edit_controller_,
-                                         edit_controller_->FindRangedParameter(
-                                             new_generator, TAG_OSC, TARGET_S));
-
+      for (auto *editor : parameter_editors_) {
+        editor->UpdateControlParameters(
+            edit_controller_, edit_controller_->FindRangedParameter(
+                                  new_generator, TAG_OSC, editor->target()));
+      }
       analog_mode_->setTag(TagFor(new_generator, TAG_OSC, TARGET_OSC_TYPE));
       selected_label_->setText(absl::StrFormat("#%d", new_generator).c_str());
       setDirty(true);

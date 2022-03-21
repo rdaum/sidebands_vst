@@ -39,7 +39,7 @@ void linspace(OscBuffer &linspaced, double start, double end, size_t num);
 OscBuffer weighted_exp(size_t N, double start, double end, double weight);
 
 struct LeakDC  {
-  explicit LeakDC(double b = 0.999) : b1_(b) {}
+  explicit LeakDC(double b = 0.998) : b1_(b) {}
   void Filter(OscBuffer &buf);
   double b1_;
   double x1_ = 0.0;
@@ -47,8 +47,8 @@ struct LeakDC  {
 };
 
 struct Integrator {
-  explicit Integrator(double b = 0.999) : b1_(b) {}
-  void Filter(OscBuffer &buf, double b = 0.999);
+  explicit Integrator(double b = 0.998) : b1_(b) {}
+  void Filter(OscBuffer &buf, double b = 0.998);
   double b1_ = 0.0;
   double y1_ = 0.f;
 };

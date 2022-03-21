@@ -212,14 +212,6 @@ void LeakDC::Filter(OscBuffer &buf) {
   y1_ = y1;
 }
 
-void integrate(OscBuffer &src) {
-  OscBuffer dst(src.size());
-  double sum = dst[0];
-  for (int i = 0; i < src.size(); i++) {
-    dst[i] = sum += dst[i];
-  }
-}
-
 void Integrator::Filter(OscBuffer &buf, double newB1) {
   double b1 = b1_;
   double y1 = y1_;
