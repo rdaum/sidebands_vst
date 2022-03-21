@@ -65,25 +65,18 @@ void Generator::NoteOn(
       modulator->On(sample_rate, patch.ModulationParams(dest));
     }
   }
+  events.GeneratorOn(this);
 }
 
-void Generator::NoteOff(SampleRate sample_rate, const GeneratorPatch &patch,
-                        uint8_t note) {
+void Generator::NoteRelease(SampleRate sample_rate, const GeneratorPatch &patch,
+                            uint8_t note) {
   for (auto dest : kModulationTargets) {
     auto *modulator = ModulatorFor(patch, dest);
     if (modulator) {
       modulator->Release(sample_rate, patch.ModulationParams(dest));
     }
   }
-}
-
-bool Generator::Playing() const {
-  for (const auto &mod_type : kModTypes) {
-    auto &mod = modulators_[TARGET_A][off_t(mod_type)];
-    if (mod && mod->Playing())
-      return true;
-  }
-  return false;
+  events.GeneratorRelease(this);
 }
 
 void Generator::Reset() {
@@ -103,10 +96,19 @@ void Generator::ConfigureModulators(const GeneratorPatch &patch) {
       case ModType::NONE:
         modulators_[target][off_t(mod_type)].reset();
         break;
-      case ModType::ADSR_ENVELOPE:
-        modulators_[target][off_t(mod_type)] =
-            std::make_unique<EnvelopeGenerator>();
-        break;
+      case ModType::ADSR_ENVELOPE: {
+        auto envgen = std::make_unique<EnvelopeGenerator>();
+        // When the amplitude envelope is done, this generator is done.
+        envgen->events.Done.connect([target, this] {
+          if (target == TARGET_A) {
+            events.GeneratorOff(this);
+          }
+        });
+        envgen->events.StageChange.connect([target, this, &patch](off_t stage) {
+          events.EnvelopeStageChange(patch.gennum(), target, stage);
+        });
+        modulators_[target][off_t(mod_type)] = std::move(envgen);
+      } break;
       case ModType::LFO:
         modulators_[target][off_t(mod_type)] = std::make_unique<LFO>();
         break;
@@ -118,18 +120,6 @@ void Generator::ConfigureModulators(const GeneratorPatch &patch) {
 IModulationSource *Generator::ModulatorFor(const GeneratorPatch &patch,
                                            TargetTag dest) {
   return modulators_[dest][off_t(patch.ModTypeFor(dest))].get();
-}
-
-void Generator::UpdateState(
-    PlayerState::VoiceState::GeneratorState *generator_state) const {
-  for (const auto &target : kModulationTargets) {
-    for (const auto &mod_type : kModTypes) {
-      auto &mod = modulators_[target][off_t(mod_type)];
-      if (mod) {
-        mod->UpdateState(&generator_state->modulation_states[target]);
-      }
-    }
-  }
 }
 
 } // namespace sidebands

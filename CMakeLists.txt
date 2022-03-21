@@ -65,6 +65,14 @@ set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+# sigslot
+FetchContent_Declare(
+        sigslot
+        GIT_REPOSITORY https://github.com/palacaze/sigslot.git
+)
+FetchContent_MakeAvailable(sigslot)
+
+
 IF (WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  /fp:fast /arch:AVX2 /DINSTRSET=7")
 ELSE()
@@ -104,6 +112,8 @@ smtg_add_vst3plugin(sidebands
         source/processor/sidebands_processor.cc
         source/processor/patch_processor.h
         source/processor/patch_processor.cc
+        source/processor/events.h
+
         source/processor/util/sample_accurate_value.h
         source/processor/util/sample_accurate_value.cc
 
@@ -195,7 +205,7 @@ target_link_libraries(sidebands
         absl::statusor
         ${PLATFORM_LIBRARIES}
 )
-target_include_directories(sidebands PRIVATE source ${vectorclass_SOURCE_DIR})
+target_include_directories(sidebands PRIVATE source ${vectorclass_SOURCE_DIR} ${sigslot_SOURCE_DIR}/include)
 
 if (SMTG_MAC)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.12)

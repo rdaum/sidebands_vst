@@ -198,9 +198,12 @@ void GeneratorEditorView::update(Steinberg::FUnknown *changedUnknown,
   }
 }
 
-void GeneratorEditorView::RefreshState(const PlayerState::VoiceState::GeneratorState &player_state) {
-  a_target_view_->RefreshState(player_state.modulation_states[TARGET_A]);
-  k_target_view_->RefreshState(player_state.modulation_states[TARGET_K]);
+void GeneratorEditorView::HighlightEnvelopeStage(TargetTag target,
+                                                 off_t stage) {
+  if (target == TARGET_A)
+    a_target_view_->HighlightEnvelopeStage(stage);
+  else if (target == TARGET_K)
+    k_target_view_->HighlightEnvelopeStage(stage);
 }
 
 } // namespace ui

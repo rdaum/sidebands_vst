@@ -21,9 +21,9 @@ class ModulatorTargetView : public VSTGUI::CRowColumnView, ModulatorEditorView {
   ~ModulatorTargetView() override = default;
 
   void SwitchGenerator(int new_generator) override;
-  void RefreshState(const PlayerState::VoiceState::GeneratorState::ModulationState &player_state);
+  void HighlightEnvelopeStage(off_t stage);
 
- private:
+private:
   void valueChanged(VSTGUI::CControl *control) override;
 
  private:

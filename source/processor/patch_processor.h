@@ -63,8 +63,8 @@ public:
 
   GeneratorPatch::ModParams *ModulationParams(TargetTag destination) const;
   ModType ModTypeFor(TargetTag destination) const;
-
   std::function<double()> ParameterGetterFor(TargetTag dest) const;
+  uint32_t gennum() const { return gennum_; }
 
 private:
   void DeclareParameter(SampleAccurateValue *value);

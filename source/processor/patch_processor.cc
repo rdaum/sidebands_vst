@@ -152,7 +152,7 @@ void GeneratorPatch::DeclareParameter(SampleAccurateValue *value) {
 
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
 
-  parameters_[param_key] = {{.sv = value}, true, value->min(), value->max()};
+  parameters_[param_key] = {{.sv = value}, true, value->Min(), value->Max()};
 }
 
 void GeneratorPatch::DeclareParameter(ParamID param_id,

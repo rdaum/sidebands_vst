@@ -214,23 +214,28 @@ SidebandsController::endEditFromHost(Steinberg::Vst::ParamID paramID) {
 
 Steinberg::tresult
 SidebandsController::notify(Steinberg::Vst::IMessage *message) {
-  if (!FIDStringsEqual(message->getMessageID(), kAttrPlayerStateMessageID)) {
+  if (!FIDStringsEqual(message->getMessageID(), kEnvelopeStageMessageID)) {
     return ComponentBase::notify(message);
   }
-  CHECK_EQ(GetPlayerStateAttributes(message->getAttributes(), &player_state_),
-           Steinberg::kResultOk);
 
-  int generator = SelectedGenerator();
-  int active_voices = player_state_.active_voices;
-  while (active_voices--) {
-    for (const auto &voice_state : player_state_.voice_states) {
-      for (int i = 0; i < kNumGenerators; i++) {
-        if (voice_state.active_generators[i] && i == generator) {
-          generator_view_->RefreshState(voice_state.generator_states[i]);
-        }
-      }
-    }
+  const void *data;
+  Steinberg::uint32 size;
+  auto attributes = message->getAttributes();
+
+  int64 gennum;
+  int64 note_id;
+  int64 target;
+  int64 stage;
+
+  attributes->getInt(kEnvelopeStageNoteIDAttr, note_id);
+  attributes->getInt(kEnvelopeStageGennumAttr, gennum);
+  attributes->getInt(kEnvelopeStageTargetAttr, target);
+  attributes->getInt(kEnvelopeStageStageAttr, stage);
+
+  if (SelectedGenerator() == gennum) {
+    generator_view_->HighlightEnvelopeStage(static_cast<TargetTag>(target), stage);
   }
+
   return Steinberg::kResultOk;
 }
 

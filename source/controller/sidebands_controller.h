@@ -83,7 +83,6 @@ private:
   VSTGUI::CView *analysis_view_ = nullptr;
   ui::GeneratorEditorView *generator_view_ = nullptr;
   std::unique_ptr<PatchController> patch_controller_;
-  PlayerState player_state_ = {0};
 };
 
 //------------------------------------------------------------------------

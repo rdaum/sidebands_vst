@@ -7,9 +7,11 @@
 #include <mutex>
 #include <valarray>
 #include <vector>
+#include <bitset>
 
 #include "constants.h"
 #include "globals.h"
+#include "processor/events.h"
 
 namespace sidebands {
 
@@ -36,7 +38,7 @@ class Voice {
               ParamValue velocity, int16_t note);
 
   // Trigger a note-release for each generator in the voice.
-  void NoteOff(SampleRate sample_rate, PatchProcessor *patch, int16_t note);
+  void NoteRelease(SampleRate sample_rate, PatchProcessor *patch, int16_t note);
 
   // Force all off (i.e. for stealing)
   void Reset();
@@ -45,24 +47,21 @@ class Voice {
   // generators are active).
   bool Playing() const;
 
-  // Populate the current player state with information about this currently
-  // playing voice and its generators, etc.
-  void UpdateState(PlayerState::VoiceState *voice_state);
-
   int16_t note() const { return note_; }
   std::chrono::high_resolution_clock::time_point on_time() const {
     return on_time_;
   }
 
+  VoiceEvents events;
+
  private:
   mutable std::mutex generators_mutex_;
   std::unique_ptr<Generator> generators_[kNumGenerators];
+  std::bitset<kNumGenerators> active_generators_;
   std::chrono::high_resolution_clock::time_point on_time_;
   int16_t note_;
   ParamValue velocity_;
   ParamValue note_frequency_;
-
-  PlayerState::VoiceState current_state;
 };
 
 }  // namespace sidebands

@@ -10,9 +10,9 @@
 #include <set>
 
 #include "globals.h"
-#include "sidebands_cids.h"
 #include "processor/patch_processor.h"
 #include "processor/synthesis/player.h"
+#include "sidebands_cids.h"
 #include "tags.h"
 
 using namespace Steinberg;
@@ -79,22 +79,22 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
       Vst::Event event;
       input_events->getEvent(i, event);
       switch (event.type) {
-        case Vst::Event::kNoteOnEvent:
-          player_->NoteOn(std::chrono::high_resolution_clock::now(),
-                          event.noteOn.noteId, event.noteOn.velocity,
-                          event.noteOn.pitch);
-          break;
-        case Vst::Event::kNoteOffEvent:
-          player_->NoteOff(event.noteOff.noteId, event.noteOff.pitch);
-          break;
-        case Vst::Event::kLegacyMIDICCOutEvent:
-          VLOG(1) << "Legacy CC control# " << std::hex
-                  << (int)event.midiCCOut.controlNumber
-                  << " value: " << (int)event.midiCCOut.value;
-          break;
-        default:
-          LOG(INFO) << "Other VST event type: " << event.type;
-          break;
+      case Vst::Event::kNoteOnEvent:
+        player_->NoteOn(std::chrono::high_resolution_clock::now(),
+                        event.noteOn.noteId, event.noteOn.velocity,
+                        event.noteOn.pitch);
+        break;
+      case Vst::Event::kNoteOffEvent:
+        player_->NoteOff(event.noteOff.noteId, event.noteOff.pitch);
+        break;
+      case Vst::Event::kLegacyMIDICCOutEvent:
+        VLOG(1) << "Legacy CC control# " << std::hex
+                << (int)event.midiCCOut.controlNumber
+                << " value: " << (int)event.midiCCOut.value;
+        break;
+      default:
+        LOG(INFO) << "Other VST event type: " << event.type;
+        break;
       }
     }
   }
@@ -102,7 +102,7 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
   // Process data in kSampleAccurateChunkSizeSamples so parameters changed
   // mid-buffer have a chance to be reflected on a chunk by chunk basis.
   Steinberg::Vst::ProcessDataSlicer slicer(kSampleAccurateChunkSizeSamples);
-  auto processing_fn = [this ](Steinberg::Vst::ProcessData &data) {
+  auto processing_fn = [this](Steinberg::Vst::ProcessData &data) {
     auto *outputs = data.outputs;
 
     // Advance parameters to the state they'd be in this chunk.
@@ -142,18 +142,6 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
 
   patch_->EndParameterChanges();
 
-  // TODO: Do this less frequently.
-  const auto &current_state = player_->CurrentPlayerState();
-  if (current_state.active_voices) {
-    if (auto player_state_message = owned(allocateMessage())) {
-      player_state_message->setMessageID(kAttrPlayerStateMessageID);
-      CHECK_EQ(SetPlayerStateAttributes(player_state_message->getAttributes(),
-                                        current_state),
-               Steinberg::kResultOk);
-      CHECK_EQ(sendMessage(player_state_message), Steinberg::kResultOk);
-    }
-  }
-
   return kResultOk;
 }
 
@@ -164,31 +152,51 @@ SidebandsProcessor::setupProcessing(Vst::ProcessSetup &newSetup) {
             << " patch instance: " << patch_.get();
 
   player_ = std::make_unique<Player>(patch_.get(), newSetup.sampleRate);
+  // Connect asynchronous events to update the UI.
+  player_->events.EnvelopeStageChange.connect(&SidebandsProcessor::SendEnvelopeStageChangedEvent, this);
 
   return AudioEffect::setupProcessing(newSetup);
 }
 
 tresult PLUGIN_API
 SidebandsProcessor::canProcessSampleSize(int32 symbolicSampleSize) {
-  if (symbolicSampleSize == Vst::kSample32) return kResultTrue;
+  if (symbolicSampleSize == Vst::kSample32)
+    return kResultTrue;
 
-  if (symbolicSampleSize == Vst::kSample64) return kResultTrue;
+  if (symbolicSampleSize == Vst::kSample64)
+    return kResultTrue;
 
   return kResultFalse;
 }
 
 tresult PLUGIN_API SidebandsProcessor::setState(IBStream *state) {
   // Here you set the state of the component (Processor part)
-  if (!state) return kResultFalse;
+  if (!state)
+    return kResultFalse;
 
   return patch_->LoadPatch(state);
 }
 
 tresult PLUGIN_API SidebandsProcessor::getState(IBStream *state) {
   // Here you get the state of the component (Processor part)
-  if (!state) return kResultFalse;
+  if (!state)
+    return kResultFalse;
 
   return patch_->SavePatch(state);
 }
 
-}  // namespace sidebands
+void SidebandsProcessor::SendEnvelopeStageChangedEvent(int note_id, int gennum,
+                                                       TargetTag target,
+                                                       off_t stage) {
+  if (auto env_change_message = owned(allocateMessage())) {
+    env_change_message->setMessageID(kEnvelopeStageMessageID);
+    auto *attributes = env_change_message->getAttributes();
+    attributes->setInt(kEnvelopeStageNoteIDAttr, note_id);
+    attributes->setInt(kEnvelopeStageGennumAttr, gennum);
+    attributes->setInt(kEnvelopeStageTargetAttr, target);
+    attributes->setInt(kEnvelopeStageStageAttr, stage);
+    sendMessage(env_change_message);
+  }
+}
+
+} // namespace sidebands

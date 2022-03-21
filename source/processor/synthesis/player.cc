@@ -76,6 +76,11 @@ void Player::NoteOn(std::chrono::high_resolution_clock::time_point start_time,
   }
   Voice *v = NewVoice(note_id);
   assert(v != nullptr);
+  v->events.EnvelopeStageChange.connect(
+      [this, note_id](Voice *v, int gennum, TargetTag target, off_t stage) {
+        events.EnvelopeStageChange(note_id, gennum, target, stage);
+      });
+
   // TODO legato, portamento, etc.
   v->NoteOn(sample_rate_, patch_, start_time, velocity, pitch);
 }
@@ -94,7 +99,7 @@ void Player::NoteOff(int32_t note_id, int16_t pitch) {
     LOG(ERROR) << "Unable to find voice for: " << std::hex << note_id;
     return;
   }
-  voice_it->second.NoteOff(sample_rate_, patch_, pitch);
+  voice_it->second.NoteRelease(sample_rate_, patch_, pitch);
 }
 
 Voice *Player::NewVoice(int32_t note_id) {
@@ -122,20 +127,6 @@ Voice *Player::NewVoice(int32_t note_id) {
   voices_.erase(stolen_voice_it);
 
   return &voices_[note_id];
-}
-
-PlayerState Player::CurrentPlayerState() {
-  PlayerState state;
-  std::lock_guard<std::mutex> player_lock(voices_mutex_);
-  state.active_voices = 0;
-  for (auto &voice : voices_) {
-    if (voice.second.Playing()) {
-      PlayerState::VoiceState voice_state;
-      voice.second.UpdateState(&voice_state);
-      state.voice_states[state.active_voices++] = voice_state;
-    }
-  }
-  return state;
 }
 
 } // namespace sidebands

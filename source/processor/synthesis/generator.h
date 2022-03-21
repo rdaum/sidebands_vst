@@ -5,8 +5,10 @@
 #include <chrono>
 #include <mutex>
 #include <vector>
+#include <bitset>
 
 #include "globals.h"
+#include "processor/events.h"
 #include "processor/synthesis/envgen.h"
 #include "processor/synthesis/oscillator.h"
 
@@ -28,13 +30,12 @@ class Generator {
               std::chrono::high_resolution_clock::time_point start_time,
               ParamValue velocity, uint8_t note);
 
-  void NoteOff(SampleRate sample_rate, const GeneratorPatch &patch,
+  void NoteRelease(SampleRate sample_rate, const GeneratorPatch &patch,
                uint8_t note);
 
-  bool Playing() const;
   void Reset();
 
-  void UpdateState(PlayerState::VoiceState::GeneratorState *generator_state) const;
+  GeneratorEvents events;
 
  private:
   void Produce(SampleRate sample_rate, GeneratorPatch &patch, OscParam &buffer, TargetTag target);

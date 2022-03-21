@@ -23,8 +23,6 @@ public:
                           const GeneratorPatch::ModParams *parameters) = 0;
   virtual bool Playing() const = 0;
   virtual ModType mod_type() const = 0;
-  virtual void
-  UpdateState( PlayerState::VoiceState::GeneratorState::ModulationState *state) const = 0;
 };
 
 } // namespace sidebands

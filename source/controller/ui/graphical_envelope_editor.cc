@@ -143,9 +143,11 @@ void GraphicalEnvelopeEditorView::drawRect(VSTGUI::CDrawContext *context,
   context->setFrameColor(VSTGUI::CColor(0, 100, 0));
   context->setFillColor(VSTGUI::CColor(0, 200, 0, 50));
   for (int s_num = 0; s_num < segments_.size(); s_num++) {
-    if (s_num != playing_segment_) continue;
+    if (s_num != playing_segment_)
+      continue;
     auto s = segments_[s_num];
-    auto hilight_box = VSTGUI::CRect(s.start_point.x, top_left.y, s.end_point.x, bottom_left.y);
+    auto hilight_box = VSTGUI::CRect(s.start_point.x, top_left.y, s.end_point.x,
+                                     bottom_left.y);
     context->drawRect(hilight_box, VSTGUI::CDrawStyle::kDrawFilledAndStroked);
   }
 
@@ -161,7 +163,10 @@ GraphicalEnvelopeEditorView::onMouseDown(CPoint &where,
         if (s.rate_param || s.start_level_param) {
           dragging_segment_ = &s;
           getFrame()->setCursor(VSTGUI::kCursorSizeAll);
-          LOG(INFO) << "Begin edit: box x " << dragging_segment_->drag_box.getCenter().x << " r: " << ValueOf(dragging_segment_->rate_param) << " width: " << dragging_segment_->width;
+          LOG(INFO) << "Begin edit: box x "
+                    << dragging_segment_->drag_box.getCenter().x
+                    << " r: " << ValueOf(dragging_segment_->rate_param)
+                    << " width: " << dragging_segment_->width;
           return VSTGUI::kMouseEventHandled;
         }
       }
@@ -250,14 +255,10 @@ GraphicalEnvelopeEditorView::Param(ParamTag param) {
   return Param(edit_controller()->SelectedGenerator(), param);
 }
 
-void GraphicalEnvelopeEditorView::RefreshState(
-    const PlayerState::VoiceState::GeneratorState::ModulationState
-        &player_state) {
-  if (player_state.current_envelope_segment != playing_segment_) {
-    // rendered segment #s differ from the envgen's # for them by 1
-    playing_segment_ = player_state.current_envelope_segment - 1;
-    setDirty(true);
-  }
+void GraphicalEnvelopeEditorView::HighlightEnvelopeStage(off_t stage) {
+  // rendered segment #s differ from the envgen's # for them by 1
+  playing_segment_ = stage - 1;
+  setDirty(true);
 }
 
 } // namespace ui

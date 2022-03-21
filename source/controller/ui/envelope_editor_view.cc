@@ -137,10 +137,8 @@ void EnvelopeEditorView::SwitchGenerator(int new_generator) {
   }
 }
 
-void EnvelopeEditorView::RefreshState(
-    const PlayerState::VoiceState::GeneratorState::ModulationState
-        &player_state) {
-  envelope_editor_->RefreshState(player_state);
+void EnvelopeEditorView::HighlightEnvelopeStage(off_t stage) {
+  envelope_editor_->HighlightEnvelopeStage(stage);
 }
 
 } // namespace ui

@@ -59,8 +59,4 @@ bool LFO::Playing() const { return playing_; }
 
 ModType LFO::mod_type() const { return ModType::LFO; }
 
-void LFO::UpdateState( PlayerState::VoiceState::GeneratorState::ModulationState *state) const {
-  state->lfo_level = last_level_;
-}
-
 } // namespace sidebands

@@ -26,11 +26,13 @@ void EnvelopeGenerator::SetStage(off_t stage_number) {
   current_sample_index_ = 0;
   if (current_stage_ >= stages_.size())
     current_stage_ = 0;
+
+  events.StageChange(current_stage_);
 }
 
 ParamValue
-EnvelopeGenerator::NextSample(
-    SampleRate sample_rate, const GeneratorPatch::EnvelopeValues &ev) {
+EnvelopeGenerator::NextSample(SampleRate sample_rate,
+                              const GeneratorPatch::EnvelopeValues &ev) {
   // Off or sustain...
   if (current_stage_ == 0 || current_stage_ == sustain_stage_)
     return current_level_;
@@ -47,8 +49,7 @@ EnvelopeGenerator::NextSample(
   return current_level_;
 }
 
-off_t EnvelopeGenerator::AddStage(double sample_rate,
-                                  const std::string &name,
+off_t EnvelopeGenerator::AddStage(double sample_rate, const std::string &name,
                                   double start_level, double end_level,
                                   double duration) {
   off_t idx = stages_.size();
@@ -57,7 +58,9 @@ off_t EnvelopeGenerator::AddStage(double sample_rate,
   end_level = std::max(end_level, minimum_level_);
   stages_.push_back(
       {name, start_level, end_level,
-       duration_samples ? EnvelopeRampCoefficient(start_level, end_level, duration_samples) : 0,
+       duration_samples
+           ? EnvelopeRampCoefficient(start_level, end_level, duration_samples)
+           : 0,
        duration_samples});
   return idx;
 }
@@ -81,40 +84,39 @@ void EnvelopeGenerator::On(SampleRate sample_rate,
            env.DR2.getValue());
   sustain_stage_ =
       AddStage(sample_rate, "SUSTAIN", env.SL.getValue(), env.SL.getValue(), 0);
-  release_stage_ = AddStage(sample_rate, "Release1", env.SL.getValue(), env.RL1.getValue(),
-                            env.RR1.getValue());
-  AddStage(sample_rate, "Release2", env.RL1.getValue(), minimum_level_, env.RR2.getValue());
+  release_stage_ = AddStage(sample_rate, "Release1", env.SL.getValue(),
+                            env.RL1.getValue(), env.RR1.getValue());
+  AddStage(sample_rate, "Release2", env.RL1.getValue(), minimum_level_,
+           env.RR2.getValue());
   SetStage(1);
   current_level_ = minimum_level_;
+
+  events.Start();
 }
 
-void EnvelopeGenerator::Release(
-    SampleRate sample_rate, const GeneratorPatch::ModParams *parameters) {
+void EnvelopeGenerator::Release(SampleRate sample_rate,
+                                const GeneratorPatch::ModParams *parameters) {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
 
+  events.Release();
   SetStage(release_stage_);
 }
 
 void EnvelopeGenerator::Reset() {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
 
+  events.StageChange(0);
+  events.Done();
   current_sample_index_ = 0;
   current_level_ = minimum_level_;
   current_stage_ = 0;
 }
 
-ModType EnvelopeGenerator::mod_type() const {
-  return ModType::ADSR_ENVELOPE;
-}
+ModType EnvelopeGenerator::mod_type() const { return ModType::ADSR_ENVELOPE; }
 
 bool EnvelopeGenerator::Playing() const {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
   return current_stage_ != 0;
-}
-
-void EnvelopeGenerator::UpdateState(
-    PlayerState::VoiceState::GeneratorState::ModulationState *state) const {
-  state->current_envelope_segment = current_stage_;
 }
 
 } // namespace sidebands

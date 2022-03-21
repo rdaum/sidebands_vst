@@ -20,7 +20,6 @@ class LFOEditorView : public VSTGUI::CRowColumnView,
   ~LFOEditorView() override = default;
 
   void SwitchGenerator(int new_generator) override;
-  void RefreshState(const PlayerState::VoiceState::GeneratorState::ModulationState &player_state);
 
   // IDependent overloads
   void valueChanged(VSTGUI::CControl *control) override;

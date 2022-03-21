@@ -50,6 +50,8 @@ public:
   Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream *state) override;
 
 private:
+  void SendEnvelopeStageChangedEvent(int note_id, int gennum, TargetTag target, off_t stage);
+
   std::unique_ptr<PatchProcessor> patch_;
   std::unique_ptr<Player> player_;
 };

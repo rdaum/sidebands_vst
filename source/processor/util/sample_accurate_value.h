@@ -25,8 +25,8 @@ public:
   void setValueNormalized(ParamValue v) ;
   ParamValue getValue() const ;
   ParamValue getValueNormalized() const ;
-  ParamValue min() const { return min_plain_; }
-  ParamValue max() const { return max_plain_; }
+  ParamValue Min() const { return min_plain_; }
+  ParamValue Max() const { return max_plain_; }
   ParamID getParamID() const ;
   bool hasChanges() const ;
   void beginChanges(IParamValueQueue *valueQueue) ;

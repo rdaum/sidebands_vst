@@ -4,9 +4,10 @@
 
 #include <cmath>
 
-#include "dsp.h"
+#include "processor/synthesis/dsp.h"
 #include "processor/patch_processor.h"
 #include "processor/synthesis/modulation_source.h"
+#include "processor/events.h"
 
 namespace sidebands {
 
@@ -33,8 +34,9 @@ public:
                   ParamValue velocity,
                   const GeneratorPatch::ModParams *parameters) override;
   bool Playing() const override;
-  void UpdateState( PlayerState::VoiceState::GeneratorState::ModulationState *state) const ;
   ModType mod_type() const override;
+
+  EnvelopeEvents events;
 
 private:
   ParamValue NextSample(SampleRate sample_rate,

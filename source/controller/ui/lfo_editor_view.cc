@@ -61,9 +61,5 @@ void LFOEditorView::valueChanged(VSTGUI::CControl *control) {
   setDirty(true);
 }
 
-void LFOEditorView::RefreshState(
-    const PlayerState::VoiceState::GeneratorState::ModulationState
-        &player_state) {}
-
 }  // namespace ui
 }  // namespace sidebands

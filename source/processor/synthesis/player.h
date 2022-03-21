@@ -19,7 +19,6 @@ using Steinberg::Vst::ParamValue;
 using Steinberg::Vst::Sample32;
 using Steinberg::Vst::Sample64;
 
-
 // Manages currently playing voices and dispatches note on/noteoff events, and
 // fills and mixes audio buffers from playing voices.
 class Player {
@@ -39,7 +38,7 @@ class Player {
   // Signal note-off.
   void NoteOff(int32_t, int16_t pitch);
 
-  PlayerState CurrentPlayerState();
+  PlayerEvents events;
 
  private:
   // Allocate a new voice or steal one if necessary.

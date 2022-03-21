@@ -115,10 +115,8 @@ void ModulatorTargetView::SwitchViewVisibility() {
   setDirty(true);
 }
 
-void ModulatorTargetView::RefreshState(
-    const PlayerState::VoiceState::GeneratorState::ModulationState &player_state) {
-  envelope_editor_view_->RefreshState(player_state);
-  lfo_editor_view_->RefreshState(player_state);
+void ModulatorTargetView::HighlightEnvelopeStage(off_t stage) {
+  envelope_editor_view_->HighlightEnvelopeStage(stage);
 }
 
 } // namespace ui

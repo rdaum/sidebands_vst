@@ -23,8 +23,7 @@ class GeneratorEditorView : public VSTGUI::CScrollView, Steinberg::FObject {
   GeneratorEditorView(const VSTGUI::CRect &size,
                       SidebandsController *edit_controller);
   ~GeneratorEditorView() override;
-
-  void RefreshState(const PlayerState::VoiceState::GeneratorState &player_state);
+  void HighlightEnvelopeStage(TargetTag target, off_t stage);
 
   // IControlListener overrides
   void valueChanged(VSTGUI::CControl *control) override;
@@ -32,7 +31,8 @@ class GeneratorEditorView : public VSTGUI::CScrollView, Steinberg::FObject {
   // IDependent overrides
   void update(FUnknown *unknown, Steinberg::int32 int_32) override;
 
- private:
+
+private:
   SidebandsController *edit_controller_;
   VSTGUI::CTextLabel *selected_label_;
   ParameterEditorView *c_slider_;

@@ -20,7 +20,7 @@ class GraphicalEnvelopeEditorView : public VSTGUI::CView,
                               int selected_generator, TargetTag target);
 
   void SwitchGenerator(int new_generator) override;
-  void RefreshState(const PlayerState::VoiceState::GeneratorState::ModulationState &player_state);
+  void HighlightEnvelopeStage(off_t stage);
 
   // IDependent overrides
   void update(FUnknown *unknown, Steinberg::int32 int_32) override;
