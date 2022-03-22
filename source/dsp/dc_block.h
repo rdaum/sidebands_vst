@@ -4,8 +4,8 @@
 
 namespace sidebands {
 
-struct LeakDC  {
-  explicit LeakDC(double b = 0.999) : b1_(b) {}
+struct DCBlock {
+  explicit DCBlock(double b = 0.999) : b1_(b) {}
   void Filter(OscBuffer &buf);
   double b1_;
   double x1_ = 0.0;

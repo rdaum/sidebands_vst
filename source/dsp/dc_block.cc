@@ -1,8 +1,8 @@
-#include "dsp/leak_dc.h"
+#include "dsp/dc_block.h"
 
 namespace sidebands {
 
-void LeakDC::Filter(OscBuffer &buf) {
+void DCBlock::Filter(OscBuffer &buf) {
   double b1 = b1_;
   double y1 = y1_;
   double x1 = x1_;
@@ -39,7 +39,7 @@ void DCBlock2::Filter(OscBuffer &in) {
       /* IIR cascade */
       for (int j = 0; j < 4; j++) {
         x2 = (*iirdel[j])[p2];
-        iirdel[j][p2] = x1;
+        (*iirdel[j])[p2] = x1;
         y = x1 - x2 + ydels_[j];
         ydels_[j] = y;
         x1 = y * scaler_;

@@ -7,9 +7,8 @@
 
 #include "processor/patch_processor.h"
 #include "dsp/oscbuffer.h"
-#include "dsp/pole_dc.h"
 #include "dsp/integrator.h"
-#include "dsp/leak_dc.h"
+#include "dsp/dc_block.h"
 
 namespace sidebands {
 

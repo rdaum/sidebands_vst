@@ -121,10 +121,8 @@ smtg_add_vst3plugin(sidebands
         source/dsp/oscbuffer.h
         source/dsp/integrator.h
         source/dsp/integrator.cc
-        source/dsp/pole_dc.cc
-        source/dsp/pole_dc.h
-        source/dsp/leak_dc.h
-        source/dsp/leak_dc.cc
+        source/dsp/dc_block.h
+        source/dsp/dc_block.cc
 
         source/processor/synthesis/envgen.h
         source/processor/synthesis/envgen.cc
