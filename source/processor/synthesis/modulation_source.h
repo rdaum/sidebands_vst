@@ -4,7 +4,7 @@
 
 #include "globals.h"
 #include "processor/patch_processor.h"
-#include "processor/synthesis/dsp.h"
+#include "dsp/oscbuffer.h"
 
 namespace sidebands {
 

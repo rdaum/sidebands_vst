@@ -6,7 +6,10 @@
 #include <valarray>
 
 #include "processor/patch_processor.h"
-#include "processor/synthesis/dsp.h"
+#include "dsp/oscbuffer.h"
+#include "dsp/pole_dc.h"
+#include "dsp/integrator.h"
+#include "dsp/leak_dc.h"
 
 namespace sidebands {
 
@@ -57,7 +60,7 @@ public:
   GeneratorPatch::OscType osc_type() const override { return GeneratorPatch::OscType::ANALOG; };
 
 private:
-  LeakDC dc_;
+  DCBlock2 dc_;
   Integrator int_;
   double phase_ = 0.0f;
 };

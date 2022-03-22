@@ -61,8 +61,7 @@ void AnalogOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
   VmulInplace(omega_c, T);
   VmulInplace(omega_m, T);
 
-  // We need larger values of than provided by the parameters.
-  VmulInplace(params.K, 5);
+  params.K *= 10;
 
   // We start by producing a pulse train using a variant of ModFM.
   // Modulator ratio is hardcoded, so we only look at C and K and note_freq values from params.

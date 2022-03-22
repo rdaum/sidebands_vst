@@ -7,7 +7,6 @@
 #include <mutex>
 
 #include "constants.h"
-#include "processor/synthesis/dsp.h"
 #include "processor/synthesis/oscillator.h"
 
 namespace sidebands {

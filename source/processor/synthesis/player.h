@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "globals.h"
+#include "dsp/oscbuffer.h"
 #include "processor/synthesis/envgen.h"
 #include "processor/synthesis/generator.h"
 #include "processor/synthesis/oscillator.h"

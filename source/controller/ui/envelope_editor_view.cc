@@ -9,8 +9,8 @@
 namespace sidebands {
 namespace ui {
 
-constexpr double kValueEditorWidth = 60;
-constexpr double kValueEditorHeight = 60;
+constexpr double kValueEditorWidth = 40;
+constexpr double kValueEditorHeight = 80;
 
 VSTGUI::CRowColumnView *
 MakeColumn(const VSTGUI::CRect &size,
@@ -45,52 +45,52 @@ EnvelopeEditorView::EnvelopeEditorView(const VSTGUI::CRect &size,
       editor_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_HT,
                                            target),
-      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "HT");
+      this, ParameterEditorStyle::KNOB, "HT");
   ParameterEditorView *ar_editor = new ParameterEditorView(
       editor_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_AR,
                                            target),
-      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "AR");
+      this, ParameterEditorStyle::KNOB, "AR");
   ParameterEditorView *al_editor = new ParameterEditorView(
       editor_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_AL,
                                            target),
-      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "AL");
+      this, ParameterEditorStyle::KNOB, "AL");
   ParameterEditorView *dr1_editor = new ParameterEditorView(
       editor_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_DR1,
                                            target),
-      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "DR1");
+      this, ParameterEditorStyle::KNOB, "DR1");
   ParameterEditorView *dl1_editor = new ParameterEditorView(
       editor_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_DL1,
                                            target),
-      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "DL1");
+      this, ParameterEditorStyle::KNOB, "DL1");
   ParameterEditorView *dr2_editor = new ParameterEditorView(
       editor_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_DR2,
                                            target),
-      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "DR2");
+      this, ParameterEditorStyle::KNOB, "DR2");
   ParameterEditorView *s_editor = new ParameterEditorView(
       editor_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_SL,
                                            target),
-      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "S");
+      this, ParameterEditorStyle::KNOB, "S");
   ParameterEditorView *rr1_editor = new ParameterEditorView(
       editor_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_RR1,
                                            target),
-      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "RR1");
+      this, ParameterEditorStyle::KNOB, "RR1");
   ParameterEditorView *rl1_editor = new ParameterEditorView(
       editor_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_RL1,
                                            target),
-      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "RL1");
+      this, ParameterEditorStyle::KNOB, "RL1");
   ParameterEditorView *rr2_editor = new ParameterEditorView(
       editor_size,
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_RR2,
                                            target),
-      this, ParameterEditorStyle::SLIDER_HORIZONTAL_SHORT, "RR2");
+      this, ParameterEditorStyle::KNOB, "RR2");
   ParameterEditorView *vs_editor = new ParameterEditorView(
       {0, 0, kVerticalSliderShortDimensions.width, getHeight()},
       edit_controller->FindRangedParameter(selected_generator, TAG_ENV_VS,

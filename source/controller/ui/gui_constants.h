@@ -13,8 +13,8 @@ constexpr const char *kSliderHandle("slider_handle.png");
 constexpr const char *kSelect("select.png");
 constexpr const char *kOnOff("on-off.png");
 constexpr const char *kToggleSwitch("toggle_switch.png");
-constexpr const char *kMetallicKnobBase("metallic_knob_base.png");
-constexpr const char *kMetallicKnobHandle("metallic_knob_handle.png");
+constexpr const char *kKnobBase("knob_base.png");
+constexpr const char *kKnobHandle("knob_handle.png");
 
 struct SliderDesc {
   double width, height, max_pos;
@@ -34,7 +34,7 @@ constexpr double kColumnLabelHeight = 15;
 constexpr double kTitleBarHeight = 15;
 constexpr double kModRowPadding = 30;
 
-constexpr double kModRowHeight = 165;
+constexpr double kModRowHeight = 200;
 
 constexpr double kDrawbarWidth = 24;
 constexpr double kToggleButtonWidth = 36;

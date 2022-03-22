@@ -14,11 +14,11 @@
       "slider_handle": {
         "path": "slider_handle.png"
       },
-      "metallic_knob_base": {
-        "path": "metallic_knob_base.png"
+      "knob_base": {
+        "path": "knob_base.png"
       },
-      "metallic_knob_handle": {
-        "path": "metallic_knob_handle.png"
+      "knob_handle": {
+        "path": "knob_handle.png"
       },
       "select": {
         "path": "select.png"

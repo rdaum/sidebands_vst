@@ -16,7 +16,8 @@ enum class ParameterEditorStyle {
   SLIDER_VERTICAL_TALL,
   SLIDER_VERTICAL_SHORT,
   SLIDER_HORIZONTAL_SHORT,
-  NUMERIC_ENTRY
+  KNOB,
+  NUMERIC_ENTRY,
 };
 
 // Combination of a slider and numeric text editor and possibly other things.

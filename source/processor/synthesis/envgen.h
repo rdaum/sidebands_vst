@@ -4,7 +4,7 @@
 
 #include <cmath>
 
-#include "processor/synthesis/dsp.h"
+#include "dsp/oscbuffer.h"
 #include "processor/patch_processor.h"
 #include "processor/synthesis/modulation_source.h"
 #include "processor/events.h"

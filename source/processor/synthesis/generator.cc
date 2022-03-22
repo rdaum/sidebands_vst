@@ -4,7 +4,7 @@
 #include <mutex>
 
 #include "constants.h"
-#include "processor/synthesis/dsp.h"
+#include "dsp/oscbuffer.h"
 #include "processor/synthesis/lfo.h"
 #include "processor/synthesis/oscillator.h"
 

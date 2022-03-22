@@ -117,8 +117,15 @@ smtg_add_vst3plugin(sidebands
         source/processor/util/sample_accurate_value.h
         source/processor/util/sample_accurate_value.cc
 
-        source/processor/synthesis/dsp.cc
-        source/processor/synthesis/dsp.h
+        source/dsp/oscbuffer.cc
+        source/dsp/oscbuffer.h
+        source/dsp/integrator.h
+        source/dsp/integrator.cc
+        source/dsp/pole_dc.cc
+        source/dsp/pole_dc.h
+        source/dsp/leak_dc.h
+        source/dsp/leak_dc.cc
+
         source/processor/synthesis/envgen.h
         source/processor/synthesis/envgen.cc
         source/processor/synthesis/lfo.h
@@ -185,8 +192,8 @@ if (SMTG_ADD_VSTGUI)
             "resource/toggle_switch.png"
             "resource/on-off.png"
             "resource/select.png"
-            "resource/metallic_knob_base.png"
-            "resource/metallic_knob_handle.png"
+            "resource/knob_base.png"
+            "resource/knob_handle.png"
             )
 endif (SMTG_ADD_VSTGUI)
 # -------------------

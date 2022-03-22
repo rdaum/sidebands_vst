@@ -13,8 +13,7 @@ namespace ui {
 
 namespace {
 
-VSTGUI::CControl *
-MakeVerticalSlider(Steinberg::Vst::RangeParameter *range_parameter,
+VSTGUI::CControl *MakeSlider(Steinberg::Vst::RangeParameter *range_parameter,
                    VSTGUI::IControlListener *listener,
                    ParameterEditorStyle style) {
   SliderDesc slider_desc;
@@ -61,7 +60,7 @@ MakeNumericEditor(Steinberg::Vst::RangeParameter *range_parameter,
                   VSTGUI::IControlListener *listener) {
 
   auto *edit_control = new VSTGUI::CTextEdit(
-      VSTGUI::CRect(0, 0, kNumericEditWidth, kNumericEditHeight), listener,
+      VSTGUI::CRect(0, 0, 40, kNumericEditHeight), listener,
       range_parameter->getInfo().id);
   edit_control->setMax(range_parameter->getMax());
   edit_control->setMin(range_parameter->getMin());
@@ -87,6 +86,21 @@ MakeNumericEditor(Steinberg::Vst::RangeParameter *range_parameter,
   return edit_control;
 }
 
+VSTGUI::CControl *
+MakeKnob(Steinberg::Vst::RangeParameter *range_parameter,
+                  VSTGUI::IControlListener *listener) {
+
+  auto *edit_control = new VSTGUI::CKnob(
+      VSTGUI::CRect(0, 0, 40, 40), listener,
+      range_parameter->getInfo().id, new VSTGUI::CBitmap(kKnobBase), nullptr, {0,0}, VSTGUI::CKnob::kHandleCircleDrawing);
+  edit_control->setMax(range_parameter->getMax());
+  edit_control->setMin(range_parameter->getMin());
+  edit_control->setHandleLineWidth(2);
+  edit_control->setValueNormalized(range_parameter->getNormalized());
+
+  return edit_control;
+}
+
 } // namespace
 
 ParameterEditorView::ParameterEditorView(
@@ -101,8 +115,11 @@ ParameterEditorView::ParameterEditorView(
 
   parameter->addDependent(this);
 
-  if (style != ParameterEditorStyle::NUMERIC_ENTRY) {
-    controls_ = {MakeVerticalSlider(parameter, listener, style)};
+  if (style != ParameterEditorStyle::NUMERIC_ENTRY && style != ParameterEditorStyle::KNOB) {
+    controls_ = {MakeSlider(parameter, listener, style)};
+  }
+  if (style == ParameterEditorStyle::KNOB) {
+    controls_ = { MakeKnob(parameter, listener)};
   }
   controls_.push_back(MakeNumericEditor(parameter, listener));
 
