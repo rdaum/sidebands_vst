@@ -52,6 +52,7 @@ private:
 // Mod ratio of "2" == square.  "1" == saw.
 class AnalogOscillator : public IOscillator {
 public:
+  AnalogOscillator();
   ~AnalogOscillator() override = default;
   void Perform(Steinberg::Vst::SampleRate sample_rate, OscBuffer &buffer,
                OscParams &params) override;

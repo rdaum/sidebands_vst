@@ -44,6 +44,8 @@ void ModFMOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
   ;
 }
 
+AnalogOscillator::AnalogOscillator() {}
+
 void AnalogOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
                               OscBuffer &buffer, OscParams &params) {
   auto buffer_size = buffer.size();
@@ -72,6 +74,7 @@ void AnalogOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
   int_.Filter(buffer);
   dc_.Filter(buffer);
 }
+
 
 std::unique_ptr<IOscillator> MakeOscillator(GeneratorPatch::OscType type) {
   switch (type) {
