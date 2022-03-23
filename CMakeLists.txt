@@ -126,6 +126,10 @@ smtg_add_vst3plugin(sidebands
         source/controller/patch_controller.h
         source/controller/patch_controller.cc
 
+        source/controller/webview/webview.h
+        source/controller/webview/webview.cc
+        source/controller/webview/webview_win32.h
+        source/controller/webview/webview_win32.cc
         source/controller/webview_pluginview.h
         source/controller/webview_pluginview.cc
         )
@@ -149,14 +153,11 @@ if (WIN32)
 
     target_compile_definitions(sidebands PRIVATE UNICODE=1 _UNICODE=1)
     target_include_directories(sidebands PRIVATE ${WebView2_PATH}/build/native/include)
-    target_include_directories(sidebands PRIVATE ${CppWinRT_PATH}/build/native/include)
 
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
         target_link_libraries(sidebands PRIVATE ${WebView2_PATH}/build/native/x64/WebView2LoaderStatic.lib)
-        target_link_libraries(sidebands PRIVATE ${CppWinRT_PATH}/build/native/lib/x64/cppwinrt_fast_forwarder.lib)
     else()
         target_link_libraries(sidebands PRIVATE ${WebView2_PATH}/build/native/x86/WebView2LoaderStatic.lib)
-        target_link_libraries(sidebands PRIVATE ${CppWinRT_PATH}/build/native/lib/x86/cppwinrt_fast_forwarder.lib)
     endif()
 
     target_link_libraries(sidebands PRIVATE WIL::WIL Dwmapi Shlwapi)

@@ -7,7 +7,7 @@ namespace winrt::impl {
 template <typename Async>
 auto wait_for(Async const &async, Windows::Foundation::TimeSpan const &timeout);
 }
-#include "webview.h"
+#include "controller/webview/webview.h"
 
 namespace sidebands {
 namespace ui {
@@ -34,7 +34,7 @@ void WebviewPluginView::attachedToParent() {
   if (!webview_handle_) {
     LOG(INFO) << "Created webview";
     webview_thread_ = std::thread([this]() {
-      webview_handle_ = new webview::webview(true, &systemWindow);
+      webview_handle_ = webview::MakeWebview(true, &systemWindow);
       auto *webview = static_cast<webview::webview *>(webview_handle_);
       LOG(INFO) << "Navigating";
       webview->set_title("Sidebands");
@@ -57,7 +57,6 @@ Steinberg::tresult WebviewPluginView::onFocus(Steinberg::TBool a_bool) {
 }
 
 void WebviewPluginView::removedFromParent() {
-  webview_handle_ = new webview::webview(true, &systemWindow);
   auto *webview = static_cast<webview::webview *>(webview_handle_);
   webview->terminate();
 
@@ -65,7 +64,7 @@ void WebviewPluginView::removedFromParent() {
 }
 
 Steinberg::tresult WebviewPluginView::canResize() {
-  return Steinberg::kResultFalse
+  return Steinberg::kResultFalse;
 }
 
 } // namespace ui
