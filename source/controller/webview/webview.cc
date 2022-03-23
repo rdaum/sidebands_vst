@@ -330,18 +330,18 @@ void webview::bind(const std::string name, webview::binding_t f, void *arg) {
      }
    })())";
   engine_->init(js);
-  bindings[name] = new binding_ctx_t(new binding_t(f), arg);
+  bindings_[name] = new binding_ctx_t(new binding_t(f), arg);
 }
 
 void webview::unbind(const std::string name) {
-  if (bindings.find(name) != bindings.end()) {
+  if (bindings_.find(name) != bindings_.end()) {
     auto js = "delete window['" + name + "'];";
     engine_->init(js);
     engine_->eval(js);
-    delete bindings[name]->first;
-    delete static_cast<sync_binding_ctx_t *>(bindings[name]->second);
-    delete bindings[name];
-    bindings.erase(name);
+    delete bindings_[name]->first;
+    delete static_cast<sync_binding_ctx_t *>(bindings_[name]->second);
+    delete bindings_[name];
+    bindings_.erase(name);
   }
 }
 
@@ -362,10 +362,10 @@ void webview::on_message(const std::string msg) {
   auto seq = json_parse(msg, "id", 0);
   auto name = json_parse(msg, "method", 0);
   auto args = json_parse(msg, "params", 0);
-  if (bindings.find(name) == bindings.end()) {
+  if (bindings_.find(name) == bindings_.end()) {
     return;
   }
-  auto fn = bindings[name];
+  auto fn = bindings_[name];
   (*fn->first)(seq, args, fn->second);
 }
 

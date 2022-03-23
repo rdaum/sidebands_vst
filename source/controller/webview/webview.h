@@ -61,11 +61,8 @@ public:
   virtual void *window() const = 0;
 };
 
-using on_message_cb_f = std::function<void(const std::string msg)> ;
 
-// Platform specific instantiation.
-
-
+// Facade class, delegates to underlying implementation (engine_)
 class webview : public browser_engine {
 public:
 
@@ -100,8 +97,7 @@ public:
   void *window() const override;
 
 private:
-  std::map<std::string, binding_ctx_t *> bindings;
-
+  std::map<std::string, binding_ctx_t *> bindings_;
   std::unique_ptr<browser_engine> engine_;
 };
 

@@ -18,15 +18,15 @@ bool edge_html::embed(HWND wnd, bool debug, msg_cb_t cb) {
                                  COWAIT_DISPATCH_CALLS | COWAIT_INPUTAVAILABLE,
                              INFINITE, 1, hs, &i);
   }
-  m_webview = op.GetResults();
-  m_webview.Settings().IsScriptNotifyAllowed(true);
-  m_webview.IsVisible(true);
-  m_webview.ScriptNotify([=](auto const &sender, auto const &args) {
+  webview_ = op.GetResults();
+  webview_.Settings().IsScriptNotifyAllowed(true);
+  webview_.IsVisible(true);
+  webview_.ScriptNotify([=](auto const &sender, auto const &args) {
     std::string s = winrt::to_string(args.Value());
     cb(s.c_str());
   });
-  m_webview.NavigationStarting([=](auto const &sender, auto const &args) {
-    m_webview.AddInitializeScript(winrt::to_hstring(init_js));
+  webview_.NavigationStarting([=](auto const &sender, auto const &args) {
+    webview_.AddInitializeScript(winrt::to_hstring(init_js_));
   });
   init("window.external.invoke = s => window.external.notify(s)");
   return true;
@@ -34,31 +34,31 @@ bool edge_html::embed(HWND wnd, bool debug, msg_cb_t cb) {
 
 void edge_html::navigate(const std::string url) {
   Uri uri(winrt::to_hstring(url));
-  m_webview.Navigate(uri);
+  webview_.Navigate(uri);
 }
 
 void edge_html::init(const std::string js) {
-  init_js = init_js + "(function(){" + js + "})();";
+  init_js_ = init_js_ + "(function(){" + js + "})();";
 }
 
 void edge_html::set_html(const std::string html) {
-  m_webview.NavigateToString(
+  webview_.NavigateToString(
       winrt::to_hstring("data:text/html," + url_encode(html)).c_str());
 }
 
 void edge_html::eval(const std::string js) {
-  m_webview.InvokeScriptAsync(
+  webview_.InvokeScriptAsync(
       L"eval", single_threaded_vector<hstring>({winrt::to_hstring(js)}));
 }
 
 void edge_html::resize(HWND wnd) {
-  if (m_webview == nullptr) {
+  if (webview_ == nullptr) {
     return;
   }
   RECT r;
   GetClientRect(wnd, &r);
   Rect bounds(r.left, r.top, r.right - r.left, r.bottom - r.top);
-  m_webview.Bounds(bounds);
+  webview_.Bounds(bounds);
 }
 
 bool edge_chromium::embed(HWND wnd, bool debug, msg_cb_t cb) {
@@ -134,7 +134,7 @@ HRESULT edge_chromium::webview2_com_handler::QueryInterface(const IID &riid,
 HRESULT
 edge_chromium::webview2_com_handler::Invoke(HRESULT res,
                                             ICoreWebView2Environment *env) {
-  env->CreateCoreWebView2Controller(m_window, this);
+  env->CreateCoreWebView2Controller(window_, this);
   return S_OK;
 }
 
@@ -148,7 +148,7 @@ HRESULT edge_chromium::webview2_com_handler::Invoke(
   webview->add_WebMessageReceived(this, &token);
   webview->add_PermissionRequested(this, &token);
 
-  m_cb(controller);
+  com_handler_cb_(controller);
   return S_OK;
 }
 
@@ -156,7 +156,7 @@ HRESULT edge_chromium::webview2_com_handler::Invoke(
     ICoreWebView2 *sender, ICoreWebView2WebMessageReceivedEventArgs *args) {
   LPWSTR message;
   args->TryGetWebMessageAsString(&message);
-  m_msgCb(winrt::to_string(message));
+  msg_cb_(winrt::to_string(message));
   sender->PostWebMessageAsString(message);
 
   CoTaskMemFree(message);
@@ -174,6 +174,7 @@ HRESULT edge_chromium::webview2_com_handler::Invoke(
 }
 
 win32_edge_engine::win32_edge_engine(bool debug, void *window, webview *webview) {
+  main_thread_ = GetCurrentThreadId();
 
   HINSTANCE hInstance = GetModuleHandle(nullptr);
   HICON icon = (HICON)LoadImage(
@@ -192,7 +193,7 @@ win32_edge_engine::win32_edge_engine(bool debug, void *window, webview *webview)
         auto w = (win32_edge_engine *)GetWindowLongPtr(hwnd, GWLP_USERDATA);
         switch (msg) {
         case WM_SIZE:
-          w->m_browser->resize(hwnd);
+          w->browser_impl_->resize(hwnd);
           break;
         case WM_CLOSE:
           DestroyWindow(hwnd);
@@ -205,12 +206,12 @@ win32_edge_engine::win32_edge_engine(bool debug, void *window, webview *webview)
           if (w == nullptr) {
             return 0;
           }
-          if (w->m_maxsz.x > 0 && w->m_maxsz.y > 0) {
-            lpmmi->ptMaxSize = w->m_maxsz;
-            lpmmi->ptMaxTrackSize = w->m_maxsz;
+          if (w->maxsz_.x > 0 && w->maxsz_.y > 0) {
+            lpmmi->ptMaxSize = w->maxsz_;
+            lpmmi->ptMaxTrackSize = w->maxsz_;
           }
-          if (w->m_minsz.x > 0 && w->m_minsz.y > 0) {
-            lpmmi->ptMinTrackSize = w->m_minsz;
+          if (w->minsz_.x > 0 && w->minsz_.y > 0) {
+            lpmmi->ptMinTrackSize = w->minsz_;
           }
         } break;
         default:
@@ -219,33 +220,33 @@ win32_edge_engine::win32_edge_engine(bool debug, void *window, webview *webview)
         return 0;
       });
   RegisterClassExW(&wc);
-  m_window = CreateWindowW(L"webview", L"", (WS_BORDER), CW_USEDEFAULT,
+  window_ = CreateWindowW(L"webview", L"", (WS_BORDER), CW_USEDEFAULT,
                            CW_USEDEFAULT, 640, 480, nullptr, nullptr,
                            GetModuleHandle(nullptr), nullptr);
-  SetWindowLongPtr(m_window, GWLP_USERDATA, (LONG_PTR)this);
+  SetWindowLongPtr(window_, GWLP_USERDATA, (LONG_PTR)this);
 
   if (window) {
-    SetParent(m_window, *(HWND *)window);
-    SetWindowLong(m_window, GWL_STYLE, 0);
-    SetWindowPos(m_window, nullptr, 0, 0, 0, 0,
+    SetParent(window_, *(HWND *)window);
+    SetWindowLong(window_, GWL_STYLE, 0);
+    SetWindowPos(window_, nullptr, 0, 0, 0, 0,
                  SWP_NOSIZE | SWP_FRAMECHANGED);
-    RedrawWindow(m_window, nullptr, nullptr, RDW_INVALIDATE);
+    RedrawWindow(window_, nullptr, nullptr, RDW_INVALIDATE);
   }
 
   SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE);
-  ShowWindow(m_window, SW_SHOW);
-  UpdateWindow(m_window);
-  SetFocus(m_window);
+  ShowWindow(window_, SW_SHOW);
+  UpdateWindow(window_);
+  SetFocus(window_);
 
   auto cb =
       std::bind(&webview::on_message, webview, std::placeholders::_1);
 
-  if (!m_browser->embed(m_window, debug, cb)) {
-    m_browser = std::make_unique<edge_html>();
-    m_browser->embed(m_window, debug, cb);
+  if (!browser_impl_->embed(window_, debug, cb)) {
+    browser_impl_ = std::make_unique<edge_html>();
+    browser_impl_->embed(window_, debug, cb);
   }
 
-  m_browser->resize(m_window);
+  browser_impl_->resize(window_);
 }
 
 void win32_edge_engine::run() {
@@ -268,43 +269,42 @@ void win32_edge_engine::run() {
 }
 
 void win32_edge_engine::terminate() {
-  DestroyWindow(m_window);
+  DestroyWindow(window_);
   PostQuitMessage(0);
 }
 
 void win32_edge_engine::dispatch(dispatch_fn_t f) {
-  PostThreadMessage(m_main_thread, WM_APP, 0, (LPARAM) new dispatch_fn_t(f));
+  PostThreadMessage(main_thread_, WM_APP, 0, (LPARAM) new dispatch_fn_t(f));
 }
 
 void win32_edge_engine::set_title(const std::string title) {
-  SetWindowTextW(m_window, winrt::to_hstring(title).c_str());
+  SetWindowTextW(window_, winrt::to_hstring(title).c_str());
 }
 
 void win32_edge_engine::set_size(int width, int height, int hints) {
-  auto style = GetWindowLong(m_window, GWL_STYLE);
+  auto style = GetWindowLong(window_, GWL_STYLE);
   if (hints == WEBVIEW_HINT_FIXED) {
     style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
   } else {
     style |= (WS_THICKFRAME | WS_MAXIMIZEBOX);
   }
-  SetWindowLong(m_window, GWL_STYLE, style);
+  SetWindowLong(window_, GWL_STYLE, style);
 
   if (hints == WEBVIEW_HINT_MAX) {
-    m_maxsz.x = width;
-    m_maxsz.y = height;
+    maxsz_.x = width;
+    maxsz_.y = height;
   } else if (hints == WEBVIEW_HINT_MIN) {
-    m_minsz.x = width;
-    m_minsz.y = height;
+    minsz_.x = width;
+    minsz_.y = height;
   } else {
     RECT r;
     r.left = r.top = 0;
     r.right = width;
     r.bottom = height;
     AdjustWindowRect(&r, WS_OVERLAPPEDWINDOW, 0);
-    SetWindowPos(
-        m_window, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top,
+    SetWindowPos(window_, NULL, r.left, r.top, r.right - r.left, r.bottom - r.top,
         SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_FRAMECHANGED);
-    m_browser->resize(m_window);
+    browser_impl_->resize(window_);
   }
 }
 

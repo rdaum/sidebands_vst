@@ -74,8 +74,8 @@ public:
   void resize(HWND wnd) override;
 
 private:
-  WebViewControl m_webview = nullptr;
-  std::string init_js = "";
+  WebViewControl webview_ = nullptr;
+  std::string init_js_ = "";
 };
 
 //
@@ -105,7 +105,7 @@ private:
   public:
     webview2_com_handler(HWND hwnd, msg_cb_t msgCb,
                          webview2_com_handler_cb_t cb)
-        : m_window(hwnd), m_msgCb(msgCb), m_cb(cb) {}
+        : window_(hwnd), msg_cb_(msgCb), com_handler_cb_(cb) {}
 
     ULONG STDMETHODCALLTYPE AddRef() { return 1; }
     ULONG STDMETHODCALLTYPE Release() { return 1; }
@@ -120,9 +120,9 @@ private:
     Invoke(ICoreWebView2 *sender,
            ICoreWebView2PermissionRequestedEventArgs *args);
   private:
-    HWND m_window;
-    msg_cb_t m_msgCb;
-    webview2_com_handler_cb_t m_cb;
+    HWND window_;
+    msg_cb_t msg_cb_;
+    webview2_com_handler_cb_t com_handler_cb_;
   };
 };
 
@@ -131,22 +131,24 @@ public:
   win32_edge_engine(bool debug, void *window, webview *webview);
 
   void run() override;
-  void *window() const override { return (void *)m_window; }
+  void *window() const override { return (void *)window_; }
   void terminate() override;
   void dispatch(dispatch_fn_t f) override;
   void set_title(const std::string title) override;
   void set_size(int width, int height, int hints) override;
-  void navigate(const std::string url) override{ m_browser->navigate(url); }
-  void set_html(const std::string html)  override { m_browser->set_html(html); }
-  void eval(const std::string js) override { m_browser->eval(js); }
-  void init(const std::string js) override { m_browser->init(js); }
+  void navigate(const std::string url) override{
+    browser_impl_->navigate(url); }
+  void set_html(const std::string html)  override {
+    browser_impl_->set_html(html); }
+  void eval(const std::string js) override { browser_impl_->eval(js); }
+  void init(const std::string js) override { browser_impl_->init(js); }
 
 private:
-  HWND m_window;
-  POINT m_minsz = POINT{0, 0};
-  POINT m_maxsz = POINT{0, 0};
-  DWORD m_main_thread = GetCurrentThreadId();
-  std::unique_ptr<browser> m_browser =
+  HWND window_;
+  POINT minsz_ = POINT{0, 0};
+  POINT maxsz_ = POINT{0, 0};
+  DWORD main_thread_;
+  std::unique_ptr<browser> browser_impl_ =
       std::make_unique<edge_chromium>();
 };
 
