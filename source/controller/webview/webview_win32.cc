@@ -269,7 +269,6 @@ void win32_edge_engine::run() {
 }
 
 void win32_edge_engine::terminate() {
-  DestroyWindow(window_);
   PostQuitMessage(0);
 }
 
