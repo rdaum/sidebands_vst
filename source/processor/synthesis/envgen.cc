@@ -1,5 +1,7 @@
 #include "envgen.h"
 
+#include <algorithm>
+
 #include <glog/logging.h>
 
 #include "globals.h"
@@ -54,8 +56,8 @@ off_t EnvelopeGenerator::AddStage(double sample_rate, const std::string &name,
                                   double duration) {
   off_t idx = stages_.size();
   double duration_samples = duration * sample_rate;
-  start_level = std::max(start_level, minimum_level_);
-  end_level = std::max(end_level, minimum_level_);
+  start_level = (std::max)(start_level, minimum_level_);
+  end_level = (std::max)(end_level, minimum_level_);
   stages_.push_back(
       {name, start_level, end_level,
        duration_samples

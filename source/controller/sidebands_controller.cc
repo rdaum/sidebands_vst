@@ -1,16 +1,11 @@
-#include "sidebands_controller.h"
+#include "controller/sidebands_controller.h"
 
 #include <absl/strings/str_format.h>
 #include <glog/logging.h>
 #include <pluginterfaces/base/ustring.h>
-#include <vstgui/plugin-bindings/vst3editor.h>
-#include <vstgui/uidescription/uiattributes.h>
-#include <vstgui/vstgui.h>
 
 #include "controller/patch_controller.h"
-#include "controller/ui/analysis_view.h"
-#include "controller/ui/drawbar_view.h"
-#include "controller/ui/generator_editor_view.h"
+#include "controller/webview_pluginview.h"
 #include "globals.h"
 #include "sidebands_cids.h"
 #include "tags.h"
@@ -62,6 +57,7 @@ tresult PLUGIN_API SidebandsController::initialize(FUnknown *context) {
 
   LOG(INFO) << "Initialization complete";
 
+
   return result;
 }
 
@@ -100,13 +96,7 @@ tresult PLUGIN_API SidebandsController::getState(IBStream *state) {
 }
 
 IPlugView *PLUGIN_API SidebandsController::createView(FIDString name) {
-  // Here the Host wants to open your editor (if you have one)
-  if (FIDStringsEqual(name, Vst::ViewType::kEditor)) {
-    // create your editor here and return a IPlugView ptr of it
-    auto *view = new VSTGUI::VST3Editor(this, "view", "sidebands.uidesc");
-    return view;
-  }
-  return nullptr;
+  return new ui::WebviewPluginView(this, new ViewRect{0, 0, 640, 480});
 }
 
 tresult PLUGIN_API SidebandsController::setParamNormalized(
@@ -114,9 +104,9 @@ tresult PLUGIN_API SidebandsController::setParamNormalized(
   // called by host to update your parameters
   tresult result = EditControllerEx1::setParamNormalized(tag, value);
   CHECK_EQ(result, kResultTrue) << "Unable to set: " << TagStr(tag);
-  if (analysis_view_) {
-    analysis_view_->setDirty(true);
-  }
+//  if (analysis_view_) {
+//    analysis_view_->setDirty(true);
+//  }
   return result;
 }
 
@@ -134,30 +124,30 @@ tresult PLUGIN_API SidebandsController::getParamValueByString(
   return EditControllerEx1::getParamValueByString(tag, string, valueNormalized);
 }
 
-VSTGUI::CView *SidebandsController::createCustomView(
-    VSTGUI::UTF8StringPtr name, const VSTGUI::UIAttributes &attributes,
-    const VSTGUI::IUIDescription *description, VSTGUI::VST3Editor *editor) {
-  const auto &view_name = VSTGUI::UTF8StringView(name);
-
-  VSTGUI::CPoint origin;
-  attributes.getPointAttribute("origin", origin);
-  VSTGUI::CPoint size;
-  attributes.getPointAttribute("size", size);
-  if (view_name == "DrawbarEditor") {
-    return new ui::DrawbarView(VSTGUI::CRect(origin, size), this);
-  }
-  if (view_name == "GeneratorEditor") {
-    generator_view_ =
-        new ui::GeneratorEditorView(VSTGUI::CRect(origin, size), this);
-    return generator_view_;
-  }
-  if (view_name == "AnalysisView") {
-    analysis_view_ = new ui::AnalysisView(VSTGUI::CRect(origin, size), this);
-    return analysis_view_;
-  }
-
-  return nullptr;
-}
+//VSTGUI::CView *SidebandsController::createCustomView(
+//    VSTGUI::UTF8StringPtr name, const VSTGUI::UIAttributes &attributes,
+//    const VSTGUI::IUIDescription *description, VSTGUI::VST3Editor *editor) {
+//  const auto &view_name = VSTGUI::UTF8StringView(name);
+//
+//  VSTGUI::CPoint origin;
+//  attributes.getPointAttribute("origin", origin);
+//  VSTGUI::CPoint size;
+//  attributes.getPointAttribute("size", size);
+//  if (view_name == "DrawbarEditor") {
+//    return new ui::DrawbarView(VSTGUI::CRect(origin, size), this);
+//  }
+//  if (view_name == "GeneratorEditor") {
+//    generator_view_ =
+//        new ui::GeneratorEditorView(VSTGUI::CRect(origin, size), this);
+//    return generator_view_;
+//  }
+//  if (view_name == "AnalysisView") {
+//    analysis_view_ = new ui::AnalysisView(VSTGUI::CRect(origin, size), this);
+//    return analysis_view_;
+//  }
+//
+//  return nullptr;
+//}
 
 void SidebandsController::UpdateParameterNormalized(
     Steinberg::Vst::ParamID param_id, Steinberg::Vst::ParamValue value) {
@@ -233,7 +223,7 @@ SidebandsController::notify(Steinberg::Vst::IMessage *message) {
   attributes->getInt(kEnvelopeStageStageAttr, stage);
 
   if (SelectedGenerator() == gennum) {
-    generator_view_->HighlightEnvelopeStage(static_cast<TargetTag>(target), stage);
+//    generator_view_->HighlightEnvelopeStage(static_cast<TargetTag>(target), stage);
   }
 
   return Steinberg::kResultOk;

@@ -1,10 +1,10 @@
 #pragma once
 
 #include <public.sdk/source/vst/vsteditcontroller.h>
-#include <vstgui/plugin-bindings/vst3editor.h>
 
 #include "tags.h"
 #include "globals.h"
+#include "constants.h"
 
 namespace sidebands {
 
@@ -14,8 +14,7 @@ class GeneratorEditorView;
 
 class PatchController;
 class SidebandsController : public Steinberg::Vst::EditControllerEx1,
-                            public Steinberg::Vst::IEditControllerHostEditing,
-                            public VSTGUI::VST3EditorDelegate {
+                            public Steinberg::Vst::IEditControllerHostEditing {
 public:
   static Steinberg::FUnknown *Instantiate(void * /*context*/);
 
@@ -37,10 +36,10 @@ public:
   int SelectedGenerator();
 
   // EditControllerEx1 overrides
-  VSTGUI::CView *createCustomView(VSTGUI::UTF8StringPtr name,
-                                  const VSTGUI::UIAttributes &attributes,
-                                  const VSTGUI::IUIDescription *description,
-                                  VSTGUI::VST3Editor *editor) override;
+//  VSTGUI::CView *createCustomView(VSTGUI::UTF8StringPtr name,
+//                                  const VSTGUI::UIAttributes &attributes,
+//                                  const VSTGUI::IUIDescription *description,
+//                                  VSTGUI::VST3Editor *editor) override;
 
   // IPluginBase overrides
   Steinberg::tresult PLUGIN_API
@@ -80,8 +79,6 @@ public:
   DELEGATE_REFCOUNT(EditController)
 
 private:
-  VSTGUI::CView *analysis_view_ = nullptr;
-  ui::GeneratorEditorView *generator_view_ = nullptr;
   std::unique_ptr<PatchController> patch_controller_;
 };
 

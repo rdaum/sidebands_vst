@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vstgui/lib/ccolor.h>
-
 #include <cstdint>
 
 namespace sidebands {

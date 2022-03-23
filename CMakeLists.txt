@@ -65,6 +65,7 @@ set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+
 # sigslot
 FetchContent_Declare(
         sigslot
@@ -72,31 +73,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(sigslot)
 
-
 IF (WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  /fp:fast /arch:AVX2 /DINSTRSET=7")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  /fp:fast /arch:AVX2 /DINSTRSET=7 /await")
 ELSE()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -ffast-math -mavx2 -fabi-version=0")
     set(PLATFORM_LIBRARIES tbb)
 ENDIF()
 
-## Utils library
-#add_library(sidebands_util STATIC
-#        source/utilities/vectorbuffer.h
-#        source/utilities/vectorbuffer.cc
-#        )
-#target_include_directories(sidebands_util PRIVATE source/utilities  ${vectorclass_SOURCE_DIR})
-#
-## Testing for utils.
-#add_executable(vectorbuffer_test source/tests/vectorbuffer_test.cc)
-#target_link_libraries(vectorbuffer_test gtest gtest_main sidebands_util)
-#target_include_directories(vectorbuffer_test PRIVATE source/utilities  ${vectorclass_SOURCE_DIR})
-#enable_testing()
-#add_test(NAME vectorbuffer_test
-#         COMMAND vectorbuffer_test)
-
-# VST3 SDK setup
-set(SMTG_VSTGUI_ROOT "${vst3sdk_SOURCE_DIR}")
 smtg_enable_vst3_sdk()
 smtg_add_vst3plugin(sidebands
         source/constants.h
@@ -143,64 +126,41 @@ smtg_add_vst3plugin(sidebands
         source/controller/patch_controller.h
         source/controller/patch_controller.cc
 
-        source/controller/ui/gui_constants.h
-        source/controller/ui/analysis_view.h
-        source/controller/ui/analysis_view.cc
-        source/controller/ui/patch_param_view.h
-        source/controller/ui/patch_param_view.cc
-        source/controller/ui/drawbar_view.h
-        source/controller/ui/drawbar_view.cc
-        source/controller/ui/modulator_editor_view.h
-        source/controller/ui/modulator_editor_view.cc
-        source/controller/ui/envelope_editor_view.h
-        source/controller/ui/envelope_editor_view.cc
-        source/controller/ui/lfo_editor_view.cc
-        source/controller/ui/lfo_editor_view.h
-        source/controller/ui/generator_editor_view.h
-        source/controller/ui/generator_editor_view.cc
-        source/controller/ui/parameter_editor_view.h
-        source/controller/ui/parameter_editor_view.cc
-        source/controller/ui/mod_target_view.cc
-        source/controller/ui/mod_target_view.h
-        source/controller/ui/graphical_envelope_editor.cc
-        source/controller/ui/graphical_envelope_editor.h
-        source/controller/ui/spectrum_view.cc
-        source/controller/ui/spectrum_view.h
-        source/controller/ui/waveform_view.cc
-        source/controller/ui/waveform_view.h
+        source/controller/webview_pluginview.h
+        source/controller/webview_pluginview.cc
         )
-
-#- VSTGUI Wanted ----
-if (SMTG_ADD_VSTGUI)
-    target_sources(sidebands
-            PRIVATE
-            resource/sidebands.uidesc
-            )
-    target_link_libraries(sidebands
-            PRIVATE
-            vstgui_support
-            )
-    smtg_target_add_plugin_resources(sidebands
-            RESOURCES
-            "resource/sidebands.uidesc"
-            "resource/slider_rail_horizontal_small.png"
-            "resource/slider_rail_vertical_small.png"
-            "resource/slider_rail_vertical_large.png"
-            "resource/slider_handle.png"
-            "resource/toggle_switch.png"
-            "resource/on-off.png"
-            "resource/select.png"
-            "resource/knob_base.png"
-            "resource/knob_handle.png"
-            )
-endif (SMTG_ADD_VSTGUI)
-# -------------------
 
 smtg_target_add_plugin_snapshots(sidebands
         RESOURCES
         resource/7A5DD92AB0615F028293F8308139D3CE_snapshot.png
         resource/7A5DD92AB0615F028293F8308139D3CE_snapshot_2.0x.png
         )
+
+# Needed for webview2.h & friends on Win32.
+if (WIN32)
+    option(WIL_BUILD_PACKAGING "" OFF)
+    option(WIL_BUILD_TESTS  "" OFF)
+    FetchContent_Declare(wil GIT_REPOSITORY "https://github.com/microsoft/wil")
+    FetchContent_MakeAvailable(wil)
+
+    include("NuGet.cmake")
+    nuget_add(WebView2 "Microsoft.Web.WebView2" 1.0.1150.38)
+    nuget_add(CppWinRT "Microsoft.Windows.CppWinRT" 2.0.220315.1)
+
+    target_compile_definitions(sidebands PRIVATE UNICODE=1 _UNICODE=1)
+    target_include_directories(sidebands PRIVATE ${WebView2_PATH}/build/native/include)
+    target_include_directories(sidebands PRIVATE ${CppWinRT_PATH}/build/native/include)
+
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        target_link_libraries(sidebands PRIVATE ${WebView2_PATH}/build/native/x64/WebView2LoaderStatic.lib)
+        target_link_libraries(sidebands PRIVATE ${CppWinRT_PATH}/build/native/lib/x64/cppwinrt_fast_forwarder.lib)
+    else()
+        target_link_libraries(sidebands PRIVATE ${WebView2_PATH}/build/native/x86/WebView2LoaderStatic.lib)
+        target_link_libraries(sidebands PRIVATE ${CppWinRT_PATH}/build/native/lib/x86/cppwinrt_fast_forwarder.lib)
+    endif()
+
+    target_link_libraries(sidebands PRIVATE WIL::WIL Dwmapi Shlwapi)
+endif()
 
 target_link_libraries(sidebands
         PRIVATE
