@@ -5,6 +5,10 @@ set(ABSL_PROPAGATE_CXX_STD ON)
 
 project(sidebands)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
+include(NuGet)
+
 # Third party packages are pulled in via FetchContent
 include(FetchContent)
 
@@ -65,6 +69,9 @@ set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+# json
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.10.5/json.tar.xz)
+FetchContent_MakeAvailable(json)
 
 # sigslot
 FetchContent_Declare(
@@ -128,11 +135,16 @@ smtg_add_vst3plugin(sidebands
 
         source/controller/webview/webview.h
         source/controller/webview/webview.cc
-        source/controller/webview/webview_win32.h
-        source/controller/webview/webview_win32.cc
+        source/controller/webview/win32/webview_win32.h
+        source/controller/webview/win32/webview_win32.cc
+        source/controller/webview/win32/webview_edge_chromium.h
+        source/controller/webview/win32/webview_edge_chromium.cc
         source/controller/webview_pluginview.h
         source/controller/webview_pluginview.cc
         )
+
+smtg_target_add_plugin_resource(sidebands
+        resource/start.html)
 
 smtg_target_add_plugin_snapshots(sidebands
         RESOURCES
@@ -140,6 +152,7 @@ smtg_target_add_plugin_snapshots(sidebands
         resource/7A5DD92AB0615F028293F8308139D3CE_snapshot_2.0x.png
         )
 
+set_target_properties(sidebands PROPERTIES LINK_DEPENDS ${CMAKE_SOURCE_DIR}/resource/start.html)
 # Needed for webview2.h & friends on Win32.
 if (WIN32)
     option(WIL_BUILD_PACKAGING "" OFF)
@@ -147,7 +160,6 @@ if (WIN32)
     FetchContent_Declare(wil GIT_REPOSITORY "https://github.com/microsoft/wil")
     FetchContent_MakeAvailable(wil)
 
-    include("NuGet.cmake")
     nuget_add(WebView2 "Microsoft.Web.WebView2" 1.0.1150.38)
     nuget_add(CppWinRT "Microsoft.Windows.CppWinRT" 2.0.220315.1)
 
@@ -169,6 +181,7 @@ target_link_libraries(sidebands
         glog
         absl::strings
         absl::statusor
+        nlohmann_json::nlohmann_json
         ${PLATFORM_LIBRARIES}
 )
 target_include_directories(sidebands PRIVATE source ${vectorclass_SOURCE_DIR} ${sigslot_SOURCE_DIR}/include)

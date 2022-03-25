@@ -35,12 +35,6 @@ public:
   void SelectGenerator(int generator_number);
   int SelectedGenerator();
 
-  // EditControllerEx1 overrides
-//  VSTGUI::CView *createCustomView(VSTGUI::UTF8StringPtr name,
-//                                  const VSTGUI::UIAttributes &attributes,
-//                                  const VSTGUI::IUIDescription *description,
-//                                  VSTGUI::VST3Editor *editor) override;
-
   // IPluginBase overrides
   Steinberg::tresult PLUGIN_API
   initialize(Steinberg::FUnknown *context) override;

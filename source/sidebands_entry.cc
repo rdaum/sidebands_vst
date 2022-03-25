@@ -46,4 +46,5 @@ DEF_CLASS2(
     SidebandsController::Instantiate)  // function pointer called when this
                                        // component should be instantiated
 
+
 END_FACTORY

@@ -96,6 +96,7 @@ tresult PLUGIN_API SidebandsController::getState(IBStream *state) {
 }
 
 IPlugView *PLUGIN_API SidebandsController::createView(FIDString name) {
+
   return new ui::WebviewPluginView(this, new ViewRect{0, 0, 640, 480});
 }
 
@@ -124,30 +125,6 @@ tresult PLUGIN_API SidebandsController::getParamValueByString(
   return EditControllerEx1::getParamValueByString(tag, string, valueNormalized);
 }
 
-//VSTGUI::CView *SidebandsController::createCustomView(
-//    VSTGUI::UTF8StringPtr name, const VSTGUI::UIAttributes &attributes,
-//    const VSTGUI::IUIDescription *description, VSTGUI::VST3Editor *editor) {
-//  const auto &view_name = VSTGUI::UTF8StringView(name);
-//
-//  VSTGUI::CPoint origin;
-//  attributes.getPointAttribute("origin", origin);
-//  VSTGUI::CPoint size;
-//  attributes.getPointAttribute("size", size);
-//  if (view_name == "DrawbarEditor") {
-//    return new ui::DrawbarView(VSTGUI::CRect(origin, size), this);
-//  }
-//  if (view_name == "GeneratorEditor") {
-//    generator_view_ =
-//        new ui::GeneratorEditorView(VSTGUI::CRect(origin, size), this);
-//    return generator_view_;
-//  }
-//  if (view_name == "AnalysisView") {
-//    analysis_view_ = new ui::AnalysisView(VSTGUI::CRect(origin, size), this);
-//    return analysis_view_;
-//  }
-//
-//  return nullptr;
-//}
 
 void SidebandsController::UpdateParameterNormalized(
     Steinberg::Vst::ParamID param_id, Steinberg::Vst::ParamValue value) {

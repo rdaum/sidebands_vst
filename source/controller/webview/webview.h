@@ -25,13 +25,6 @@
  */
 #pragma once
 
-
-// Window size hints
-#define WEBVIEW_HINT_NONE 0  // Width and height are default size
-#define WEBVIEW_HINT_MIN 1   // Width and height are minimum bounds
-#define WEBVIEW_HINT_MAX 2   // Width and height are maximum bounds
-#define WEBVIEW_HINT_FIXED 3 // Window size can not be changed by a user
-
 #include <atomic>
 #include <functional>
 #include <future>
@@ -42,67 +35,83 @@
 
 #include <cstring>
 
+#include <nlohmann/json.hpp>
+
 namespace webview {
-using dispatch_fn_t = std::function<void()>;
 
-std::string url_encode(const std::string s);
+using DispatchFunction = std::function<void()>;
 
-class browser_engine {
+
+// Abstract webview parent.
+class Webview {
 public:
-  virtual void run() = 0;
-  virtual void terminate() = 0;
-  virtual void dispatch(dispatch_fn_t f) = 0;
-  virtual void set_title(const std::string title) = 0;
-  virtual void set_size(int width, int height, int hints) = 0;
-  virtual void navigate(const std::string url) = 0;
-  virtual void set_html(const std::string html) = 0;
-  virtual void eval(const std::string js) = 0;
-  virtual void init(const std::string js) = 0;
-  virtual void *window() const = 0;
-};
+  virtual ~Webview() = default;
 
+      /**
+   * Create a JavaScript function ('name') that invokes native function 'f'
+   * and returns a Promise with its results.
+   */
+  using FunctionBinding = std::function<const nlohmann::json(int seq, const std::string&, const nlohmann::json &)>;
+  void BindFunction(const std::string &name, FunctionBinding f);
 
-// Facade class, delegates to underlying implementation (engine_)
-class webview : public browser_engine {
-public:
+  /**
+   * Unbind a previously-bound JavaScript function.
+   */
+  void UnbindFunction(const std::string &name);
 
-  using FactoryFn = std::function<std::unique_ptr<browser_engine>(webview *webview)>;
-  explicit webview(FactoryFn factory_fn) {
-      engine_ = factory_fn(this);
-  }
+  /**
+   * Set the webview document title.
+   */
+  virtual void SetTitle(const std::string &title) = 0;
 
-  using binding_t = std::function<void(std::string, std::string, void *)>;
-  using binding_ctx_t = std::pair<binding_t *, void *>;
+  /*
+   * Adjust the size of the webview.
+   */
+  enum class SizeHint {
+    WEBVIEW_HINT_NONE,// Width and height are default size
+    WEBVIEW_HINT_MIN, // Width and height are minimum bounds
+    WEBVIEW_HINT_MAX,  // Width and height are maximum bounds
+    WEBVIEW_HINT_FIXED // Window size can not be changed by a user
+  };
+  virtual void SetViewSize(int width, int height, SizeHint hints = SizeHint::WEBVIEW_HINT_NONE) = 0;
 
-  using sync_binding_t = std::function<std::string(std::string)>;
-  using sync_binding_ctx_t = std::pair<webview *, sync_binding_t>;
+  /**
+   * Navigate the webview to a URL.
+   */
+  virtual void Navigate(const std::string &url) = 0;
 
-  void bind(const std::string name, sync_binding_t fn);
-  void bind(const std::string name, binding_t f, void *arg);
-  void unbind(const std::string name);
-  void resolve(const std::string seq, int status, const std::string result);
+  /*
+   * Evaluate a fragment of JS in the webview.
+   */
+  virtual void EvalJS(const std::string &js) = 0;
 
-  void on_message(const std::string msg);
+  /*
+   * Set a fragment of JS to execute when the webview first loads a document.
+   */
+  virtual void OnDocumentCreate(const std::string &js) = 0;
 
-  // browser_engine overrides
-  void run() override;
-  void terminate() override;
-  void dispatch(dispatch_fn_t f) override;
-  void set_title(const std::string title) override;
-  void set_size(int width, int height, int hints) override;
-  void set_html(const std::string html) override;
-  void eval(const std::string js) override;
-  void init(const std::string js) override;
-  void navigate(const std::string url) override;
-  void *window() const override;
+  /*
+   * Returns the handle for the platform window hosting the webview.
+   */
+  virtual void *PlatformWindow() const = 0;
+
+  /*
+   * Terminate the webview execution.
+   */
+  virtual void Terminate() = 0;
+
+protected:
+  void OnBrowserMessage(const std::string &msg);
+  virtual void DispatchIn(DispatchFunction f) = 0;
 
 private:
-  std::map<std::string, binding_ctx_t *> bindings_;
-  std::unique_ptr<browser_engine> engine_;
+  void ResolveFunctionDispatch(int seq, int status, const nlohmann::json &result);
+
+  std::map<std::string, FunctionBinding> bindings_;
+;
 };
 
-std::unique_ptr<browser_engine> MakeEngine(bool debug, void *window, webview *webview);
-
-webview *MakeWebview(bool debug, void *wnd);
+using WebviewCreatedCallback = std::function<void(Webview*)>;
+std::unique_ptr<Webview> MakeWebview(bool debug, void *window, WebviewCreatedCallback created_cb);
 
 } // namespace webview
