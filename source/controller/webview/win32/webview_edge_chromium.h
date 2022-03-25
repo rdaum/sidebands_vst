@@ -15,18 +15,22 @@ namespace webview {
 //
 // Edge/Chromium browser engine
 //
-class EdgeChromiumBrowser : public Win32BrowserEngine {
+class EdgeChromiumBrowser : public WebviewWin32 {
 public:
   EdgeChromiumBrowser(HWND parent_window, bool debug,
                       WebviewCreatedCallback created_cb);
   ~EdgeChromiumBrowser() override;
 
-  bool embed() override;
-  void resize() override;
+  bool Embed() override;
+
   void Navigate(const std::string &url) override;
   void OnDocumentCreate(const std::string &js) override;
   void EvalJS(const std::string &js) override;
   void DispatchIn(DispatchFunction f) override;
+
+
+protected:
+  void Resize() override;
 
 private:
   HRESULT OnControllerCreated(HRESULT result, ICoreWebView2Controller *controller);

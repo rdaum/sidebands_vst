@@ -15,11 +15,9 @@ auto wait_for(Async const &async, Windows::Foundation::TimeSpan const &timeout);
 
 namespace webview {
 
-Win32BrowserEngine::Win32BrowserEngine(HWND parent_window, bool debug,
+WebviewWin32::WebviewWin32(HWND parent_window, bool debug,
                                        WebviewCreatedCallback created_cb)
     : debug_(debug), created_cb_(created_cb) {
-  main_thread_ = GetCurrentThreadId();
-
   HINSTANCE hInstance = GetModuleHandle(nullptr);
   HICON icon = (HICON)LoadImage(hInstance, IDI_APPLICATION, IMAGE_ICON,
                                 GetSystemMetrics(SM_CXSMICON),
@@ -34,11 +32,11 @@ Win32BrowserEngine::Win32BrowserEngine(HWND parent_window, bool debug,
   wc.hIconSm = icon;
   wc.lpfnWndProc =
       (WNDPROC)(+[](HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) -> LRESULT {
-        auto *w = reinterpret_cast<Win32BrowserEngine *>(
+        auto *w = reinterpret_cast<WebviewWin32 *>(
             GetWindowLongPtr(hwnd, GWLP_USERDATA));
         switch (msg) {
         case WM_SIZE:
-          w->resize();
+          w->Resize();
           break;
         case WM_CLOSE:
           DestroyWindow(hwnd);
@@ -82,28 +80,28 @@ Win32BrowserEngine::Win32BrowserEngine(HWND parent_window, bool debug,
   UpdateWindow(window_);
   SetFocus(window_);
 
-  resize();
+  Resize();
 }
 
-void Win32BrowserEngine::Terminate() { PostQuitMessage(0); }
+void WebviewWin32::Terminate() { PostQuitMessage(0); }
 
-void Win32BrowserEngine::SetTitle(const std::string &title) {
+void WebviewWin32::SetTitle(const std::string &title) {
   SetWindowTextW(window_, winrt::to_hstring(title).c_str());
 }
 
-void Win32BrowserEngine::SetViewSize(int width, int height, SizeHint hints) {
+void WebviewWin32::SetViewSize(int width, int height, SizeHint hints) {
   auto style = GetWindowLong(window_, GWL_STYLE);
-  if (hints == SizeHint::WEBVIEW_HINT_FIXED) {
+  if (hints == SizeHint::kFixed) {
     style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
   } else {
     style |= (WS_THICKFRAME | WS_MAXIMIZEBOX);
   }
   SetWindowLong(window_, GWL_STYLE, style);
 
-  if (hints == SizeHint::WEBVIEW_HINT_MAX) {
+  if (hints == SizeHint::kMax) {
     maxsz_.x = width;
     maxsz_.y = height;
-  } else if (hints == SizeHint::WEBVIEW_HINT_MIN) {
+  } else if (hints == SizeHint::kMin) {
     minsz_.x = width;
     minsz_.y = height;
   } else {
@@ -115,7 +113,7 @@ void Win32BrowserEngine::SetViewSize(int width, int height, SizeHint hints) {
     SetWindowPos(window_, NULL, r.left, r.top, r.right - r.left,
                  r.bottom - r.top,
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE | SWP_FRAMECHANGED);
-    resize();
+    Resize();
   }
 }
 
@@ -125,7 +123,7 @@ std::unique_ptr<Webview> MakeWebview(bool debug, void *window,
                                      WebviewCreatedCallback created_cb) {
   auto webview =
       std::make_unique<EdgeChromiumBrowser>((HWND)window, debug, created_cb);
-  if (webview->embed()) {
+  if (webview->Embed()) {
     return std::move(webview);
   }
   return nullptr;

@@ -20,7 +20,7 @@ namespace webview {
 
 EdgeChromiumBrowser::EdgeChromiumBrowser(HWND parent_window, bool debug,
                                          WebviewCreatedCallback created_cb)
-    : Win32BrowserEngine(parent_window, debug, created_cb) {
+    : WebviewWin32(parent_window, debug, created_cb) {
   SetFilePaths();
   controller_completed_handler_ =
       Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(
@@ -130,7 +130,7 @@ HRESULT EdgeChromiumBrowser::OnControllerCreated(
   return S_OK;
 }
 
-bool EdgeChromiumBrowser::embed() {
+bool EdgeChromiumBrowser::Embed() {
   // Start callback chain here.
   HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
       nullptr, user_data_path_, nullptr, environment_completed_handler_.Get());
@@ -143,7 +143,7 @@ bool EdgeChromiumBrowser::embed() {
   return true;
 }
 
-void EdgeChromiumBrowser::resize() {
+void EdgeChromiumBrowser::Resize() {
   if (wv2_controller_ == nullptr) {
     return;
   }

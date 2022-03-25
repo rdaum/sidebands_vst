@@ -68,12 +68,12 @@ public:
    * Adjust the size of the webview.
    */
   enum class SizeHint {
-    WEBVIEW_HINT_NONE,// Width and height are default size
-    WEBVIEW_HINT_MIN, // Width and height are minimum bounds
-    WEBVIEW_HINT_MAX,  // Width and height are maximum bounds
-    WEBVIEW_HINT_FIXED // Window size can not be changed by a user
+    kNone,// Width and height are default size
+    kMin, // Width and height are minimum bounds
+    kMax,  // Width and height are maximum bounds
+    kFixed // Window size can not be changed by a user
   };
-  virtual void SetViewSize(int width, int height, SizeHint hints = SizeHint::WEBVIEW_HINT_NONE) = 0;
+  virtual void SetViewSize(int width, int height, SizeHint hints = SizeHint::kNone) = 0;
 
   /**
    * Navigate the webview to a URL.

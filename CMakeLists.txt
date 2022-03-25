@@ -22,11 +22,17 @@ FetchContent_MakeAvailable(vst3sdk)
 #set(SMTG_CREATE_BUNDLE_FOR_WINDOWS OFF)
 set(SMTG_ENABLE_TARGET_VARS_LOG ON)
 
-# Symlink requires manual deletion each build for some reason, so don't bother.
+# The samples were useful for looking at, but now they're bloating the build dir.
+set(SMTG_ADD_VST3_PLUGINS_SAMPLES OFF)
+set(SMTG_ADD_VST3_HOSTING_SAMPLES OFF)
+
 set(SMTG_CREATE_PLUGIN_LINK ON)
 
 # If validation is on then the execution of the host in debug seems to fail
 set(SMTG_RUN_VST_VALIDATOR OFF)
+
+# We don't want VSTGUI to bloat the binary.
+set(SMTG_ADD_VSTGUI OFF)
 
 # Abseil (and probably others) will fail in VST load if shared libs are on.
 set(BUILD_SHARED_LIBS FALSE)

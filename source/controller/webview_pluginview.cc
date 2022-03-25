@@ -27,7 +27,7 @@ Steinberg::tresult WebviewPluginView::onSize(Steinberg::ViewRect *newSize) {
     if (webview_handle_) {
       webview_handle_->SetViewSize(
           newSize->getWidth(), newSize->getHeight(),
-          webview::Webview::SizeHint::WEBVIEW_HINT_NONE);
+          webview::Webview::SizeHint::kNone);
     }
   }
   return Steinberg::Vst::EditorView::onSize(newSize);
@@ -42,7 +42,7 @@ void WebviewPluginView::attachedToParent() {
           LOG(INFO) << "Loaded webview :" << webview << " doing stuff.";
           webview->SetTitle("Sidebands");
           webview->SetViewSize(rect.getWidth(), rect.getHeight(),
-                               webview::Webview::SizeHint::WEBVIEW_HINT_NONE);
+                               webview::Webview::SizeHint::kNone);
           webview->BindFunction(
               "getParameterObject",
               [this](int seq, const std::string &fname,

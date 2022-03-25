@@ -21,24 +21,24 @@
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "Shlwapi.lib")
 
-
 namespace webview {
 
-using MessageReceivedCallback = std::function<void(const std::string)>;
-
-class Win32BrowserEngine : public Webview {
+// Abstract parent for both edge-chromium and edge variants.
+class WebviewWin32 : public Webview {
 public:
-  Win32BrowserEngine(HWND parent_window, bool debug,
+  WebviewWin32(HWND parent_window, bool debug,
                      WebviewCreatedCallback created_cb);
-  ~Win32BrowserEngine() override = default;
+  ~WebviewWin32() override = default;
+
+  virtual bool Embed() = 0;
 
   void *PlatformWindow() const override { return (void *)window_; }
   void Terminate() override;
   void SetTitle(const std::string &title) override;
   void SetViewSize(int width, int height, SizeHint hints) override;
 
-  virtual bool embed() = 0;
-  virtual void resize(){};
+protected:
+  virtual void Resize(){};
 
 protected:
   HWND window_;
@@ -48,7 +48,6 @@ protected:
 private:
   POINT minsz_ = POINT{0, 0};
   POINT maxsz_ = POINT{0, 0};
-  DWORD main_thread_;
 };
 
 } // namespace webview
