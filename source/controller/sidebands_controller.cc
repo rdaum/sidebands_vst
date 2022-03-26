@@ -100,31 +100,6 @@ IPlugView *PLUGIN_API SidebandsController::createView(FIDString name) {
   return new ui::WebviewPluginView(this, new ViewRect{0, 0, 640, 480});
 }
 
-tresult PLUGIN_API SidebandsController::setParamNormalized(
-    Vst::ParamID tag, Vst::ParamValue value) {
-  // called by host to update your parameters
-  tresult result = EditControllerEx1::setParamNormalized(tag, value);
-  CHECK_EQ(result, kResultTrue) << "Unable to set: " << TagStr(tag);
-//  if (analysis_view_) {
-//    analysis_view_->setDirty(true);
-//  }
-  return result;
-}
-
-tresult PLUGIN_API SidebandsController::getParamStringByValue(
-    Vst::ParamID tag, Vst::ParamValue valueNormalized, Vst::String128 string) {
-  // called by host to get a string for given normalized value of a specific
-  // parameter (without having to set the value!)
-  return EditControllerEx1::getParamStringByValue(tag, valueNormalized, string);
-}
-
-tresult PLUGIN_API SidebandsController::getParamValueByString(
-    Vst::ParamID tag, Vst::TChar *string, Vst::ParamValue &valueNormalized) {
-  // called by host to get a normalized value from a string representation of a
-  // specific parameter (without having to set the value!)
-  return EditControllerEx1::getParamValueByString(tag, string, valueNormalized);
-}
-
 
 void SidebandsController::UpdateParameterNormalized(
     Steinberg::Vst::ParamID param_id, Steinberg::Vst::ParamValue value) {

@@ -32,7 +32,7 @@ void Webview::UnbindFunction(const std::string &name) {
   if (bindings_.find(name) != bindings_.end()) {
     auto js = "delete window['" + name + "'];";
     OnDocumentCreate(js);
-    EvalJS(js);
+    EvalJS(js, [](const nlohmann::json &j){});
     bindings_.erase(name);
   }
 }
@@ -43,11 +43,11 @@ void Webview::ResolveFunctionDispatch(int seq, int status,
     if (status == 0) {
       EvalJS("window._rpc[" + std::to_string(seq) + "].resolve(" +
              result.dump() + "); delete window._rpc[" + std::to_string(seq) +
-             "]");
+             "]", [](const nlohmann::json &j){});
     } else {
       EvalJS("window._rpc[" + std::to_string(seq) + "].reject(" +
              result.dump() + "); delete window._rpc[" + std::to_string(seq) +
-             "]");
+             "]", [](const nlohmann::json &j){});
     }
   });
 }

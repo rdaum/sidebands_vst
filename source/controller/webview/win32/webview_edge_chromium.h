@@ -25,7 +25,7 @@ public:
 
   void Navigate(const std::string &url) override;
   void OnDocumentCreate(const std::string &js) override;
-  void EvalJS(const std::string &js) override;
+  void EvalJS(const std::string &js, ResultCallback rs) override;
   void DispatchIn(DispatchFunction f) override;
 
 

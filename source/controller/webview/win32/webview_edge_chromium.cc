@@ -162,9 +162,20 @@ void EdgeChromiumBrowser::OnDocumentCreate(const std::string &js) {
   webview2_->AddScriptToExecuteOnDocumentCreated(wjs.c_str(), nullptr);
 }
 
-void EdgeChromiumBrowser::EvalJS(const std::string &js) {
+void EdgeChromiumBrowser::EvalJS(const std::string &js, ResultCallback rs) {
   auto wjs = winrt::to_hstring(js);
-  webview2_->ExecuteScript(wjs.c_str(), nullptr);
+
+  auto complete_handler = [rs](HRESULT errorCode, LPCWSTR resultObjectAsJson) -> HRESULT {
+    if (!SUCCEEDED(errorCode)) {
+      return E_FAIL;
+    }
+    std::wstring ws( resultObjectAsJson );
+    std::string json_str( ws.begin(), ws.end() );
+    auto j = nlohmann::json::parse(json_str);
+    rs(j);
+  };
+
+  webview2_->ExecuteScript(wjs.c_str(), Callback<ICoreWebView2ExecuteScriptCompletedHandler>(complete_handler).Get());
 }
 
 bool EdgeChromiumBrowser::SetFilePaths() {

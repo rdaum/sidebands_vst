@@ -83,7 +83,8 @@ public:
   /*
    * Evaluate a fragment of JS in the webview.
    */
-  virtual void EvalJS(const std::string &js) = 0;
+  using ResultCallback = std::function<void(const nlohmann::json &)>;
+  virtual void EvalJS(const std::string &js, ResultCallback rs) = 0;
 
   /*
    * Set a fragment of JS to execute when the webview first loads a document.

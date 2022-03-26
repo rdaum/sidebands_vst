@@ -1,15 +1,63 @@
 #include "controller/webview_pluginview.h"
 
-#include <deque>
+#include <functional>
 
 #include <glog/logging.h>
-#include <nlohmann/json.hpp>
 #include <public.sdk/source/vst/utility/stringconvert.h>
 
 #include "controller/webview/webview.h"
 
 namespace sidebands {
 namespace ui {
+
+namespace {
+
+json SerializeParameter(Steinberg::Vst::Parameter *param) {
+  auto &info = param->getInfo();
+  return {
+      {"normalized", param->getNormalized()},
+      {"precision", param->getUnitID()},
+      {"unitID", param->getUnitID()},
+      {"info",
+       {
+           {"id", info.id},
+           {"title", VST3::StringConvert::convert(info.title)},
+           {"stepCount", info.stepCount},
+           {"flags", info.flags},
+           {"defaultNormalizedValue", info.defaultNormalizedValue},
+           {"units", info.units},
+           {"shortTitle", VST3::StringConvert::convert(info.shortTitle)},
+       }},
+  };
+}
+
+// Proxy IDependent through the webview for parameter object changes.
+class ParameterDependenciesProxy : public Steinberg::FObject {
+public:
+  explicit ParameterDependenciesProxy(webview::Webview *webview)
+      : webview_(webview) {}
+
+  void update(FUnknown *changedUnknown, Steinberg::int32 message) override {
+    if (!webview_ || message != IDependent::kChanged)
+      return;
+
+    Steinberg::Vst::Parameter *changed_param;
+    auto query_result = changedUnknown->queryInterface(
+        Steinberg::Vst::RangeParameter::iid, (void **)&changed_param);
+
+    if (query_result != Steinberg::kResultOk)
+      return;
+
+    webview_->EvalJS("notifyParameterChange(" +
+                         SerializeParameter(changed_param).dump() + ");",
+                     [](const json &r) {});
+  }
+
+private:
+  webview::Webview *webview_;
+};
+
+} // namespace
 
 WebviewPluginView::WebviewPluginView(Steinberg::Vst::EditController *controller,
                                      Steinberg::ViewRect *size)
@@ -25,73 +73,58 @@ Steinberg::tresult WebviewPluginView::onSize(Steinberg::ViewRect *newSize) {
   {
     std::lock_guard<std::mutex> webview_lock(webview_mutex_);
     if (webview_handle_) {
-      webview_handle_->SetViewSize(
-          newSize->getWidth(), newSize->getHeight(),
-          webview::Webview::SizeHint::kNone);
+      webview_handle_->SetViewSize(newSize->getWidth(), newSize->getHeight(),
+                                   webview::Webview::SizeHint::kNone);
     }
   }
   return Steinberg::Vst::EditorView::onSize(newSize);
+}
+
+webview::Webview::FunctionBinding
+WebviewPluginView::BindCallback(CallbackFn fn) {
+  return std::bind(fn, this, std::placeholders::_3);
 }
 
 void WebviewPluginView::attachedToParent() {
   LOG(INFO) << "Attach on correct thread: "
             << thread_checker_->test("Not attached on UI thread");
   if (!webview_handle_) {
-    webview_handle_ = webview::MakeWebview(
-        true, systemWindow, [this](webview::Webview *webview) {
-          LOG(INFO) << "Loaded webview :" << webview << " doing stuff.";
-          webview->SetTitle("Sidebands");
-          webview->SetViewSize(rect.getWidth(), rect.getHeight(),
-                               webview::Webview::SizeHint::kNone);
-          webview->BindFunction(
-              "getParameterObject",
-              [this](int seq, const std::string &fname,
-                     const nlohmann::json &in) -> nlohmann::json {
-                LOG(INFO) << "thread? "
-                          << thread_checker_->test(
-                                 "Not called back on UI thread");
-                int id = in[0];
-                auto *param = controller->getParameterObject(id);
-                if (!param)
-                  return "{}";
-                auto &info = param->getInfo();
-                nlohmann::json out = {
-                    {"normalized", param->getNormalized()},
-                    {"precision", param->getUnitID()},
-                    {"unitID", param->getUnitID()},
-                    {"info",
-                     {
-                         {"id", info.id},
-                         {"title", VST3::StringConvert::convert(info.title)},
-                         {"stepCount", info.stepCount},
-                         {"flags", info.flags},
-                         {"defaultNormalizedValue",
-                          info.defaultNormalizedValue},
-                         {"units", info.units},
-                         {"shortTitle",
-                          VST3::StringConvert::convert(info.shortTitle)},
-                     }},
-                };
-                return out;
-              });
-          webview->BindFunction(
-              "setParamNormalized",
-              [this](int seq, const std::string &fname,
-                     const nlohmann::json &in) -> nlohmann::json {
-                LOG(INFO) << "thread? "
-                          << thread_checker_->test(
-                                 "Not called back on UI thread");
-                int tag = in[0];
-                double value = in[1];
-                nlohmann::json out = controller->setParamNormalized(tag, value);
-                return out;
-              });
-          webview->Navigate("https://appassets.daumaudioworks/start.html");
-          LOG(INFO) << "Done load sequence";
-        });
-  }
+    auto init_function = [this](webview::Webview *webview) {
+      webview->SetTitle("Sidebands VST");
+      webview->SetViewSize(rect.getWidth(), rect.getHeight(),
+                           webview::Webview::SizeHint::kFixed);
 
-  LOG(INFO) << "Created webview: " << webview_handle_.get();
+      webview->BindFunction(
+          "getParameterObject",
+          BindCallback(&WebviewPluginView::WVGetParameterObject));
+      webview->BindFunction(
+          "subscribeParameter",
+          BindCallback(&WebviewPluginView::WVsubscribeParameter));
+      webview->BindFunction(
+          "setParamNormalized",
+          BindCallback(&WebviewPluginView::WVSetParameterNormalized));
+      webview->BindFunction(
+          "normalizedParamToPlain",
+          BindCallback(&WebviewPluginView::WVnormalizedParamToPlain));
+      webview->BindFunction(
+          "getParamNormalized",
+          BindCallback(&WebviewPluginView::WVgetParamNormalized));
+      webview->BindFunction("beginEdit",
+                            BindCallback(&WebviewPluginView::WVbeginEdit));
+      webview->BindFunction("performEdit",
+                            BindCallback(&WebviewPluginView::WVperformEdit));
+      webview->BindFunction("endEdit",
+                            BindCallback(&WebviewPluginView::WVendEdit));
+      webview->BindFunction(
+          "getParameterCount",
+          BindCallback(&WebviewPluginView::WVgetParameterCount));
+
+      webview->Navigate("https://appassets.daumaudioworks/start.html");
+      LOG(INFO) << "Done load sequence";
+    };
+
+    webview_handle_ = webview::MakeWebview(true, systemWindow, init_function);
+  }
 
   EditorView::attachedToParent();
 }
@@ -112,74 +145,84 @@ void WebviewPluginView::removedFromParent() {
   EditorView::removedFromParent();
 }
 
-void WebviewPluginView::update(Steinberg::FUnknown *unknown,
-                               Steinberg::int32 message) {
-  LOG(INFO) << "Called in UI thread? "
-            << thread_checker_->test("not in ui thread");
-
-  if (message != IDependent::kChanged)
-    return;
-  CBObject *changed_cb;
-  if (unknown->queryInterface(CBObject::iid, (void **)&changed_cb) !=
-      Steinberg::kResultOk)
-    return;
-
-  // Execute the callback on our UI thread.
-  std::string result = changed_cb->callback_fn_(changed_cb->Message());
-
-  // Set its reply.
-  changed_cb->SetReply(result);
-}
-
 Steinberg::tresult WebviewPluginView::canResize() {
   return Steinberg::kResultFalse;
 }
 
-void CBObject::update(Steinberg::FUnknown *unknown, Steinberg::int32 message) {}
-
-CBObject::CBObject(std::function<std::string(std::string)> fn)
-    : Steinberg::FObject(), callback_fn_(fn) {
-  thread_checker_ = Steinberg::Vst::ThreadChecker::create();
-  thread_checker_->test("not created ui thread");
-  LOG(ERROR) << "UpdateHandler: " << getUpdateHandler();
+json WebviewPluginView::WVGetParameterObject(const json &in) {
+  thread_checker_->test();
+  int id = in[0];
+  auto *param = controller->getParameterObject(id);
+  if (!param)
+    return json();
+  return SerializeParameter(param);
 }
 
-void CBObject::Call(const std::string &message) {
-  // Can be called on any thread.
+json WebviewPluginView::WVSetParameterNormalized(const json &in) {
+  thread_checker_->test();
+  int tag = in[0];
+  double value = in[1];
+  json out = controller->setParamNormalized(tag, value) == Steinberg::kResultOk;
+  return out;
+}
 
-  // Change the outbound message.
-  {
-    std::lock_guard<std::mutex> ml(message_mutex_);
-    message_ = message;
+json WebviewPluginView::WVnormalizedParamToPlain(const json &in) {
+  thread_checker_->test();
+  int tag = in[0];
+  double value = in[1];
+  json out = controller->normalizedParamToPlain(tag, value);
+  return out;
+}
+
+json WebviewPluginView::WVgetParamNormalized(const json &in) {
+  thread_checker_->test();
+  int tag = in[0];
+  json out = controller->getParamNormalized(tag);
+  return out;
+}
+
+json WebviewPluginView::WVbeginEdit(const json &in) {
+  thread_checker_->test();
+  int tag = in[0];
+  json out = controller->beginEdit(tag) == Steinberg::kResultOk;
+  return out;
+}
+
+json WebviewPluginView::WVperformEdit(const json &in) {
+  thread_checker_->test();
+  int tag = in[0];
+  double value = in[1];
+  json out = controller->performEdit(tag, value) == Steinberg::kResultOk;
+  return out;
+}
+
+json WebviewPluginView::WVendEdit(const json &in) {
+  thread_checker_->test();
+  int tag = in[0];
+  json out = controller->endEdit(tag) == Steinberg::kResultOk;
+  return out;
+}
+
+json WebviewPluginView::WVgetParameterCount(const json &in) {
+  thread_checker_->test();
+  json out = controller->getParameterCount();
+  return out;
+}
+
+json WebviewPluginView::WVsubscribeParameter(const json &in) {
+  thread_checker_->test();
+  json out = controller->getParameterCount();
+  int tag = in[0];
+  auto *param = controller->getParameterObject(tag);
+  if (!param)
+    return json();
+  if (!param_dep_proxy_) {
+    param_dep_proxy_ =
+        std::make_unique<sidebands::ui::ParameterDependenciesProxy>(
+            webview_handle_.get());
   }
-  // Let dependents know we've changed, this is supposed to transfer threads?!
-  LOG(ERROR) << "UpdateHandler: " << getUpdateHandler();
-  changed();
-}
-
-void CBObject::SetReply(std::string &reply) {
-  {
-    std::lock_guard<std::mutex> reply_lock(reply_mutex_);
-    reply_ = reply;
-  }
-  reply_condition_.notify_all();
-}
-
-std::string CBObject::Message() {
-  std::lock_guard<std::mutex> ml(message_mutex_);
-  return message_;
-}
-
-bool CBObject::WaitReply(std::string &reply) {
-  std::unique_lock<std::mutex> reply_wait_lock_(reply_mutex_);
-  if (reply_condition_.wait_for(reply_wait_lock_,
-                                std::chrono::milliseconds(500)) ==
-      std::cv_status::timeout) {
-    return false;
-  }
-  reply = reply_;
+  param->addDependent(param_dep_proxy_.get());
   return true;
 }
-
 } // namespace ui
 } // namespace sidebands

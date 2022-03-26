@@ -47,14 +47,6 @@ public:
   createView(Steinberg::FIDString name) override;
   Steinberg::tresult PLUGIN_API setState(Steinberg::IBStream *state) override;
   Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream *state) override;
-  Steinberg::tresult PLUGIN_API setParamNormalized(
-      Steinberg::Vst::ParamID tag, Steinberg::Vst::ParamValue value) override;
-  Steinberg::tresult PLUGIN_API getParamStringByValue(
-      Steinberg::Vst::ParamID tag, Steinberg::Vst::ParamValue valueNormalized,
-      Steinberg::Vst::String128 string) override;
-  Steinberg::tresult PLUGIN_API getParamValueByString(
-      Steinberg::Vst::ParamID tag, Steinberg::Vst::TChar *string,
-      Steinberg::Vst::ParamValue &valueNormalized) override;
 
   // IEditControllerHostEditing overrides
   Steinberg::tresult PLUGIN_API beginEditFromHost (Steinberg::Vst::ParamID paramID) override;
