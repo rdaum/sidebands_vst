@@ -47,7 +47,7 @@ class Webview {
 public:
   virtual ~Webview() = default;
 
-      /**
+  /**
    * Create a JavaScript function ('name') that invokes native function 'f'
    * and returns a Promise with its results.
    */

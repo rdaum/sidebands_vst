@@ -41,6 +41,7 @@ private:
   BindCallback(CallbackFn fn);
 
   json WVGetParameterObject(const json &in);
+  json WVGetParameterObjects(const json &in);
   json WVSetParameterNormalized(const json &in);
   json WVnormalizedParamToPlain(const json &in);
   json WVgetParamNormalized(const json &in);

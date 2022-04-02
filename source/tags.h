@@ -92,7 +92,7 @@ ParamTag ParamFor(Steinberg::Vst::ParamID tag);
 
 ParamKey ParamKeyFor(Steinberg::Vst::ParamID tag);
 std::string TagStr(Steinberg::Vst::ParamID tag);
-Steinberg::Vst::ParamID TagFor(uint8_t generator, ParamTag param,
+Steinberg::Vst::ParamID TagFor(int generator, ParamTag param,
                                TargetTag target);
 
 } // namespace sidebands

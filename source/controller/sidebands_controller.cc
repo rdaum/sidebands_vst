@@ -97,7 +97,7 @@ tresult PLUGIN_API SidebandsController::getState(IBStream *state) {
 
 IPlugView *PLUGIN_API SidebandsController::createView(FIDString name) {
 
-  return new ui::WebviewPluginView(this, new ViewRect{0, 0, 640, 480});
+  return new ui::WebviewPluginView(this, new ViewRect{0, 0, 800, 1100});
 }
 
 

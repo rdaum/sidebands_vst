@@ -147,18 +147,14 @@ smtg_add_vst3plugin(sidebands
         source/controller/webview/win32/webview_edge_chromium.cc
         source/controller/webview_pluginview.h
         source/controller/webview_pluginview.cc
+
+        source/controller/webui/index.ts
+        source/controller/webui/pureknob.js
+        source/controller/webui/style.css
+        source/controller/webui/index.html
         )
 
-smtg_target_add_plugin_resource(sidebands
-        resource/start.html)
 
-smtg_target_add_plugin_snapshots(sidebands
-        RESOURCES
-        resource/7A5DD92AB0615F028293F8308139D3CE_snapshot.png
-        resource/7A5DD92AB0615F028293F8308139D3CE_snapshot_2.0x.png
-        )
-
-set_target_properties(sidebands PROPERTIES LINK_DEPENDS ${CMAKE_SOURCE_DIR}/resource/start.html)
 # Needed for webview2.h & friends on Win32.
 if (WIN32)
     option(WIL_BUILD_PACKAGING "" OFF)
@@ -180,6 +176,26 @@ if (WIN32)
 
     target_link_libraries(sidebands PRIVATE WIL::WIL Dwmapi Shlwapi)
 endif()
+
+add_custom_target(typescript
+        COMMAND tsc --module es6 --outDir ${CMAKE_CURRENT_BINARY_DIR}
+        SOURCES source/controller/webui/index.ts
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui
+)
+
+add_dependencies(sidebands typescript)
+smtg_target_add_plugin_resource(sidebands source/controller/webui/index.html)
+smtg_target_add_plugin_resource(sidebands source/controller/webui/pureknob.js)
+smtg_target_add_plugin_resource(sidebands source/controller/webui/style.css)
+smtg_target_add_plugin_resource(sidebands resource/MetalSwitchOff.png)
+smtg_target_add_plugin_resource(sidebands resource/MetalSwitchOn.png)
+smtg_target_add_plugin_resource(sidebands ${CMAKE_CURRENT_BINARY_DIR}/index.js)
+
+smtg_target_add_plugin_snapshots(sidebands
+        RESOURCES
+        resource/7A5DD92AB0615F028293F8308139D3CE_snapshot.png
+        resource/7A5DD92AB0615F028293F8308139D3CE_snapshot_2.0x.png
+        )
 
 target_link_libraries(sidebands
         PRIVATE

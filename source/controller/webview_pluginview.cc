@@ -6,6 +6,7 @@
 #include <public.sdk/source/vst/utility/stringconvert.h>
 
 #include "controller/webview/webview.h"
+#include "tags.h"
 
 namespace sidebands {
 namespace ui {
@@ -86,6 +87,7 @@ WebviewPluginView::BindCallback(CallbackFn fn) {
 }
 
 void WebviewPluginView::attachedToParent() {
+  auto test_t = TagFor(1, TAG_OSC, TARGET_C);
   LOG(INFO) << "Attach on correct thread: "
             << thread_checker_->test("Not attached on UI thread");
   if (!webview_handle_) {
@@ -97,6 +99,9 @@ void WebviewPluginView::attachedToParent() {
       webview->BindFunction(
           "getParameterObject",
           BindCallback(&WebviewPluginView::WVGetParameterObject));
+      webview->BindFunction(
+          "getParameterObjects",
+          BindCallback(&WebviewPluginView::WVGetParameterObjects));
       webview->BindFunction(
           "subscribeParameter",
           BindCallback(&WebviewPluginView::WVsubscribeParameter));
@@ -119,7 +124,7 @@ void WebviewPluginView::attachedToParent() {
           "getParameterCount",
           BindCallback(&WebviewPluginView::WVgetParameterCount));
 
-      webview->Navigate("https://appassets.daumaudioworks/start.html");
+      webview->Navigate("https://appassets.daumaudioworks/index.html");
       LOG(INFO) << "Done load sequence";
     };
 
@@ -153,15 +158,30 @@ json WebviewPluginView::WVGetParameterObject(const json &in) {
   thread_checker_->test();
   int id = in[0];
   auto *param = controller->getParameterObject(id);
+  LOG(INFO) << "Retrieve for " << id << " (" << TagStr(id) << ")  == " << param;
   if (!param)
     return json();
   return SerializeParameter(param);
+}
+
+
+json WebviewPluginView::WVGetParameterObjects(const json &in) {
+  thread_checker_->test();
+  json out;
+  for (int id : in[0]) {
+    auto *param = controller->getParameterObject(id);
+    if (param) {
+      out[id] = SerializeParameter(param);
+    }
+  }
+  return out;
 }
 
 json WebviewPluginView::WVSetParameterNormalized(const json &in) {
   thread_checker_->test();
   int tag = in[0];
   double value = in[1];
+  LOG(INFO) << "Setting " << TagStr(tag) << " to n: " << value;
   json out = controller->setParamNormalized(tag, value) == Steinberg::kResultOk;
   return out;
 }

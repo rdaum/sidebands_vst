@@ -1,5 +1,7 @@
 #include "tags.h"
 
+#include <absl/strings/str_format.h>
+
 #include "constants.h"
 
 namespace sidebands {
@@ -12,14 +14,14 @@ Steinberg::Vst::UnitID MakeUnitID(UnitTag unit_tag, uint16_t unit_id) {
   return unit_tag << 16 | unit_id;
 }
 
-
 std::string TagStr(Steinberg::Vst::ParamID tag) {
-  std::string gen = std::to_string(GeneratorFor(tag));
-  std::string param = kParamNames[ParamFor(tag)];
-  std::string result = "#" + gen + "/" + param;
+  uint8_t gennum = GeneratorFor(tag);
+  CHECK_LT(gennum, kNumGenerators);
+  ParamTag param_tag = ParamFor(tag);
+  CHECK_LT(param_tag, TAG_NUM_TAGS);
   TargetTag sp(TargetFor(tag));
-  if (sp != TARGET_NA) result = result + "/" + kTargetNames[sp];
-  return result;
+  CHECK_LT(sp, NUM_TARGETS);
+  return absl::StrFormat("%d/%s/%s", gennum, kParamNames[param_tag], kTargetNames[sp]);
 }
 
 uint8_t GeneratorFor(Steinberg::Vst::ParamID tag) {
@@ -35,7 +37,7 @@ TargetTag TargetFor(Steinberg::Vst::ParamID tag) {
   return static_cast<TargetTag>((tag & 0x00ffff00) >> 8);
 }
 
-Steinberg::Vst::ParamID TagFor(uint8_t generator, ParamTag param,
+Steinberg::Vst::ParamID TagFor(int generator, ParamTag param,
                                TargetTag target) {
   Steinberg::Vst::ParamID pid = (generator << 24 | target << 8 | param);
   return pid;
