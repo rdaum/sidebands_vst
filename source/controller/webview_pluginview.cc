@@ -15,7 +15,7 @@ namespace {
 
 json SerializeParameter(Steinberg::Vst::Parameter *param) {
   auto &info = param->getInfo();
-  return {
+  json j = {
       {"normalized", param->getNormalized()},
       {"precision", param->getUnitID()},
       {"unitID", param->getUnitID()},
@@ -30,6 +30,15 @@ json SerializeParameter(Steinberg::Vst::Parameter *param) {
            {"shortTitle", VST3::StringConvert::convert(info.shortTitle)},
        }},
   };
+  bool isRangeParameter =
+      (param->isA(Steinberg::Vst::RangeParameter::getFClassID()));
+  j["isRangeParameter"] = isRangeParameter;
+  if (isRangeParameter) {
+    auto *range_param = dynamic_cast<Steinberg::Vst::RangeParameter *>(param);
+    j["min"] = range_param->getMin();
+    j["max"] = range_param->getMax();
+  }
+  return j;
 }
 
 // Proxy IDependent through the webview for parameter object changes.
@@ -163,7 +172,6 @@ json WebviewPluginView::WVGetParameterObject(const json &in) {
     return json();
   return SerializeParameter(param);
 }
-
 
 json WebviewPluginView::WVGetParameterObjects(const json &in) {
   thread_checker_->test();

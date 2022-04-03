@@ -71,6 +71,12 @@ export interface IParameter {
     precision: number;
     unitID: number;
     info: IParameterInfo;
+    isRangeParameter: boolean;
+}
+
+export interface IRangeParameter extends IParameter {
+    min: number;
+    max: number;
 }
 
 export class ParameterHandle {

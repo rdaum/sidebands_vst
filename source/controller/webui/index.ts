@@ -1,7 +1,7 @@
 import {createKnob} from './pureknob';
 import {MakeTab} from './templates';
 import * as Model from './sidebandsModel';
-import {IParameter} from "./sidebandsModel";
+import {IParameter, IRangeParameter} from "./sidebandsModel";
 
 // Exported EditController functions.
 export declare function beginEdit(tag: number): Promise<void>;
@@ -34,12 +34,9 @@ class BaseParameterControl<ElementType extends HTMLElement> {
         let pid = Model.ParamIDFor(this.pTag);
         beginEdit(pid).then(x => {
             setParamNormalized(pid, val).then(x => {
-                console.log("Set: ", this.pTag.Param, " ", this.pTag.Target);
-
             });
             performEdit(pid, val).then(x => {
                 endEdit(pid).then(x => {
-                    console.log("Complete edit.");
                 })
             })
         })
@@ -58,42 +55,38 @@ class Toggle extends BaseParameterControl<HTMLInputElement> {
 
 class ParameterKnob extends BaseParameterControl<HTMLElement> {
     readonly knobControl: any;
-    readonly parameter: Model.IParameter;
-    readonly min: number;
-    readonly max: number;
+    readonly parameter: Model.IRangeParameter;
 
-    constructor(tag: Model.Tag, parameter: Model.IParameter, min: number, max: number) {
+    constructor(tag: Model.Tag, parameter: Model.IRangeParameter) {
         let knobControl = createKnob(48, 48);
         let properties = knobControl.properties;
         properties.angleStart = -0.75 * Math.PI;
         properties.angleEnd = 0.75 * Math.PI;
         properties.colorFG = '#fb4400';
         properties.trackWidth = 0.4;
-        properties.valMin = min;
-        properties.valMax = max;
+        properties.valMin = parameter.min;
+        properties.valMax = parameter.max;
 
         super(tag, knobControl.node());
 
         this.knobControl = knobControl;
         this.parameter = parameter;
-        this.min = min;
-        this.max = max;
 
         knobControl.value = this.normalizedToPlain(parameter.normalized);
         knobControl.addListener(this.knobListener.bind(this));
     }
 
     normalizedToPlain(normalized: number): number {
-        return this.min + normalized * (this.max - this.min);
+        return this.parameter.min + normalized * (this.parameter.max - this.parameter.min);
     }
 
     plainToNormalized(plain: number): number {
-        return (plain - this.min) / this.max;
+        return (plain - this.parameter.min) / this.parameter.max;
     }
 
     knobListener(knobControl: any, value: number) {
         const val = this.plainToNormalized(value);
-        this.setValue(value);
+        this.setValue(val);
     }
 
     node(): HTMLElement {
@@ -159,8 +152,8 @@ class GeneratorTab {
     }
 }
 
-function buildKnob(elem: Element, tag: Model.Tag, param: Model.IParameter) {
-    const knob = new ParameterKnob(tag, param, 0, 10);
+function buildKnob(elem: Element, tag: Model.Tag, param: Model.IRangeParameter) {
+    const knob = new ParameterKnob(tag, param);
     const node = knob.node();
     elem.appendChild(node);
     return knob;
@@ -169,7 +162,9 @@ function buildKnob(elem: Element, tag: Model.Tag, param: Model.IParameter) {
 function addKnob(elem: Element | null, tag: Model.Tag) {
     return new Promise<ParameterKnob>((resolve) => {
         getParameterObject(Model.ParamIDFor(tag)).then((param) => {
-            resolve(buildKnob(<HTMLElement>elem, tag, param));
+            if (param.isRangeParameter) {
+                resolve(buildKnob(<HTMLElement>elem, tag, <IRangeParameter>param));
+            }
         })
     });
 }

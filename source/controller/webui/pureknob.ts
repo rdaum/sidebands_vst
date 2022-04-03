@@ -168,8 +168,7 @@ class Knob {
             value = valMax;
         }
 
-        value = Math.round(value);
-        this._properties.val = value;
+        this._properties.val = parseFloat(value.toFixed(2));
     }
 
     /*
