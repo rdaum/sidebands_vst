@@ -1,19 +1,30 @@
 import * as Model from './sidebandsModel';
-import {IParameter, IRangeParameter} from "./sidebandsModel";
+import {IParameter, IRangeParameter, ParamTag} from "./sidebandsModel";
 import {createKnob} from "./pureknob";
 import {MakeTab} from "./templates";
 
 // Exported EditController functions.
 export declare function beginEdit(tag: number): Promise<void>;
-export declare function performEdit(tag: number, value: number): Promise<void>;
-export declare function endEdit(tag: number): Promise<void>;
-export declare function setParamNormalized(tag: number, value: number): Promise<void>;
-export declare function getParameterObject(tag: number): Promise<IParameter>;
-export declare function getParameterObjects(tag: Array<number>): Promise<{ [key: number]: IParameter }>;
-export declare function getSelectedUnit(): Promise<number>;
-export declare function selectUnit(unitId: number) : Promise<void>;
 
-class BaseParameterControl<ElementType extends HTMLElement> {
+export declare function performEdit(tag: number, value: number): Promise<void>;
+
+export declare function endEdit(tag: number): Promise<void>;
+
+export declare function setParamNormalized(tag: number, value: number): Promise<void>;
+
+export declare function getParameterObject(tag: number): Promise<IParameter>;
+
+export declare function getParameterObjects(tag: Array<number>): Promise<{ [key: number]: IParameter }>;
+
+export declare function getSelectedUnit(): Promise<number>;
+
+export declare function selectUnit(unitId: number): Promise<void>;
+
+export interface ParameterControl {
+    readonly pTag: Model.Tag;
+}
+
+class BaseParameterControl<ElementType extends HTMLElement> implements ParameterControl {
     constructor(readonly pTag: Model.Tag, readonly element: ElementType) {
         this.pTag = pTag;
         this.element = element;
@@ -37,7 +48,7 @@ class BaseParameterControl<ElementType extends HTMLElement> {
 
 }
 
-class Toggle extends BaseParameterControl<HTMLInputElement> {
+export class Toggle extends BaseParameterControl<HTMLInputElement> {
     constructor(pTag: Model.Tag, toggle: HTMLInputElement) {
         toggle.addEventListener('change', () => {
             this.setValue(this.element.checked ? 1 : 0);
@@ -46,7 +57,7 @@ class Toggle extends BaseParameterControl<HTMLInputElement> {
     }
 }
 
-class ParameterKnob extends BaseParameterControl<HTMLElement> {
+export class ParameterKnob extends BaseParameterControl<HTMLElement> {
     readonly knobControl: any;
     readonly parameter: Model.IRangeParameter;
 
@@ -87,63 +98,6 @@ class ParameterKnob extends BaseParameterControl<HTMLElement> {
     }
 }
 
-export class GeneratorTab {
-    readonly element: HTMLElement;
-    readonly toggle: Toggle;
-
-    constructor(readonly gennum: number, parent: HTMLElement) {
-        this.gennum = gennum;
-
-        const rootTabElement = MakeTab(gennum);
-        const toggleInput = rootTabElement.querySelector(`#generator_${gennum}_toggle`);
-        this.toggle = new Toggle({
-            Generator: gennum,
-            Param: Model.ParamTag.TAG_GENERATOR_TOGGLE,
-            Target: Model.TargetTag.TARGET_NA
-        }, <HTMLInputElement>toggleInput);
-
-        const knobElement = rootTabElement.querySelector(`#generator_${gennum}_level`);
-        addKnob(knobElement, {
-            Generator: gennum,
-            Param: Model.ParamTag.TAG_OSC,
-            Target: Model.TargetTag.TARGET_A
-        })
-
-        rootTabElement.addEventListener("click", () => {
-            this.select();
-        })
-        this.element = rootTabElement;
-        parent.appendChild(this.element);
-    }
-
-    select() {
-        let element = this.element;
-
-        const selected = element.getAttribute('is-selected');
-        if (selected != "false") return;
-
-        element.setAttribute('is-selected', 'true');
-        element.classList.replace('tab-inactive', 'tab-active');
-
-        let parent = element.parentNode;
-        if (!parent) return;
-        for (let tabSpan of parent.children) {
-            if (tabSpan == element) {
-                continue;
-            }
-            const childSelected = tabSpan.getAttribute('is-selected');
-            if (childSelected == "false") {
-                continue;
-            }
-            tabSpan.setAttribute('is-selected', "false");
-            tabSpan.classList.replace('tab-active', 'tab-inactive');
-        }
-    }
-
-    node(): HTMLElement {
-        return this.element;
-    }
-}
 
 function buildKnob(elem: Element, tag: Model.Tag, param: Model.IRangeParameter) {
     const knob = new ParameterKnob(tag, param);
@@ -162,10 +116,3 @@ export function addKnob(elem: Element | null, tag: Model.Tag) {
     });
 }
 
-export function addTab(parent: HTMLElement | null, gennum: number): GeneratorTab | null {
-    if (!parent) return null;
-
-    let tab = new GeneratorTab(gennum, parent);
-
-    return tab;
-}
