@@ -1,4 +1,6 @@
-import {MakeTab} from "./templates";
+// Where composite views go
+
+import {MakeEnvelopeEditor, MakeTab} from "./templates";
 import * as Model from "./sidebandsModel";
 import {addKnob, IParameterControl, Toggle} from "./controls";
 import * as VstModel from "./vstModel";
@@ -16,6 +18,10 @@ type SelectedGeneratorDelegate = (unitId: number) => void;
 
 interface View {
     node() : HTMLElement;
+}
+
+interface GeneratorView extends View {
+   updateSelectedGenerator(gennum: number): void;
 }
 
 export class GeneratorTabView implements View {
@@ -92,59 +98,22 @@ function addTab(parent: HTMLElement | null, gennum: number, selectedDelegate: Se
     return tab;
 }
 
-export class MainView implements View {
+export class EnvelopeEditorKnobView implements GeneratorView {
     controls: Array<IParameterControl>;
-    childViews: Array<View>;
 
-    constructor() {
+    constructor(readonly element :HTMLDivElement, readonly gennum : number, target : Model.TargetTag) {
         this.controls = [];
-        this.childViews = [];
+        const targetPrefix = target.toString().toLowerCase();
+        let panel = MakeEnvelopeEditor(targetPrefix);
+        element.appendChild(panel);
+
+        this.makeEnvelopeKnobs(targetPrefix, gennum, target);
     }
 
-    build() {
-        const selector_area = GD('generator_selector');
-        let generators: Array<GeneratorTabView> = [];
-        for (let x = 0; x < 12; x++) {
-            let tab = addTab(selector_area, x, (selected: number) => {
-                VstModel.controller.selectUnit(selected);
-                this.updateSelectedGenerator(selected);
-            });
-            if (tab) {
-                generators.push(tab);
-                this.childViews.push(tab);
-            }
+    updateSelectedGenerator(gennum: number): void {
+        for (let control of this.controls) {
+            control.updateSelectedGenerator(gennum);
         }
-
-        VstModel.controller.getSelectedUnit().then(selectedUnit => {
-            generators[selectedUnit].select();
-
-            let pushControl = (c: IParameterControl) => {
-                this.controls.push(c);
-            };
-
-            addKnob(GD('carrier_ratio'),
-                {
-                    Generator: selectedUnit,
-                    Param: Model.ParamTag.TAG_OSC,
-                    Target: Model.TargetTag.TARGET_C
-                }).then(pushControl);
-            addKnob(GD('modulation_ratio'),
-                {
-                    Generator: selectedUnit,
-                    Param: Model.ParamTag.TAG_OSC,
-                    Target: Model.TargetTag.TARGET_M
-                }).then(pushControl);
-            addKnob(GD('modulation_index'),
-                {
-                    Generator: selectedUnit,
-                    Param: Model.ParamTag.TAG_OSC,
-                    Target: Model.TargetTag.TARGET_K
-                }).then(pushControl);
-
-            this.makeEnvelopeKnobs('a', selectedUnit, Model.TargetTag.TARGET_A);
-            this.makeEnvelopeKnobs('k', selectedUnit, Model.TargetTag.TARGET_K);
-        })
-
     }
 
     makeEnvelopeKnobs(elemPrefix: string, gennum: number, target: Model.TargetTag) {
@@ -174,9 +143,75 @@ export class MainView implements View {
             {Generator: gennum, Param: Model.ParamTag.TAG_ENV_RL1, Target: target}).then(pushControl);
     }
 
+    node() {
+        return this.element;
+    }
+}
+
+export class MainView implements View {
+    controls: Array<IParameterControl>;
+    subViews: Array<GeneratorView>;
+
+    constructor() {
+        this.controls = [];
+        this.subViews = [];
+    }
+
+    build() {
+        const selector_area = GD('generator_selector');
+        let generators: Array<GeneratorTabView> = [];
+        for (let x = 0; x < 12; x++) {
+            let tab = addTab(selector_area, x, (selected: number) => {
+                VstModel.controller.selectUnit(selected);
+                this.updateSelectedGenerator(selected);
+            });
+            if (tab) {
+                generators.push(tab);
+            }
+        }
+
+        VstModel.controller.getSelectedUnit().then(selectedUnit => {
+            generators[selectedUnit].select();
+
+            let pushControl = (c: IParameterControl) => {
+                this.controls.push(c);
+            };
+
+            addKnob(GD('carrier_ratio'),
+                {
+                    Generator: selectedUnit,
+                    Param: Model.ParamTag.TAG_OSC,
+                    Target: Model.TargetTag.TARGET_C
+                }).then(pushControl);
+            addKnob(GD('modulation_ratio'),
+                {
+                    Generator: selectedUnit,
+                    Param: Model.ParamTag.TAG_OSC,
+                    Target: Model.TargetTag.TARGET_M
+                }).then(pushControl);
+            addKnob(GD('modulation_index'),
+                {
+                    Generator: selectedUnit,
+                    Param: Model.ParamTag.TAG_OSC,
+                    Target: Model.TargetTag.TARGET_K
+                }).then(pushControl);
+
+            let a_env_area = GD("a_env_area");
+            if (a_env_area)
+                this.subViews.push(new EnvelopeEditorKnobView(<HTMLDivElement>a_env_area, selectedUnit, Model.TargetTag.TARGET_A));
+            let k_env_area = GD("k_env_area");
+            if (k_env_area)
+                this.subViews.push(new EnvelopeEditorKnobView(<HTMLDivElement>k_env_area, selectedUnit, Model.TargetTag.TARGET_K));
+        })
+
+    }
+
     updateSelectedGenerator(gennum : number) {
         for (let control of this.controls) {
-            control.updateCurrentGenerator(gennum);
+            control.updateSelectedGenerator(gennum);
+        }
+        for (let subView of this.subViews) {
+            subView.updateSelectedGenerator(gennum);
         }
     }
 
@@ -184,4 +219,5 @@ export class MainView implements View {
         return <HTMLElement>GD("sidebands_view");
     }
 }
+
 

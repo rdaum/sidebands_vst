@@ -14,6 +14,55 @@ function Tab(attributes : Attributes, contents: string[]) {
     </span>;
 }
 
+function EnvelopeKnobs(attributes : Attributes, contents: string[]) {
+    let target_str = attributes['target-prefix'];
+    return <div class="envelope-editor editor-panel" id={target_str + "_env_editor"}>
+        <div class="parameter hold">
+            <label>Hold</label>
+            <div id={target_str + "_hold_time"}></div>
+        </div>
+        <span>&nbsp;</span>
+        <div class="parameter a-rate">
+            <label>Attack</label>
+            <div id={target_str + "_attack"}></div>
+        </div>
+        <span>&nbsp;</span>
+        <div class="parameter d1-rate">
+            <label>Decay1 Rate</label>
+            <div id={target_str + "_d1_r"}></div>
+        </div>
+        <div class="parameter d2-rate">
+            <label>Decay2 Rate</label>
+            <div id={target_str + "_d2_r"}></div>
+        </div>
+        <div class="parameter r1-rate">
+            <label>Release1 Rate</label>
+            <div id={target_str + "_r1_r"}></div>
+        </div>
+        <div class="parameter r2-date">
+            <label>Release2 Rate</label>
+            <div id={target_str + "_r2_r"}></div>
+        </div>
+
+        <div class="parameter a-level">
+            <label>Peak</label>
+            <div id={target_str + "_attack_level"}></div>
+        </div>
+        <div class="parameter d1-level">
+            <label>Decay1 Level</label>
+            <div id={target_str + "_d1_l"}></div>
+        </div>
+        <div class="parameter s-level">
+            <label>Sustain Level</label>
+            <div id={target_str + "_s_l"}></div>
+        </div>
+        <div class="parameter r-level">
+            <label>Release Level</label>
+            <div id={target_str + "_r1_l"}></div>
+        </div>
+    </div>;
+}
+
 function MakeElement<T extends HTMLElement>(html : string) : HTMLElement {
     let t = document.createElement('template');
     t.insertAdjacentHTML("afterbegin", html);
@@ -22,4 +71,8 @@ function MakeElement<T extends HTMLElement>(html : string) : HTMLElement {
 
 export function MakeTab(gennum : number) : HTMLElement {
     return MakeElement(<Tab generator-number={gennum}></Tab>);
+}
+
+export function MakeEnvelopeEditor(targetPrefix : string) {
+    return MakeElement(<EnvelopeKnobs target-prefix={targetPrefix}/>);
 }

@@ -6,7 +6,7 @@ import {ParamTag} from "./sidebandsModel";
 export interface IParameterControl {
     pTag: SidebandsModel.Tag;
 
-    updateCurrentGenerator(gennum: number): void;
+    updateSelectedGenerator(gennum: number): void;
     refresh() : void;
 }
 
@@ -28,7 +28,7 @@ abstract class ParameterControl implements IParameterControl {
         })
     }
 
-    updateCurrentGenerator(gennum: number): void {
+    updateSelectedGenerator(gennum: number): void {
         this.pTag.Generator = gennum;
         this.refresh();
     }
@@ -84,7 +84,6 @@ export class ParameterKnob extends BaseParameterControlView<HTMLElement> {
         knobView.value = this.normalizedToPlain(parameter.normalized);
         knobView.addListener(this.knobListener.bind(this));
     }
-
 
     refresh() {
         VstModel.controller.getParameterObject(SidebandsModel.ParamIDFor(this.pTag)).then( (p) => {
