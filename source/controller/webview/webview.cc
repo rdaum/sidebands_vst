@@ -2,8 +2,6 @@
 
 #include <utility>
 
-#include <glog/logging.h>
-
 namespace webview {
 
 void Webview::BindFunction(const std::string &name,
@@ -63,8 +61,7 @@ void Webview::OnBrowserMessage(const std::string &msg) {
   if (it == bindings_.end()) {
     return;
   }
-  auto result = it->second(seq, name, args);
-  LOG(INFO) << "Waiting on: " << name;
+  auto result = it->second(this, seq, name, args);
   ResolveFunctionDispatch(seq, 0, result);
 }
 

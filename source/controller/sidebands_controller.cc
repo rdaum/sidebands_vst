@@ -5,6 +5,7 @@
 #include <pluginterfaces/base/ustring.h>
 
 #include "controller/patch_controller.h"
+#include "controller/webview_controller_bindings.h"
 #include "controller/webview_pluginview.h"
 #include "globals.h"
 #include "sidebands_cids.h"
@@ -45,18 +46,7 @@ tresult PLUGIN_API SidebandsController::initialize(FUnknown *context) {
   patch_controller_ = std::make_unique<PatchController>();
   patch_controller_->AppendParameters(&parameters);
 
-  // Universal parameters, not generator specific.
-  std::string sel_gen_param_name = "Selected Generator Number";
-  auto parameter_info =
-      Vst::ParameterInfo{.id = TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA),
-                         .defaultNormalizedValue = 0,
-                         .unitId = Vst::kRootUnitId};
-  Steinberg::UString(parameter_info.title, USTRINGSIZE(parameter_info.title))
-      .assign(USTRING(sel_gen_param_name.c_str()));
-  parameters.addParameter(parameter_info);
-
   LOG(INFO) << "Initialization complete";
-
 
   return result;
 }
@@ -76,7 +66,7 @@ tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
   if (patch_controller_->LoadPatch(state, this) != kResultOk)
     return kResultFalse;
 
-  setParamNormalized(TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA), 0);
+  selectUnit(0);
 
   return kResultOk;
 }
@@ -96,10 +86,12 @@ tresult PLUGIN_API SidebandsController::getState(IBStream *state) {
 }
 
 IPlugView *PLUGIN_API SidebandsController::createView(FIDString name) {
-
-  return new ui::WebviewPluginView(this, new ViewRect{0, 0, 800, 1100});
+  webview_controller_bindings_ =
+      std::make_unique<WebviewControllerBindings>(this);
+  webview_pluginview_ = new ui::WebviewPluginView(
+      this, webview_controller_bindings_.get(), &view_rect_);
+  return webview_pluginview_;
 }
-
 
 void SidebandsController::UpdateParameterNormalized(
     Steinberg::Vst::ParamID param_id, Steinberg::Vst::ParamValue value) {
@@ -120,16 +112,6 @@ Steinberg::Vst::RangeParameter *SidebandsController::FindRangedParameter(
                                           (void **)&ranged_parameter);
   CHECK_EQ(result, Steinberg::kResultOk);
   return ranged_parameter;
-}
-
-void SidebandsController::SelectGenerator(int generator_number) {
-  UpdateParameterNormalized(TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA),
-                            generator_number / (float)kNumGenerators);
-}
-
-int SidebandsController::SelectedGenerator() {
-  return getParamNormalized(TagFor(0, TAG_SELECTED_GENERATOR, TARGET_NA)) *
-         kNumGenerators;
 }
 
 Steinberg::Vst::ParamValue
@@ -173,10 +155,6 @@ SidebandsController::notify(Steinberg::Vst::IMessage *message) {
   attributes->getInt(kEnvelopeStageGennumAttr, gennum);
   attributes->getInt(kEnvelopeStageTargetAttr, target);
   attributes->getInt(kEnvelopeStageStageAttr, stage);
-
-  if (SelectedGenerator() == gennum) {
-//    generator_view_->HighlightEnvelopeStage(static_cast<TargetTag>(target), stage);
-  }
 
   return Steinberg::kResultOk;
 }

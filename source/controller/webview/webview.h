@@ -41,7 +41,6 @@ namespace webview {
 
 using DispatchFunction = std::function<void()>;
 
-
 // Abstract webview parent.
 class Webview {
 public:
@@ -51,7 +50,8 @@ public:
    * Create a JavaScript function ('name') that invokes native function 'f'
    * and returns a Promise with its results.
    */
-  using FunctionBinding = std::function<const nlohmann::json(int seq, const std::string&, const nlohmann::json &)>;
+  using FunctionBinding = std::function<const nlohmann::json(
+      Webview *webview, int seq, const std::string &, const nlohmann::json &)>;
   void BindFunction(const std::string &name, FunctionBinding f);
 
   /**
@@ -68,12 +68,13 @@ public:
    * Adjust the size of the webview.
    */
   enum class SizeHint {
-    kNone,// Width and height are default size
-    kMin, // Width and height are minimum bounds
+    kNone, // Width and height are default size
+    kMin,  // Width and height are minimum bounds
     kMax,  // Width and height are maximum bounds
     kFixed // Window size can not be changed by a user
   };
-  virtual void SetViewSize(int width, int height, SizeHint hints = SizeHint::kNone) = 0;
+  virtual void SetViewSize(int width, int height,
+                           SizeHint hints = SizeHint::kNone) = 0;
 
   /**
    * Navigate the webview to a URL.
@@ -106,13 +107,15 @@ protected:
   virtual void DispatchIn(DispatchFunction f) = 0;
 
 private:
-  void ResolveFunctionDispatch(int seq, int status, const nlohmann::json &result);
+  void ResolveFunctionDispatch(int seq, int status,
+                               const nlohmann::json &result);
 
   std::map<std::string, FunctionBinding> bindings_;
-;
+  ;
 };
 
-using WebviewCreatedCallback = std::function<void(Webview*)>;
-std::unique_ptr<Webview> MakeWebview(bool debug, void *window, WebviewCreatedCallback created_cb);
+using WebviewCreatedCallback = std::function<void(Webview *)>;
+std::unique_ptr<Webview> MakeWebview(bool debug, void *window,
+                                     WebviewCreatedCallback created_cb);
 
 } // namespace webview

@@ -5,12 +5,11 @@
 #include "tags.h"
 #include "globals.h"
 #include "constants.h"
+#include "controller/webview_pluginview.h"
 
 namespace sidebands {
 
-namespace ui {
-class GeneratorEditorView;
-} // namespace ui
+class WebviewControllerBindings;
 
 class PatchController;
 class SidebandsController : public Steinberg::Vst::EditControllerEx1,
@@ -32,9 +31,6 @@ public:
   Steinberg::Vst::RangeParameter *FindRangedParameter(uint16_t generator,
                                                       const ParamTag &param,
                                                       const TargetTag &sp);
-  void SelectGenerator(int generator_number);
-  int SelectedGenerator();
-
   // IPluginBase overrides
   Steinberg::tresult PLUGIN_API
   initialize(Steinberg::FUnknown *context) override;
@@ -66,6 +62,9 @@ public:
 
 private:
   std::unique_ptr<PatchController> patch_controller_;
+  Steinberg::ViewRect view_rect_{0, 0, 800, 1100};
+  std::unique_ptr<WebviewControllerBindings> webview_controller_bindings_;
+  sidebands::ui::WebviewPluginView *webview_pluginview_;
 };
 
 //------------------------------------------------------------------------

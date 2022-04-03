@@ -35,7 +35,6 @@ enum ParamTag {
   TAG_LFO_AMP,
   TAG_LFO_VS,
   TAG_LFO_TYPE,
-  TAG_SELECTED_GENERATOR, // valid only with "0" for generator and TARGET_NA
   TAG_MOD_TYPE,
   TAG_NUM_TAGS
 };
@@ -43,7 +42,7 @@ enum ParamTag {
 constexpr const char *kParamNames[]{
     "SELECT",  "TOGGLE", "OSC",      "ENV_A",         "ENV_AL",
     "ENV_D",   "ENV_S",  "ENV_R",    "ENV_VS",        "LFO_FREQ",
-    "LFO_AMP", "LFO_VS", "LFO_TYPE", "SELECTED_GEN#", "MOD_TYPE"};
+    "LFO_AMP", "LFO_VS", "LFO_TYPE", "MOD_TYPE"};
 
 enum TargetTag {
   TARGET_NA,

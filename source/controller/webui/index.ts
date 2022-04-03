@@ -10,6 +10,8 @@ export declare function endEdit(tag: number): Promise<void>;
 export declare function setParamNormalized(tag: number, value: number): Promise<void>;
 export declare function getParameterObject(tag: number): Promise<IParameter>;
 export declare function getParameterObjects(tag: Array<number>): Promise<{ [key: number]: IParameter }>;
+export declare function getSelectedUnit(): Promise<number>;
+export declare function selectUnit(unitId: number) : Promise<void>;
 
 // Shortcut.
 function GD(id: string): HTMLElement | null {

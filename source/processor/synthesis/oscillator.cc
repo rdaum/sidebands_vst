@@ -75,10 +75,11 @@ void AnalogOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
 
 std::unique_ptr<IOscillator> MakeOscillator(GeneratorPatch::OscType type) {
   switch (type) {
-  case GeneratorPatch::OscType::MOD_FM:
-    return std::make_unique<ModFMOscillator>();
   case GeneratorPatch::OscType::ANALOG:
     return std::make_unique<AnalogOscillator>();
+  case GeneratorPatch::OscType::MOD_FM:
+  default:
+    return std::make_unique<ModFMOscillator>();
   }
 }
 

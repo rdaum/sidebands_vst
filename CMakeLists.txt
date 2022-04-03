@@ -147,6 +147,8 @@ smtg_add_vst3plugin(sidebands
         source/controller/webview/win32/webview_edge_chromium.cc
         source/controller/webview_pluginview.h
         source/controller/webview_pluginview.cc
+        source/controller/webview_controller_bindings.cc
+        source/controller/webview_controller_bindings.h
 
         source/controller/webui/index.ts
         source/controller/webui/pureknob.ts
