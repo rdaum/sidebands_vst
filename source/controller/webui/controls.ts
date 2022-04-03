@@ -1,55 +1,43 @@
-import * as Model from './sidebandsModel';
-import {IParameter, IRangeParameter, ParamTag} from "./sidebandsModel";
+import * as SidebandsModel from './sidebandsModel';
+import * as VstModel from "./vstModel";
 import {createKnob} from "./pureknob";
 import {MakeTab} from "./templates";
 
 // Exported EditController functions.
-export declare function beginEdit(tag: number): Promise<void>;
 
-export declare function performEdit(tag: number, value: number): Promise<void>;
-
-export declare function endEdit(tag: number): Promise<void>;
-
-export declare function setParamNormalized(tag: number, value: number): Promise<void>;
-
-export declare function getParameterObject(tag: number): Promise<IParameter>;
-
-export declare function getParameterObjects(tag: Array<number>): Promise<{ [key: number]: IParameter }>;
-
-export declare function getSelectedUnit(): Promise<number>;
-
-export declare function selectUnit(unitId: number): Promise<void>;
-
-export interface ParameterControl {
-    readonly pTag: Model.Tag;
+export interface IParameterControl {
+    readonly pTag: SidebandsModel.Tag;
 }
 
-class BaseParameterControl<ElementType extends HTMLElement> implements ParameterControl {
-    constructor(readonly pTag: Model.Tag, readonly element: ElementType) {
-        this.pTag = pTag;
+export class ParameterControl implements IParameterControl {
+    constructor(readonly pTag : SidebandsModel.Tag) {}
+
+    setValue(val: number) {
+        let pid = SidebandsModel.ParamIDFor(this.pTag);
+        VstModel.controller.beginEdit(pid).then(x => {
+            VstModel.controller.setParamNormalized(pid, val).then(x => {
+            });
+            VstModel.controller.performEdit(pid, val).then(x => {
+                VstModel.controller.endEdit(pid).then(x => {
+                })
+            })
+        })
+    }
+}
+
+class BaseParameterControlView<ElementType extends HTMLElement> extends ParameterControl {
+    constructor(readonly pTag: SidebandsModel.Tag, readonly element: ElementType) {
+        super(pTag);
         this.element = element;
     }
 
     node(): HTMLElement {
         return this.element;
     }
-
-    setValue(val: number) {
-        let pid = Model.ParamIDFor(this.pTag);
-        beginEdit(pid).then(x => {
-            setParamNormalized(pid, val).then(x => {
-            });
-            performEdit(pid, val).then(x => {
-                endEdit(pid).then(x => {
-                })
-            })
-        })
-    }
-
 }
 
-export class Toggle extends BaseParameterControl<HTMLInputElement> {
-    constructor(pTag: Model.Tag, toggle: HTMLInputElement) {
+export class Toggle extends BaseParameterControlView<HTMLInputElement> {
+    constructor(pTag: SidebandsModel.Tag, toggle: HTMLInputElement) {
         toggle.addEventListener('change', () => {
             this.setValue(this.element.checked ? 1 : 0);
         })
@@ -57,13 +45,13 @@ export class Toggle extends BaseParameterControl<HTMLInputElement> {
     }
 }
 
-export class ParameterKnob extends BaseParameterControl<HTMLElement> {
-    readonly knobControl: any;
-    readonly parameter: Model.IRangeParameter;
+export class ParameterKnob extends BaseParameterControlView<HTMLElement> {
+    readonly knobView: any;
+    readonly parameter: VstModel.IRangeParameter;
 
-    constructor(tag: Model.Tag, parameter: Model.IRangeParameter) {
-        let knobControl = createKnob(48, 48);
-        let properties = knobControl.properties;
+    constructor(tag: SidebandsModel.Tag, parameter: VstModel.IRangeParameter) {
+        let knobView = createKnob(48, 48);
+        let properties = knobView.properties;
         properties.angleStart = -0.75 * Math.PI;
         properties.angleEnd = 0.75 * Math.PI;
         properties.colorFG = '#fb4400';
@@ -71,13 +59,13 @@ export class ParameterKnob extends BaseParameterControl<HTMLElement> {
         properties.valMin = parameter.min;
         properties.valMax = parameter.max;
 
-        super(tag, knobControl.node());
+        super(tag, knobView.node());
 
-        this.knobControl = knobControl;
+        this.knobView = knobView;
         this.parameter = parameter;
 
-        knobControl.value = this.normalizedToPlain(parameter.normalized);
-        knobControl.addListener(this.knobListener.bind(this));
+        knobView.value = this.normalizedToPlain(parameter.normalized);
+        knobView.addListener(this.knobListener.bind(this));
     }
 
     normalizedToPlain(normalized: number): number {
@@ -94,23 +82,22 @@ export class ParameterKnob extends BaseParameterControl<HTMLElement> {
     }
 
     node(): HTMLElement {
-        return this.knobControl.node();
+        return this.knobView.node();
     }
 }
 
-
-function buildKnob(elem: Element, tag: Model.Tag, param: Model.IRangeParameter) {
+function buildKnob(elem: Element, tag: SidebandsModel.Tag, param: VstModel.IRangeParameter) {
     const knob = new ParameterKnob(tag, param);
     const node = knob.node();
     elem.appendChild(node);
     return knob;
 }
 
-export function addKnob(elem: Element | null, tag: Model.Tag) {
+export function addKnob(elem: Element | null, tag: SidebandsModel.Tag) : Promise<ParameterKnob> {
     return new Promise<ParameterKnob>((resolve) => {
-        getParameterObject(Model.ParamIDFor(tag)).then((param) => {
+        VstModel.controller.getParameterObject(SidebandsModel.ParamIDFor(tag)).then((param) => {
             if (param.isRangeParameter) {
-                resolve(buildKnob(<HTMLElement>elem, tag, <IRangeParameter>param));
+                resolve(buildKnob(<HTMLElement>elem, tag, <VstModel.IRangeParameter>param));
             }
         })
     });

@@ -1,17 +1,7 @@
 import {MakeTab} from "./templates";
 import * as Model from "./sidebandsModel";
-import {addKnob, ParameterControl, Toggle} from "./controls";
-import {IParameter} from "./sidebandsModel";
-
-// Exported EditController functions.
-export declare function beginEdit(tag: number): Promise<void>;
-export declare function performEdit(tag: number, value: number): Promise<void>;
-export declare function endEdit(tag: number): Promise<void>;
-export declare function setParamNormalized(tag: number, value: number): Promise<void>;
-export declare function getParameterObject(tag: number): Promise<IParameter>;
-export declare function getParameterObjects(tag: Array<number>): Promise<{ [key: number]: IParameter }>;
-export declare function getSelectedUnit(): Promise<number>;
-export declare function selectUnit(unitId: number): Promise<void>;
+import {addKnob, IParameterControl, Toggle} from "./controls";
+import * as VstModel from "./vstModel";
 
 // Shortcut to access dom element.
 function GD(id: string): HTMLElement | null {
@@ -25,13 +15,13 @@ function GD(id: string): HTMLElement | null {
 type SelectedGeneratorDelegate = (unitId: number) => void;
 
 interface View {
-    controls:  Array<ParameterControl>;
+    node() : HTMLElement;
 }
 
 export class GeneratorTabView implements View {
     readonly element: HTMLElement;
     toggle: Toggle;
-    controls: Array<ParameterControl>;
+    controls: Array<IParameterControl>;
 
     constructor(readonly gennum: number, readonly selectDelegate: SelectedGeneratorDelegate, parent: HTMLElement) {
         this.gennum = gennum;
@@ -103,10 +93,12 @@ function addTab(parent: HTMLElement | null, gennum: number, selectedDelegate: Se
 }
 
 export class MainView implements View {
-    controls: Array<ParameterControl>;
+    controls: Array<IParameterControl>;
+    childViews: Array<View>;
 
     constructor() {
         this.controls = [];
+        this.childViews = [];
     }
 
     build() {
@@ -114,16 +106,18 @@ export class MainView implements View {
         let generators: Array<GeneratorTabView> = [];
         for (let x = 0; x < 12; x++) {
             let tab = addTab(selector_area, x, (selected: number) => {
-                selectUnit(selected);
+                VstModel.controller.selectUnit(selected);
             });
-            if (tab)
+            if (tab) {
                 generators.push(tab);
+                this.childViews.push(tab);
+            }
         }
 
-        getSelectedUnit().then(selectedUnit => {
+        VstModel.controller.getSelectedUnit().then(selectedUnit => {
             generators[selectedUnit].select();
 
-            let pushControl = (c: ParameterControl) => {
+            let pushControl = (c: IParameterControl) => {
                 this.controls.push(c);
             };
 
@@ -153,7 +147,7 @@ export class MainView implements View {
     }
 
     makeEnvelopeKnobs(elemPrefix: string, gennum: number, target: Model.TargetTag) {
-        let pushControl = (c: ParameterControl) => {
+        let pushControl = (c: IParameterControl) => {
             this.controls.push(c);
         };
 
@@ -177,6 +171,10 @@ export class MainView implements View {
             {Generator: gennum, Param: Model.ParamTag.TAG_ENV_SL, Target: target}).then(pushControl);
         addKnob(GD(`${elemPrefix}_r1_l`),
             {Generator: gennum, Param: Model.ParamTag.TAG_ENV_RL1, Target: target}).then(pushControl);
+    }
+
+    node() : HTMLElement {
+        return <HTMLElement>GD("sidebands_view");
     }
 }
 

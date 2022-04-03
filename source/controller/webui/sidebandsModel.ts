@@ -55,36 +55,3 @@ export function ParamIDFor(tag: Tag): number {
     return pid(tag.Generator, tag.Param, tag.Target);
 }
 
-export interface IParameterInfo {
-    id: number;
-    title: string;
-    shortTitle: string;
-    stepCount: number;
-    flags: number;
-    defaultNormalizedValue: number;
-    units: number;
-}
-
-export interface IParameter {
-    normalized: number;
-    precision: number;
-    unitID: number;
-    info: IParameterInfo;
-    isRangeParameter: boolean;
-}
-
-export interface IRangeParameter extends IParameter {
-    min: number;
-    max: number;
-}
-
-export class ParameterHandle {
-    id: number;
-    param: IParameter;
-
-    constructor(id: number, param: IParameter) {
-        this.id = id;
-        this.param = param;
-    }
-}
-
