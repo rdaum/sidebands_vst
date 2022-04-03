@@ -20,29 +20,19 @@ interface KnobProperties {
 }
 
 class Knob {
-    _canvas: HTMLCanvasElement;
-    _div: HTMLDivElement;
-    _width: number;
-    _height: number;
-    _input: HTMLInputElement;
-    _inputDiv: HTMLDivElement;
-    _listeners: Array<ListenerFunction>
+    private readonly _listeners: Array<ListenerFunction>
+    private readonly _properties: KnobProperties;
+
+    private _previousVal: number;
+
     _mousebutton: boolean;
-    _previousVal: number;
     _timeout: any;
     _timeoutDoubleTap: any;
     _touchCount: number;
-    _properties: KnobProperties;
 
-    constructor(width: number, height: number,
-                canvas: HTMLCanvasElement, div: HTMLDivElement,
-                input: HTMLInputElement, inputDiv: HTMLDivElement) {
-        this._canvas = canvas;
-        this._div = div;
-        this._width = width;
-        this._height = height;
-        this._input = input;
-        this._inputDiv = inputDiv;
+    constructor(readonly _width: number, readonly _height: number,
+                readonly _canvas: HTMLCanvasElement, readonly _div: HTMLDivElement,
+                readonly _input: HTMLInputElement, readonly _inputDiv: HTMLDivElement) {
         this._listeners = [];
         this._mousebutton = false;
         this._previousVal = 0;
@@ -142,21 +132,21 @@ class Knob {
     /*
      * Return the bag of properties on this knob.
      */
-    getProperties(): KnobProperties {
+    get properties(): KnobProperties {
         return this._properties;
     }
 
     /*
      * Return the current value of the knob.
      */
-    getValue(): number {
+    get value(): number {
         return this._properties.val;
     }
 
     /*
      * Sets the value of this knob.
      */
-    setValue(value: number) {
+    set value(value: number) {
         this.setValueFloating(value);
         this.commit();
     }
@@ -482,7 +472,7 @@ export function createKnob(width: number, height: number) {
      * Show input element on double click.
      */
     const doubleClickListener = function (e: MouseEvent) {
-        const properties = knob._properties;
+        const properties = knob.properties;
         const readonly = properties.readonly;
 
         /*
@@ -509,7 +499,7 @@ export function createKnob(width: number, height: number) {
          * It is a left-click.
          */
         if (btn === 1) {
-            const properties = knob._properties;
+            const properties = knob.properties;
             const readonly = properties.readonly;
 
             /*
@@ -529,7 +519,7 @@ export function createKnob(width: number, height: number) {
          * It is a middle click.
          */
         if (btn === 4) {
-            const properties = knob._properties;
+            const properties = knob.properties;
             const readonly = properties.readonly;
 
             /*
@@ -558,7 +548,7 @@ export function createKnob(width: number, height: number) {
          * Only process event, if mouse button is depressed.
          */
         if (btn) {
-            const properties = knob._properties;
+            const properties = knob.properties;
             const readonly = properties.readonly;
 
             /*
@@ -585,7 +575,7 @@ export function createKnob(width: number, height: number) {
          * Only process event, if mouse button was depressed.
          */
         if (btn) {
-            const properties = knob._properties;
+            const properties = knob.properties;
             const readonly = properties.readonly;
 
             /*
@@ -595,7 +585,7 @@ export function createKnob(width: number, height: number) {
                 e.preventDefault();
                 const val = mouseEventToValue(e, properties)
                 if (val)
-                    knob.setValue(val);
+                    knob.value = val;
             }
 
         }
@@ -623,7 +613,7 @@ export function createKnob(width: number, height: number) {
      * This is called when a user touches the element.
      */
     const touchStartListener = function (e: TouchEvent) {
-        const properties = knob._properties;
+        const properties = knob.properties;
         const readonly = properties.readonly;
 
         /*
@@ -658,7 +648,7 @@ export function createKnob(width: number, height: number) {
                          * twice, enable on-screen keyboard.
                          */
                         if (knob._touchCount === 2) {
-                            const properties = knob._properties;
+                            const properties = knob.properties;
                             const readonly = properties.readonly;
 
                             /*
@@ -705,7 +695,7 @@ export function createKnob(width: number, height: number) {
          * Only process event, if mouse button is depressed.
          */
         if (btn) {
-            const properties = knob._properties;
+            const properties = knob.properties;
             const readonly = properties.readonly;
 
             /*
@@ -743,7 +733,7 @@ export function createKnob(width: number, height: number) {
          * Only process event, if mouse button was depressed.
          */
         if (btn) {
-            const properties = knob._properties;
+            const properties = knob.properties;
             const readonly = properties.readonly;
 
             /*
@@ -801,7 +791,7 @@ export function createKnob(width: number, height: number) {
      * This is called when the mouse wheel is moved.
      */
     const scrollListener = function (e: WheelEvent) {
-        const readonly = knob.getProperties().readonly;
+        const readonly = knob.properties.readonly;
 
         /*
          * If knob is not read only, process mouse wheel event.
@@ -810,7 +800,7 @@ export function createKnob(width: number, height: number) {
             e.preventDefault();
             const delta = e.deltaY;
             const direction = delta > 0 ? 1 : (delta < 0 ? -1 : 0);
-            let val = knob.getValue();
+            let val = knob.value;
             val += direction;
             knob.setValueFloating(val);
 
@@ -848,7 +838,7 @@ export function createKnob(width: number, height: number) {
              * Only evaluate value when user pressed enter.
              */
             if (k === 'Enter') {
-                const properties = knob._properties;
+                const properties = knob.properties;
                 const value = input.value;
                 const stringToValue = properties.fnStringToValue;
                 const val = stringToValue(value);
@@ -858,7 +848,7 @@ export function createKnob(width: number, height: number) {
                  * Check if input is a valid number.
                  */
                 if (valid) {
-                    knob.setValue(val);
+                    knob.value = val;
                 }
 
             }

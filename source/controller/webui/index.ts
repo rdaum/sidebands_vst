@@ -1,7 +1,18 @@
 import {createKnob} from './pureknob';
 import {MakeTab} from './templates';
+import * as Model from './sidebandsModel';
+import {IParameter} from "./sidebandsModel";
 
-function GD(id:string) : HTMLElement | null{
+// Exported EditController functions.
+export declare function beginEdit(tag: number): Promise<void>;
+export declare function performEdit(tag: number, value: number): Promise<void>;
+export declare function endEdit(tag: number): Promise<void>;
+export declare function setParamNormalized(tag: number, value: number): Promise<void>;
+export declare function getParameterObject(tag: number): Promise<IParameter>;
+export declare function getParameterObjects(tag: Array<number>): Promise<{ [key: number]: IParameter }>;
+
+// Shortcut.
+function GD(id: string): HTMLElement | null {
     const el = document.getElementById(id);
     if (!el) {
         console.log(`Unable to find: ${id}`);
@@ -9,109 +20,8 @@ function GD(id:string) : HTMLElement | null{
     return el;
 }
 
-enum ParamTag {
-    TAG_GENERATOR_SELECT,
-    TAG_GENERATOR_TOGGLE,
-    TAG_OSC,
-    TAG_ENV_HT,
-    TAG_ENV_AR,
-    TAG_ENV_AL,
-    TAG_ENV_DR1,
-    TAG_ENV_DL1,
-    TAG_ENV_DR2,
-    TAG_ENV_SL, // sustain
-    TAG_ENV_RR1,
-    TAG_ENV_RL1,
-    TAG_ENV_RR2,
-    TAG_ENV_VS,
-    TAG_LFO_FREQ,
-    TAG_LFO_AMP,
-    TAG_LFO_VS,
-    TAG_LFO_TYPE,
-    TAG_SELECTED_GENERATOR, // valid only with "0" for generator and TARGET_NA
-    TAG_MOD_TYPE,
-}
-
-enum TargetTag {
-    TARGET_NA,
-    TARGET_C,
-    TARGET_A,
-    TARGET_M,
-    TARGET_K,
-    TARGET_R,
-    TARGET_S,
-    TARGET_PORTAMENTO,
-    TARGET_OSC_TYPE,
-}
-
-interface Tag {
-    Generator: number;
-    Param: ParamTag;
-    Target: TargetTag;
-}
-
-function ParseTag(paramID: number): Tag {
-    let parsed = {
-        Generator: paramID >> 24,
-        Target: ((paramID & 0x00ffff00) >> 8),
-        Param: paramID & 0x000000ff,
-    };
-    return parsed;
-}
-
-function pid(g: number, p: ParamTag, t: TargetTag): number {
-    return (g << 24 | t << 8 | p);
-}
-
-function ParamIDFor(tag: Tag): number {
-    return pid(tag.Generator, tag.Param, tag.Target);
-}
-
-interface IParameterInfo {
-    id: number;
-    title: string;
-    shortTitle: string;
-    stepCount: number;
-    flags: number;
-    defaultNormalizedValue: number;
-    units: number;
-}
-
-interface IParameter {
-    normalized: number;
-    precision: number;
-    unitID: number;
-    info: IParameterInfo;
-}
-
-class ParameterHandle {
-    id: number;
-    param: IParameter;
-
-    constructor(id: number, param: IParameter) {
-        this.id = id;
-        this.param = param;
-    }
-}
-
-// Exported EditController functions.
-declare function beginEdit(tag: number): Promise<void>;
-
-declare function performEdit(tag: number, value: number): Promise<void>;
-
-declare function endEdit(tag: number): Promise<void>;
-
-declare function setParamNormalized(tag: number, value: number): Promise<void>;
-
-declare function getParameterObject(tag: number): Promise<IParameter>;
-
-declare function getParameterObjects(tag: Array<number>): Promise<{ [key: number]: IParameter }>;
-
 class BaseParameterControl<ElementType extends HTMLElement> {
-    pTag: Tag;
-    element: ElementType;
-
-    constructor(pTag: Tag, element :ElementType) {
+    constructor(readonly pTag: Model.Tag, readonly element: ElementType) {
         this.pTag = pTag;
         this.element = element;
     }
@@ -121,7 +31,7 @@ class BaseParameterControl<ElementType extends HTMLElement> {
     }
 
     setValue(val: number) {
-        let pid = ParamIDFor(this.pTag);
+        let pid = Model.ParamIDFor(this.pTag);
         beginEdit(pid).then(x => {
             setParamNormalized(pid, val).then(x => {
                 console.log("Set: ", this.pTag.Param, " ", this.pTag.Target);
@@ -138,7 +48,7 @@ class BaseParameterControl<ElementType extends HTMLElement> {
 }
 
 class Toggle extends BaseParameterControl<HTMLInputElement> {
-    constructor(pTag: Tag, toggle : HTMLInputElement) {
+    constructor(pTag: Model.Tag, toggle: HTMLInputElement) {
         toggle.addEventListener('change', () => {
             this.setValue(this.element.checked ? 1 : 0);
         })
@@ -147,15 +57,15 @@ class Toggle extends BaseParameterControl<HTMLInputElement> {
 }
 
 class ParameterKnob extends BaseParameterControl<HTMLElement> {
-    knobControl: any;
-    parameter: IParameter;
-    min: number;
-    max: number;
+    readonly knobControl: any;
+    readonly parameter: Model.IParameter;
+    readonly min: number;
+    readonly max: number;
 
-    constructor(tag: Tag, parameter: IParameter, min: number, max: number) {
+    constructor(tag: Model.Tag, parameter: Model.IParameter, min: number, max: number) {
         let knobControl = createKnob(48, 48);
-        let properties = knobControl.getProperties();
-        properties.angleStart =  -0.75 * Math.PI;
+        let properties = knobControl.properties;
+        properties.angleStart = -0.75 * Math.PI;
         properties.angleEnd = 0.75 * Math.PI;
         properties.colorFG = '#fb4400';
         properties.trackWidth = 0.4;
@@ -169,8 +79,7 @@ class ParameterKnob extends BaseParameterControl<HTMLElement> {
         this.min = min;
         this.max = max;
 
-
-        knobControl.setValue(this.normalizedToPlain(parameter.normalized));
+        knobControl.value = this.normalizedToPlain(parameter.normalized);
         knobControl.addListener(this.knobListener.bind(this));
     }
 
@@ -193,26 +102,25 @@ class ParameterKnob extends BaseParameterControl<HTMLElement> {
 }
 
 class GeneratorTab {
-    gennum: number;
-    element: HTMLElement;
-    toggle: Toggle;
+    readonly element: HTMLElement;
+    readonly toggle: Toggle;
 
-    constructor(gennum: number, parent : HTMLElement) {
+    constructor(readonly gennum: number, parent: HTMLElement) {
         this.gennum = gennum;
 
         const rootTabElement = MakeTab(gennum);
         const toggleInput = rootTabElement.querySelector(`#generator_${gennum}_toggle`);
         this.toggle = new Toggle({
             Generator: gennum,
-            Param: ParamTag.TAG_GENERATOR_TOGGLE,
-            Target: TargetTag.TARGET_NA
+            Param: Model.ParamTag.TAG_GENERATOR_TOGGLE,
+            Target: Model.TargetTag.TARGET_NA
         }, <HTMLInputElement>toggleInput);
 
         const knobElement = rootTabElement.querySelector(`#generator_${gennum}_level`);
         addKnob(knobElement, {
             Generator: gennum,
-            Param: ParamTag.TAG_OSC,
-            Target: TargetTag.TARGET_A
+            Param: Model.ParamTag.TAG_OSC,
+            Target: Model.TargetTag.TARGET_A
         })
 
         rootTabElement.addEventListener("click", () => {
@@ -251,22 +159,22 @@ class GeneratorTab {
     }
 }
 
-function buildKnob(elem: Element, tag: Tag, param: IParameter) {
+function buildKnob(elem: Element, tag: Model.Tag, param: Model.IParameter) {
     const knob = new ParameterKnob(tag, param, 0, 10);
     const node = knob.node();
     elem.appendChild(node);
     return knob;
 }
 
-function addKnob(elem: Element | null, tag: Tag) {
-    return new Promise<ParameterKnob>( (resolve) => {
-        getParameterObject(ParamIDFor(tag)).then((param) => {
+function addKnob(elem: Element | null, tag: Model.Tag) {
+    return new Promise<ParameterKnob>((resolve) => {
+        getParameterObject(Model.ParamIDFor(tag)).then((param) => {
             resolve(buildKnob(<HTMLElement>elem, tag, param));
         })
     });
 }
 
-function addTab(parent: HTMLElement | null, gennum: number) : GeneratorTab | null {
+function addTab(parent: HTMLElement | null, gennum: number): GeneratorTab | null {
     if (!parent) return null;
 
     let tab = new GeneratorTab(gennum, parent);
@@ -274,34 +182,34 @@ function addTab(parent: HTMLElement | null, gennum: number) : GeneratorTab | nul
     return tab;
 }
 
-function makeEnvelopeKnobs(elemPrefix: string, target: TargetTag) {
+function makeEnvelopeKnobs(elemPrefix: string, target: Model.TargetTag) {
     addKnob(GD(`${elemPrefix}_hold_time`),
-        {Generator: 0, Param: ParamTag.TAG_ENV_HT, Target: target});
+        {Generator: 0, Param: Model.ParamTag.TAG_ENV_HT, Target: target});
     addKnob(GD(`${elemPrefix}_attack`),
-        {Generator: 0, Param: ParamTag.TAG_ENV_AR, Target: target});
+        {Generator: 0, Param: Model.ParamTag.TAG_ENV_AR, Target: target});
     addKnob(GD(`${elemPrefix}_d1_r`),
-        {Generator: 0, Param: ParamTag.TAG_ENV_DR1, Target: target});
+        {Generator: 0, Param: Model.ParamTag.TAG_ENV_DR1, Target: target});
     addKnob(GD(`${elemPrefix}_d2_r`),
-        {Generator: 0, Param: ParamTag.TAG_ENV_DR2, Target: target});
+        {Generator: 0, Param: Model.ParamTag.TAG_ENV_DR2, Target: target});
     addKnob(GD(`${elemPrefix}_r1_r`),
-        {Generator: 0, Param: ParamTag.TAG_ENV_RR1, Target: target});
+        {Generator: 0, Param: Model.ParamTag.TAG_ENV_RR1, Target: target});
     addKnob(GD(`${elemPrefix}_r2_r`),
-        {Generator: 0, Param: ParamTag.TAG_ENV_RR2, Target: target});
+        {Generator: 0, Param: Model.ParamTag.TAG_ENV_RR2, Target: target});
     addKnob(GD(`${elemPrefix}_attack_level`),
-        {Generator: 0, Param: ParamTag.TAG_ENV_AL, Target: target});
+        {Generator: 0, Param: Model.ParamTag.TAG_ENV_AL, Target: target});
     addKnob(GD(`${elemPrefix}_d1_l`),
-        {Generator: 0, Param: ParamTag.TAG_ENV_DL1, Target: target});
+        {Generator: 0, Param: Model.ParamTag.TAG_ENV_DL1, Target: target});
     addKnob(GD(`${elemPrefix}_s_l`),
-        {Generator: 0, Param: ParamTag.TAG_ENV_SL, Target: target});
+        {Generator: 0, Param: Model.ParamTag.TAG_ENV_SL, Target: target});
     addKnob(GD(`${elemPrefix}_r1_l`),
-        {Generator: 0, Param: ParamTag.TAG_ENV_RL1, Target: target});
+        {Generator: 0, Param: Model.ParamTag.TAG_ENV_RL1, Target: target});
 }
 
 export function ready() {
     console.log("Awoken.");
 
     const selector_area = GD('generator_selector');
-    let generators : Array<GeneratorTab> = [];
+    let generators: Array<GeneratorTab> = [];
     for (let x = 0; x < 12; x++) {
         let tab = addTab(selector_area, x);
         if (tab)
@@ -310,15 +218,15 @@ export function ready() {
     generators[0].select();
 
     addKnob(GD('carrier_ratio'),
-        {Generator: 0, Param: ParamTag.TAG_OSC, Target: TargetTag.TARGET_C});
+        {Generator: 0, Param: Model.ParamTag.TAG_OSC, Target: Model.TargetTag.TARGET_C});
 
     addKnob(GD('modulation_ratio'),
-        {Generator: 0, Param: ParamTag.TAG_OSC, Target: TargetTag.TARGET_M});
+        {Generator: 0, Param: Model.ParamTag.TAG_OSC, Target: Model.TargetTag.TARGET_M});
     addKnob(GD('modulation_index'),
-        {Generator: 0, Param: ParamTag.TAG_OSC, Target: TargetTag.TARGET_K});
+        {Generator: 0, Param: Model.ParamTag.TAG_OSC, Target: Model.TargetTag.TARGET_K});
 
-    makeEnvelopeKnobs('a', TargetTag.TARGET_A);
-    makeEnvelopeKnobs('k', TargetTag.TARGET_K);
+    makeEnvelopeKnobs('a', Model.TargetTag.TARGET_A);
+    makeEnvelopeKnobs('k', Model.TargetTag.TARGET_K);
 
     console.log("Done");
 }
