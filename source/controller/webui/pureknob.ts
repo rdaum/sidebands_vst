@@ -1,40 +1,42 @@
-type ListenerFunction = (self: Knob, val : number) => void;
+type ListenerFunction = (self: Knob, val: number) => void;
 
 interface KnobProperties {
-    angleEnd : number,
+    angleEnd: number,
     angleOffset: number,
     angleStart: number,
     colorBG: string,
     colorFG: string,
     colorLabel: string,
-    fnStringToValue : (str : string) => number,
-    fnValueToString : (val : number) => string,
-    label : string|null,
+    fnStringToValue: (str: string) => number,
+    fnValueToString: (val: number) => string,
+    label: string | null,
     needle: boolean,
-    readonly : false,
-    textScale : number,
-    trackWidth : number,
+    readonly: false,
+    textScale: number,
+    trackWidth: number,
     valMin: number,
-    valMax : number,
-    val : number;
+    valMax: number,
+    val: number;
 }
 
 class Knob {
-    _canvas : HTMLCanvasElement;
-    _div : HTMLDivElement;
-    _width : number;
-    _height : number;
-    _input :HTMLInputElement;
+    _canvas: HTMLCanvasElement;
+    _div: HTMLDivElement;
+    _width: number;
+    _height: number;
+    _input: HTMLInputElement;
     _inputDiv: HTMLDivElement;
-    _listeners : Array<ListenerFunction>
-    _mousebutton : boolean;
-    _previousVal : number;
-    _timeout : any;
-    _timeoutDoubleTap : any;
-    _touchCount : number;
-    _properties : KnobProperties;
+    _listeners: Array<ListenerFunction>
+    _mousebutton: boolean;
+    _previousVal: number;
+    _timeout: any;
+    _timeoutDoubleTap: any;
+    _touchCount: number;
+    _properties: KnobProperties;
 
-    constructor(width : number, height : number, canvas : HTMLCanvasElement, div : HTMLDivElement, input : HTMLInputElement, inputDiv : HTMLDivElement) {
+    constructor(width: number, height: number,
+                canvas: HTMLCanvasElement, div: HTMLDivElement,
+                input: HTMLInputElement, inputDiv: HTMLDivElement) {
         this._canvas = canvas;
         this._div = div;
         this._width = width;
@@ -49,39 +51,38 @@ class Knob {
         this._touchCount = 0;
 
         /*
-         * Properties of this knob.
+         * Default properties of this knob.
          */
         this._properties = {
-            'angleEnd': 2.0 * Math.PI,
-            'angleOffset': -0.5 * Math.PI,
-            'angleStart': 0,
-            'colorBG': '#181818',
-            'colorFG': '#ff8800',
-            'colorLabel': '#ffffff',
-            'fnStringToValue': function (str : string) {
+            angleEnd: 2.0 * Math.PI,
+            angleOffset: -0.5 * Math.PI,
+            angleStart: 0,
+            colorBG: '#181818',
+            colorFG: '#ff8800',
+            colorLabel: '#ffffff',
+            fnStringToValue: function (str: string) {
                 return parseInt(str);
             },
-            'fnValueToString': function (value : any) {
+            fnValueToString: function (value: any) {
                 return value.toString();
             },
-            'label': null,
-            'needle': false,
-            'readonly': false,
-            'textScale': 1.0,
-            'trackWidth': 0.4,
-            'valMin': 0,
-            'valMax': 100,
-            'val': 0
+            label: null,
+            needle: false,
+            readonly: false,
+            textScale: 1.0,
+            trackWidth: 0.4,
+            valMin: 0,
+            valMax: 100,
+            val: 0
         };
     }
 
-
     /*
-   * Notify listeners about value changes.
-   */
+     * Notify listeners about value changes.
+     */
     _notifyUpdate() {
         const properties = this._properties;
-        const value : number = <number>properties["val"];
+        const value: number = <number>properties["val"];
         const listeners = this._listeners;
         const numListeners = listeners.length;
 
@@ -102,8 +103,8 @@ class Knob {
     }
 
     /*
-    * Abort value change, restoring the previous value.
-    */
+     * Abort value change, restoring the previous value.
+     */
     abort() {
         const previousValue = this._previousVal;
         const properties = this._properties;
@@ -114,7 +115,7 @@ class Knob {
     /*
      * Adds an event listener.
      */
-    addListener(listener : ListenerFunction) {
+    addListener(listener: ListenerFunction) {
         const listeners = this._listeners;
         listeners.push(listener);
     }
@@ -138,8 +139,47 @@ class Knob {
         return div;
     }
 
-    getProperties() : KnobProperties {
+    /*
+     * Return the bag of properties on this knob.
+     */
+    getProperties(): KnobProperties {
         return this._properties;
+    }
+
+    /*
+     * Return the current value of the knob.
+     */
+    getValue(): number {
+        return this._properties.val;
+    }
+
+    /*
+     * Sets the value of this knob.
+     */
+    setValue(value: number) {
+        this.setValueFloating(value);
+        this.commit();
+    }
+
+    /*
+     * Sets floating (temporary) value of this knob.
+     */
+    setValueFloating(value: number) {
+        const properties = this._properties;
+        const valMin = properties.valMin;
+        const valMax = properties.valMax;
+
+        /*
+         * Clamp the actual value into the [valMin; valMax] range.
+         */
+        if (value < valMin) {
+            value = valMin;
+        } else if (value > valMax) {
+            value = valMax;
+        }
+
+        value = Math.round(value);
+        this._properties.val = value;
     }
 
     /*
@@ -263,46 +303,12 @@ class Knob {
         ctx.scale(scale, scale);
     }
 
-
-
-    getValue() : number {
-        return this._properties.val;
-    }
-
-    /*
-     * Sets the value of this knob.
-     */
-    setValue(value : number) {
-        this.setValueFloating(value);
-        this.commit();
-    }
-
-    /*
-     * Sets floating (temporary) value of this knob.
-     */
-    setValueFloating(value : number) {
-        const properties = this._properties;
-        const valMin = properties.valMin;
-        const valMax = properties.valMax;
-
-        /*
-         * Clamp the actual value into the [valMin; valMax] range.
-         */
-        if (value < valMin) {
-            value = valMin;
-        } else if (value > valMax) {
-            value = valMax;
-        }
-
-        value = Math.round(value);
-        this._properties.val = value;
-    }
 }
 
 /*
  * Creates a knob element.
  */
-export function createKnob(width : number, height : number) {
+export function createKnob(width: number, height: number) {
     const heightString = height.toString();
     const widthString = width.toString();
     const smaller = width < height ? width : height;
@@ -351,7 +357,7 @@ export function createKnob(width : number, height : number) {
     /*
      * Convert mouse event to value.
      */
-    const mouseEventToValue = function (e : MouseEvent, properties : KnobProperties) {
+    const mouseEventToValue = function (e: MouseEvent, properties: KnobProperties) {
         if (!e.target) return;
         const canvas = <HTMLCanvasElement>e.target;
 
@@ -401,7 +407,7 @@ export function createKnob(width : number, height : number) {
     /*
      * Convert touch event to value.
      */
-    const touchEventToValue = function (e : TouchEvent, properties : KnobProperties) {
+    const touchEventToValue = function (e: TouchEvent, properties: KnobProperties) {
         const canvas = <HTMLCanvasElement>e.target;
         if (!canvas) return;
         const rect = canvas.getBoundingClientRect();
@@ -475,7 +481,7 @@ export function createKnob(width : number, height : number) {
     /*
      * Show input element on double click.
      */
-    const doubleClickListener = function (e : MouseEvent) {
+    const doubleClickListener = function (e: MouseEvent) {
         const properties = knob._properties;
         const readonly = properties.readonly;
 
@@ -496,7 +502,7 @@ export function createKnob(width : number, height : number) {
     /*
      * This is called when the mouse button is depressed.
      */
-    const mouseDownListener = function (e : MouseEvent) {
+    const mouseDownListener = function (e: MouseEvent) {
         const btn = e.buttons;
 
         /*
@@ -513,7 +519,7 @@ export function createKnob(width : number, height : number) {
                 e.preventDefault();
                 const val = mouseEventToValue(e, properties);
                 if (val)
-                 knob.setValueFloating(val);
+                    knob.setValueFloating(val);
             }
 
             knob._mousebutton = true;
@@ -545,7 +551,7 @@ export function createKnob(width : number, height : number) {
     /*
      * This is called when the mouse cursor is moved.
      */
-    const mouseMoveListener = function (e : MouseEvent) {
+    const mouseMoveListener = function (e: MouseEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -572,7 +578,7 @@ export function createKnob(width : number, height : number) {
     /*
      * This is called when the mouse button is released.
      */
-    const mouseUpListener = function (e : MouseEvent) {
+    const mouseUpListener = function (e: MouseEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -600,7 +606,7 @@ export function createKnob(width : number, height : number) {
     /*
      * This is called when the drag action is canceled.
      */
-    const mouseCancelListener = function (e : MouseEvent) {
+    const mouseCancelListener = function (e: MouseEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -616,7 +622,7 @@ export function createKnob(width : number, height : number) {
     /*
      * This is called when a user touches the element.
      */
-    const touchStartListener = function (e : TouchEvent) {
+    const touchStartListener = function (e: TouchEvent) {
         const properties = knob._properties;
         const readonly = properties.readonly;
 
@@ -692,7 +698,7 @@ export function createKnob(width : number, height : number) {
     /*
      * This is called when a user moves a finger on the element.
      */
-    var touchMoveListener = function (e : TouchEvent) {
+    var touchMoveListener = function (e: TouchEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -730,7 +736,7 @@ export function createKnob(width : number, height : number) {
     /*
      * This is called when a user lifts a finger off the element.
      */
-    const touchEndListener = function (e : TouchEvent) {
+    const touchEndListener = function (e: TouchEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -768,7 +774,7 @@ export function createKnob(width : number, height : number) {
     /*
      * This is called when a user cancels a touch action.
      */
-    const touchCancelListener = function (e : TouchEvent) {
+    const touchCancelListener = function (e: TouchEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -787,14 +793,14 @@ export function createKnob(width : number, height : number) {
     /*
      * This is called when the size of the canvas changes.
      */
-    const resizeListener = function (e : Event) {
+    const resizeListener = function (e: Event) {
         knob.redraw();
     };
 
     /*
      * This is called when the mouse wheel is moved.
      */
-    const scrollListener = function (e : WheelEvent) {
+    const scrollListener = function (e: WheelEvent) {
         const readonly = knob.getProperties().readonly;
 
         /*
@@ -826,7 +832,7 @@ export function createKnob(width : number, height : number) {
     /*
      * This is called when the user presses a key on the keyboard.
      */
-    const keyDownListener = function (e : KeyboardEvent) {
+    const keyDownListener = function (e: KeyboardEvent) {
         const k = e.key;
 
         /*
