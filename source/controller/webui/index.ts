@@ -1,4 +1,4 @@
-import {MainView} from './views';
+import {MainView} from './view/main_view';
 
 export function ready() {
     console.log("Awoken.");

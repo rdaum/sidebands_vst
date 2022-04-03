@@ -1,7 +1,6 @@
-import * as SidebandsModel from './sidebandsModel';
-import * as VstModel from "./vstModel";
+import * as SidebandsModel from '../model/sidebands_model';
+import * as VstModel from "../model/vst_model";
 import {createKnob} from "./pureknob";
-import {ParamTag} from "./sidebandsModel";
 
 export interface IParameterControl {
     pTag: SidebandsModel.Tag;

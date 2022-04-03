@@ -5,7 +5,7 @@
 namespace sidebands {
 
 // The number of generators to configure.
-constexpr int32_t kNumGenerators = 12;
+constexpr int32_t kNumGenerators = 8;
 
 constexpr int kNumVoices = 8;  // Must be power of 2.
 

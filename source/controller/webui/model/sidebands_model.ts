@@ -1,3 +1,5 @@
+export const kNumGenerators = 8;
+
 export enum ParamTag {
     TAG_GENERATOR_SELECT,
     TAG_GENERATOR_TOGGLE,
