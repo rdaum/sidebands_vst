@@ -1,5 +1,5 @@
 import {createKnob} from './pureknob.js';
-
+import {MakeTab} from './templates';
 
 function GD(id:string) : HTMLElement | null{
     const el = document.getElementById(id);
@@ -138,16 +138,10 @@ class BaseParameterControl<ElementType extends HTMLElement> {
 }
 
 class Toggle extends BaseParameterControl<HTMLInputElement> {
-    constructor(pTag: Tag) {
-        let gennum = pTag.Generator;
-        const toggle = document.createElement('input');
-        toggle.setAttribute('type', 'checkbox');
-        toggle.setAttribute('name', `selected_generator_${gennum}`);
-        toggle.setAttribute('id', `generator_${gennum}_toggle`);
+    constructor(pTag: Tag, toggle : HTMLInputElement) {
         toggle.addEventListener('change', () => {
             this.setValue(this.element.checked ? 1 : 0);
         })
-
         super(pTag, toggle);
     }
 }
@@ -199,57 +193,40 @@ class ParameterKnob extends BaseParameterControl<HTMLElement> {
 class GeneratorTab {
     gennum: number;
     element: HTMLElement;
+    toggle: Toggle;
 
-    constructor(gennum: number) {
+    constructor(gennum: number, parent : HTMLElement) {
         this.gennum = gennum;
 
-        const root = document.createElement("span");
-        root.classList.add('tabs-span');
-        root.classList.add('tab-inactive');
-        root.setAttribute('selected', 'false');
-        root.id = `generator_${gennum}`;
-
-        const labelDiv = document.createElement('div');
-        labelDiv.classList.add('tabs-label-div');
-        root.appendChild(labelDiv);
-
-        const label = document.createElement('label');
-        label.classList.add('tabs-label')
-        label.innerText = `#${gennum + 1}`;
-        labelDiv.appendChild(label);
-
-        const toggle = new Toggle({
+        const rootTabElement = MakeTab(gennum);
+        const toggleInput = rootTabElement.querySelector(`#generator_${gennum}_toggle`);
+        this.toggle = new Toggle({
             Generator: gennum,
             Param: ParamTag.TAG_GENERATOR_TOGGLE,
             Target: TargetTag.TARGET_NA
-        });
-        toggle.node().classList.add('label-toggle');
-        labelDiv.appendChild(toggle.node());
+        }, <HTMLInputElement>toggleInput);
 
-        const knob = document.createElement('div');
-        knob.id= `generator_${gennum}_level`;
-        root.appendChild(knob);
-
-        addKnob(knob, {
+        const knobElement = rootTabElement.querySelector(`#generator_${gennum}_level`);
+        addKnob(knobElement, {
             Generator: gennum,
             Param: ParamTag.TAG_OSC,
             Target: TargetTag.TARGET_A
-        });
+        })
 
-        root.setAttribute("selected", "false");
-        root.addEventListener("click", () => {
+        rootTabElement.addEventListener("click", () => {
             this.select();
         })
-        this.element = root;
+        this.element = rootTabElement;
+        parent.appendChild(this.element);
     }
 
     select() {
         let element = this.element;
 
-        const selected = element.getAttribute("selected");
+        const selected = element.getAttribute('is-selected');
         if (selected != "false") return;
 
-        element.setAttribute('selected', 'true');
+        element.setAttribute('is-selected', 'true');
         element.classList.replace('tab-inactive', 'tab-active');
 
         let parent = element.parentNode;
@@ -258,11 +235,11 @@ class GeneratorTab {
             if (tabSpan == element) {
                 continue;
             }
-            const childSelected = tabSpan.getAttribute("selected");
+            const childSelected = tabSpan.getAttribute('is-selected');
             if (childSelected == "false") {
                 continue;
             }
-            tabSpan.setAttribute("selected", "false");
+            tabSpan.setAttribute('is-selected', "false");
             tabSpan.classList.replace('tab-active', 'tab-inactive');
         }
     }
@@ -272,24 +249,25 @@ class GeneratorTab {
     }
 }
 
-function buildKnob(elem: HTMLElement, tag: Tag, param: IParameter) {
+function buildKnob(elem: Element, tag: Tag, param: IParameter) {
     const knob = new ParameterKnob(tag, param, 0, 10);
     const node = knob.node();
     elem.appendChild(node);
+    return knob;
 }
 
-function addKnob(elem: HTMLElement | null, tag: Tag) {
-    if (!elem) return;
-    getParameterObject(ParamIDFor(tag)).then((param) => {
-        buildKnob(elem, tag, param);
-    })
+function addKnob(elem: Element | null, tag: Tag) {
+    return new Promise<ParameterKnob>( (resolve) => {
+        getParameterObject(ParamIDFor(tag)).then((param) => {
+            resolve(buildKnob(<HTMLElement>elem, tag, param));
+        })
+    });
 }
 
 function addTab(parent: HTMLElement | null, gennum: number) : GeneratorTab | null {
     if (!parent) return null;
 
-    let tab = new GeneratorTab(gennum);
-    parent.appendChild(tab.node());
+    let tab = new GeneratorTab(gennum, parent);
 
     return tab;
 }

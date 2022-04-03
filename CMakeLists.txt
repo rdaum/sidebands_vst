@@ -177,19 +177,27 @@ if (WIN32)
     target_link_libraries(sidebands PRIVATE WIL::WIL Dwmapi Shlwapi)
 endif()
 
-add_custom_target(typescript
-        COMMAND tsc --module es6 --outDir ${CMAKE_CURRENT_BINARY_DIR}
-        SOURCES source/controller/webui/index.ts
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui
-)
+add_custom_target(typed-html-install COMMAND npm install --saved typed-html)
+#add_custom_target(typescript-compile
+#        COMMAND tsc --module es6 --outDir ${CMAKE_CURRENT_BINARY_DIR}
+#        SOURCES source/controller/webui/index.ts source/controller/webui/templates.tsx
+#        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui
+#)
+#add_dependencies(typescript-compile typed-html-install)
 
-add_dependencies(sidebands typescript)
+add_custom_target(webpack-install COMMAND npm install --saved-dev webpack webpack-cli)
+add_custom_target(ts-install COMMAND npm install --saved-dev typescript ts-loader ts-node)
+add_custom_target(perform-webpack
+        COMMAND npx webpack --config ${CMAKE_SOURCE_DIR}/source/controller/webui/webpack.config.js --env outdir=${CMAKE_BINARY_DIR}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui)
+add_dependencies(perform-webpack webpack-install ts-install typed-html-install)
+add_dependencies(sidebands perform-webpack)
+
 smtg_target_add_plugin_resource(sidebands source/controller/webui/index.html)
-smtg_target_add_plugin_resource(sidebands source/controller/webui/pureknob.js)
 smtg_target_add_plugin_resource(sidebands source/controller/webui/style.css)
 smtg_target_add_plugin_resource(sidebands resource/MetalSwitchOff.png)
 smtg_target_add_plugin_resource(sidebands resource/MetalSwitchOn.png)
-smtg_target_add_plugin_resource(sidebands ${CMAKE_CURRENT_BINARY_DIR}/index.js)
+smtg_target_add_plugin_resource(sidebands ${CMAKE_CURRENT_BINARY_DIR}/dist/main.js)
 
 smtg_target_add_plugin_snapshots(sidebands
         RESOURCES
