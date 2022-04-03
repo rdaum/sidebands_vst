@@ -107,6 +107,7 @@ export class MainView implements View {
         for (let x = 0; x < 12; x++) {
             let tab = addTab(selector_area, x, (selected: number) => {
                 VstModel.controller.selectUnit(selected);
+                this.updateSelectedGenerator(selected);
             });
             if (tab) {
                 generators.push(tab);
@@ -171,6 +172,12 @@ export class MainView implements View {
             {Generator: gennum, Param: Model.ParamTag.TAG_ENV_SL, Target: target}).then(pushControl);
         addKnob(GD(`${elemPrefix}_r1_l`),
             {Generator: gennum, Param: Model.ParamTag.TAG_ENV_RL1, Target: target}).then(pushControl);
+    }
+
+    updateSelectedGenerator(gennum : number) {
+        for (let control of this.controls) {
+            control.updateCurrentGenerator(gennum);
+        }
     }
 
     node() : HTMLElement {

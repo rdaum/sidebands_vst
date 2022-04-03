@@ -39,12 +39,11 @@ export interface Tag {
 }
 
 export function ParseTag(paramID: number): Tag {
-    let parsed = {
+    return {
         Generator: paramID >> 24,
         Target: ((paramID & 0x00ffff00) >> 8),
         Param: paramID & 0x000000ff,
     };
-    return parsed;
 }
 
 export function pid(g: number, p: ParamTag, t: TargetTag): number {

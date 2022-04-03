@@ -1,16 +1,20 @@
 import * as SidebandsModel from './sidebandsModel';
 import * as VstModel from "./vstModel";
 import {createKnob} from "./pureknob";
-import {MakeTab} from "./templates";
-
-// Exported EditController functions.
+import {ParamTag} from "./sidebandsModel";
 
 export interface IParameterControl {
-    readonly pTag: SidebandsModel.Tag;
+    pTag: SidebandsModel.Tag;
+
+    updateCurrentGenerator(gennum: number): void;
+    refresh() : void;
 }
 
-export class ParameterControl implements IParameterControl {
-    constructor(readonly pTag : SidebandsModel.Tag) {}
+abstract class ParameterControl implements IParameterControl {
+    pTag : SidebandsModel.Tag;
+    constructor(pTag : SidebandsModel.Tag) {
+        this.pTag = pTag;
+    }
 
     setValue(val: number) {
         let pid = SidebandsModel.ParamIDFor(this.pTag);
@@ -23,9 +27,16 @@ export class ParameterControl implements IParameterControl {
             })
         })
     }
+
+    updateCurrentGenerator(gennum: number): void {
+        this.pTag.Generator = gennum;
+        this.refresh();
+    }
+
+    abstract refresh() : void;
 }
 
-class BaseParameterControlView<ElementType extends HTMLElement> extends ParameterControl {
+abstract class BaseParameterControlView<ElementType extends HTMLElement> extends ParameterControl {
     constructor(readonly pTag: SidebandsModel.Tag, readonly element: ElementType) {
         super(pTag);
         this.element = element;
@@ -42,6 +53,12 @@ export class Toggle extends BaseParameterControlView<HTMLInputElement> {
             this.setValue(this.element.checked ? 1 : 0);
         })
         super(pTag, toggle);
+    }
+
+    refresh() {
+        VstModel.controller.getParameterObject(SidebandsModel.ParamIDFor(this.pTag)).then( (p) => {
+            this.element.checked = p.normalized == 1;
+        });
     }
 }
 
@@ -66,6 +83,13 @@ export class ParameterKnob extends BaseParameterControlView<HTMLElement> {
 
         knobView.value = this.normalizedToPlain(parameter.normalized);
         knobView.addListener(this.knobListener.bind(this));
+    }
+
+
+    refresh() {
+        VstModel.controller.getParameterObject(SidebandsModel.ParamIDFor(this.pTag)).then( (p) => {
+            this.knobView.value = this.normalizedToPlain(p.normalized);
+        });
     }
 
     normalizedToPlain(normalized: number): number {
