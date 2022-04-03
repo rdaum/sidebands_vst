@@ -11,16 +11,15 @@
         }
 
         :root {
-        <!-- color scheme --> --cultured: #f5f5f5ff;
+            --cultured: #f5f5f5ff;
             --silver: #c2c2c2ff;
             --silver-chalice: #aeaeaeff;
             --spanish-gray: #999999ff;
             --red-orange-color-wheel: #fb4400ff;
-            --raisin-black: #2a2828ff;
+            --raisin-black: #2b2929;
             --eerie-black: #141414ff;
 
-
-        <!-- assignments --> --foreground: var(--raisin-black);
+            --foreground: var(--raisin-black);
             --inactive: var(--silver-chalice);
             --active: var(--spanish-gray);
             --editor-region: var(--raisin-black);
@@ -30,8 +29,7 @@
 
         body {
             font-family: 'TorontoSubwayW01-Regular';
-            background: rgb(254, 254, 254);
-            background: linear-gradient(90deg, hsla(0, 0%, 96%, 1) 0%, hsla(0, 0%, 76%, 1) 48%);
+            background: linear-gradient(90deg, var(--cultured) 0%, var(--silver) 75%);
             color: #e1eef4ff;
             margin-right: 32px;
         }
@@ -85,7 +83,6 @@
         .tab-inactive {
             height: 32px;
             align-self: flex-end;
-
         }
 
         .tabs span:hover {
@@ -103,7 +100,6 @@
 
         .editor-panel {
             box-shadow: 7px 7px 4px -3px var(--editor-region);
-            color: #e1eef4ff;
             background-color: var(--editor-region);
             padding: 5px;
             margin: 5px;
