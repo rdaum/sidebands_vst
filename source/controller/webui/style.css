@@ -206,3 +206,11 @@ h3 {
     width: 400px;
     height: 200px;
 }
+
+.graphical-env-container {
+    margin: 5px;
+    border-radius: 5px;
+    background: #afe9dd;
+    box-shadow: inset 5px 5px 8px #526e68,
+    inset -5px -5px 8px #ffffff;
+}

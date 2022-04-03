@@ -1,6 +1,12 @@
 import * as elements from 'typed-html';
 import {Attributes, CustomElementHandler} from "typed-html"
 
+function MakeElement<T extends HTMLElement>(html : string) : HTMLElement {
+    let t = document.createElement('template');
+    t.insertAdjacentHTML("afterbegin", html);
+    return t.firstChild as HTMLElement;
+}
+
 function Tab(attributes : Attributes, contents: string[]) {
     let gennum_str = attributes['generator-number'];
     let gennum = parseInt(gennum_str.toString());
@@ -12,6 +18,10 @@ function Tab(attributes : Attributes, contents: string[]) {
         <div id={`generator_${gennum}_level`}>
         </div>
     </span>;
+}
+
+export function MakeTab(gennum : number) : HTMLElement {
+    return MakeElement(<Tab generator-number={gennum}></Tab>);
 }
 
 function EnvelopeKnobs(attributes : Attributes, contents: string[]) {
@@ -63,16 +73,17 @@ function EnvelopeKnobs(attributes : Attributes, contents: string[]) {
     </div>;
 }
 
-function MakeElement<T extends HTMLElement>(html : string) : HTMLElement {
-    let t = document.createElement('template');
-    t.insertAdjacentHTML("afterbegin", html);
-    return t.firstChild as HTMLElement;
-}
-
-export function MakeTab(gennum : number) : HTMLElement {
-    return MakeElement(<Tab generator-number={gennum}></Tab>);
-}
-
 export function MakeEnvelopeEditor(targetPrefix : string) {
     return MakeElement(<EnvelopeKnobs target-prefix={targetPrefix}/>);
+}
+
+function GraphicalEnvelope(attributes : Attributes, contents: string[]) {
+    let target_str = attributes['target-prefix'];
+    return <div id={target_str + "-graph-env"} class="graphical-env-container">
+        <canvas id={target_str + "-graph-env-canvas"}></canvas>
+    </div>;
+}
+
+export function MakeGraphicalEnvelopeEditor(targetPrefix : string) {
+    return MakeElement(<GraphicalEnvelope target-prefix={targetPrefix}/>);
 }

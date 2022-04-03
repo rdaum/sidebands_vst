@@ -21,6 +21,11 @@ export interface IRangeParameter extends IParameter {
     max: number;
 }
 
+export function ValueOf(rp : IRangeParameter | null) : number {
+    if (!rp) return 0;
+    return rp.min + rp.normalized * (rp.max - rp.min);
+}
+
 export declare function beginEdit(tag: number): Promise<void>;
 
 export declare function performEdit(tag: number, value: number): Promise<void>;

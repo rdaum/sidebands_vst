@@ -56,15 +56,26 @@ export class MainView implements View {
 
             let a_env_area = GD("a_env_area");
             if (a_env_area)
-                this.subViews.push(new Env.EnvelopeEditorKnobView(<HTMLDivElement>a_env_area, selectedUnit, Model.TargetTag.TARGET_A));
+                this.subViews.push(
+                    new Env.EnvelopeEditorKnobView(<HTMLDivElement>a_env_area, selectedUnit, Model.TargetTag.TARGET_A));
             let k_env_area = GD("k_env_area");
             if (k_env_area)
-                this.subViews.push(new Env.EnvelopeEditorKnobView(<HTMLDivElement>k_env_area, selectedUnit, Model.TargetTag.TARGET_K));
+                this.subViews.push(
+                    new Env.EnvelopeEditorKnobView(<HTMLDivElement>k_env_area, selectedUnit, Model.TargetTag.TARGET_K));
+            let a_env_graph_area = GD("a_env-graphical");
+            if (a_env_graph_area)
+                this.subViews.push(
+                    new Env.GraphicalEnvelopeEditorView(<HTMLDivElement>a_env_graph_area, selectedUnit, Model.TargetTag.TARGET_A));
+            let k_env_graph_area = GD("k_env-graphical");
+            if (k_env_graph_area)
+                this.subViews.push(
+                    new Env.GraphicalEnvelopeEditorView(<HTMLDivElement>k_env_graph_area, selectedUnit, Model.TargetTag.TARGET_K));
+
         })
 
     }
 
-    updateSelectedGenerator(gennum : number) {
+    updateSelectedGenerator(gennum: number) {
         for (let control of this.controls) {
             control.updateSelectedGenerator(gennum);
         }
@@ -73,7 +84,7 @@ export class MainView implements View {
         }
     }
 
-    node() : HTMLElement {
+    node(): HTMLElement {
         return <HTMLElement>GD("sidebands_view");
     }
 }
