@@ -1,8 +1,6 @@
 const path = require('path');
 
 module.exports = (env) => {
-    console.log("HELLO WORLD: ", env.outdir);
-
     return {
         entry: './index.ts',
         optimization: {

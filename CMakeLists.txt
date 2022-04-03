@@ -149,7 +149,7 @@ smtg_add_vst3plugin(sidebands
         source/controller/webview_pluginview.cc
 
         source/controller/webui/index.ts
-        source/controller/webui/pureknob.js
+        source/controller/webui/pureknob.ts
         source/controller/webui/style.css
         source/controller/webui/index.html
         )

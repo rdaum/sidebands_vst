@@ -1,4 +1,4 @@
-import {createKnob} from './pureknob.js';
+import {createKnob} from './pureknob';
 import {MakeTab} from './templates';
 
 function GD(id:string) : HTMLElement | null{
@@ -154,12 +154,13 @@ class ParameterKnob extends BaseParameterControl<HTMLElement> {
 
     constructor(tag: Tag, parameter: IParameter, min: number, max: number) {
         let knobControl = createKnob(48, 48);
-        knobControl.setProperty('angleStart', -0.75 * Math.PI);
-        knobControl.setProperty('angleEnd', 0.75 * Math.PI);
-        knobControl.setProperty('colorFG', '#fb4400');
-        knobControl.setProperty('trackWidth', 0.4);
-        knobControl.setProperty('valMin', min);
-        knobControl.setProperty('valMax', max);
+        let properties = knobControl.getProperties();
+        properties.angleStart =  -0.75 * Math.PI;
+        properties.angleEnd = 0.75 * Math.PI;
+        properties.colorFG = '#fb4400';
+        properties.trackWidth = 0.4;
+        properties.valMin = min;
+        properties.valMax = max;
 
         super(tag, knobControl.node());
 
@@ -168,7 +169,8 @@ class ParameterKnob extends BaseParameterControl<HTMLElement> {
         this.min = min;
         this.max = max;
 
-        knobControl.setProperty('val', this.normalizedToPlain(parameter.normalized));
+
+        knobControl.setValue(this.normalizedToPlain(parameter.normalized));
         knobControl.addListener(this.knobListener.bind(this));
     }
 

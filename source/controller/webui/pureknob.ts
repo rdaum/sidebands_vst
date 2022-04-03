@@ -1,9 +1,308 @@
-"use strict";
+type ListenerFunction = (self: Knob, val : number) => void;
+
+interface KnobProperties {
+    angleEnd : number,
+    angleOffset: number,
+    angleStart: number,
+    colorBG: string,
+    colorFG: string,
+    colorLabel: string,
+    fnStringToValue : (str : string) => number,
+    fnValueToString : (val : number) => string,
+    label : string|null,
+    needle: boolean,
+    readonly : false,
+    textScale : number,
+    trackWidth : number,
+    valMin: number,
+    valMax : number,
+    val : number;
+}
+
+class Knob {
+    _canvas : HTMLCanvasElement;
+    _div : HTMLDivElement;
+    _width : number;
+    _height : number;
+    _input :HTMLInputElement;
+    _inputDiv: HTMLDivElement;
+    _listeners : Array<ListenerFunction>
+    _mousebutton : boolean;
+    _previousVal : number;
+    _timeout : any;
+    _timeoutDoubleTap : any;
+    _touchCount : number;
+    _properties : KnobProperties;
+
+    constructor(width : number, height : number, canvas : HTMLCanvasElement, div : HTMLDivElement, input : HTMLInputElement, inputDiv : HTMLDivElement) {
+        this._canvas = canvas;
+        this._div = div;
+        this._width = width;
+        this._height = height;
+        this._input = input;
+        this._inputDiv = inputDiv;
+        this._listeners = [];
+        this._mousebutton = false;
+        this._previousVal = 0;
+        this._timeout = null;
+        this._timeoutDoubleTap = null;
+        this._touchCount = 0;
+
+        /*
+         * Properties of this knob.
+         */
+        this._properties = {
+            'angleEnd': 2.0 * Math.PI,
+            'angleOffset': -0.5 * Math.PI,
+            'angleStart': 0,
+            'colorBG': '#181818',
+            'colorFG': '#ff8800',
+            'colorLabel': '#ffffff',
+            'fnStringToValue': function (str : string) {
+                return parseInt(str);
+            },
+            'fnValueToString': function (value : any) {
+                return value.toString();
+            },
+            'label': null,
+            'needle': false,
+            'readonly': false,
+            'textScale': 1.0,
+            'trackWidth': 0.4,
+            'valMin': 0,
+            'valMax': 100,
+            'val': 0
+        };
+    }
+
+
+    /*
+   * Notify listeners about value changes.
+   */
+    _notifyUpdate() {
+        const properties = this._properties;
+        const value : number = <number>properties["val"];
+        const listeners = this._listeners;
+        const numListeners = listeners.length;
+
+        /*
+         * Call all listeners.
+         */
+        for (let i = 0; i < numListeners; i++) {
+            const listener = listeners[i];
+
+            /*
+             * Call listener, if it exists.
+             */
+            if (listener !== null) {
+                listener(this, value);
+            }
+
+        }
+    }
+
+    /*
+    * Abort value change, restoring the previous value.
+    */
+    abort() {
+        const previousValue = this._previousVal;
+        const properties = this._properties;
+        properties.val = previousValue;
+        this.redraw();
+    }
+
+    /*
+     * Adds an event listener.
+     */
+    addListener(listener : ListenerFunction) {
+        const listeners = this._listeners;
+        listeners.push(listener);
+    }
+
+    /*
+     * Commit value, indicating that it is no longer temporary.
+     */
+    commit() {
+        const properties = this._properties;
+        const value = properties.val;
+        this._previousVal = value;
+        this.redraw();
+        this._notifyUpdate();
+    }
+
+    /*
+     * Return the DOM node representing this knob.
+     */
+    node() {
+        const div = this._div;
+        return div;
+    }
+
+    getProperties() : KnobProperties {
+        return this._properties;
+    }
+
+    /*
+     * Redraw the knob on the canvas.
+     */
+    redraw() {
+        this.resize();
+        const properties = this._properties;
+        const needle = properties.needle;
+        const angleStart = properties.angleStart;
+        const angleOffset = properties.angleOffset;
+        const angleEnd = properties.angleEnd;
+        const actualStart = angleStart + angleOffset;
+        const actualEnd = angleEnd + angleOffset;
+        const label = properties.label;
+        const value = properties.val;
+        const valueToString = properties.fnValueToString;
+        const valueStr = valueToString(value);
+        const valMin = properties.valMin;
+        const valMax = properties.valMax;
+        const relValue = (value - valMin) / (valMax - valMin);
+        const relAngle = relValue * (angleEnd - angleStart);
+        const angleVal = actualStart + relAngle;
+        const colorTrack = properties.colorBG;
+        const colorFilling = properties.colorFG;
+        const colorLabel = properties.colorLabel;
+        const textScale = properties.textScale;
+        const trackWidth = properties.trackWidth;
+        const height = this._height;
+        const width = this._width;
+        const smaller = width < height ? width : height;
+        const centerX = 0.5 * width;
+        const centerY = 0.5 * height;
+        const radius = 0.4 * smaller;
+        const labelY = centerY + radius;
+        const lineWidth = Math.round(trackWidth * radius);
+        const labelSize = Math.round(0.8 * lineWidth);
+        const labelSizeString = labelSize.toString();
+        const fontSize = (0.2 * smaller) * textScale;
+        const fontSizeString = fontSize.toString();
+        const canvas = this._canvas;
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) return;
+
+        /*
+         * Clear the canvas.
+         */
+        ctx.clearRect(0, 0, width, height);
+
+        /*
+         * Draw the track.
+         */
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, actualStart, actualEnd);
+        ctx.lineCap = 'butt';
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = colorTrack;
+        ctx.stroke();
+
+        /*
+         * Draw the filling.
+         */
+        ctx.beginPath();
+
+        /*
+         * Check if we're in needle mode.
+         */
+        if (needle) {
+            ctx.arc(centerX, centerY, radius, angleVal - 0.1, angleVal + 0.1);
+        } else {
+            ctx.arc(centerX, centerY, radius, actualStart, angleVal);
+        }
+
+        ctx.lineCap = 'butt';
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = colorFilling;
+        ctx.stroke();
+
+        /*
+         * Draw the number.
+         */
+        ctx.font = fontSizeString + 'px sans-serif';
+        ctx.fillStyle = colorFilling;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(valueStr, centerX, centerY);
+
+        /*
+         * Draw the label
+         */
+        if (label !== null) {
+            ctx.font = labelSizeString + 'px sans-serif';
+            ctx.fillStyle = colorLabel;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, centerX, labelY);
+        }
+
+        /*
+         * Set the color and font size of the input element.
+         */
+        const elemInput = this._input;
+        elemInput.style.color = colorFilling;
+        elemInput.style.fontSize = fontSizeString + 'px';
+    }
+
+    /*
+     * This is called as the canvas or the surrounding DIV is resized.
+     */
+    resize() {
+        const canvas = this._canvas;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const scale = window.devicePixelRatio;
+        canvas.style.height = this._height + 'px';
+        canvas.style.width = this._width + 'px';
+        canvas.height = Math.floor(this._height * scale);
+        canvas.width = Math.floor(this._width * scale);
+        ctx.scale(scale, scale);
+    }
+
+
+
+    getValue() : number {
+        return this._properties.val;
+    }
+
+    /*
+     * Sets the value of this knob.
+     */
+    setValue(value : number) {
+        this.setValueFloating(value);
+        this.commit();
+    }
+
+    /*
+     * Sets floating (temporary) value of this knob.
+     */
+    setValueFloating(value : number) {
+        const properties = this._properties;
+        const valMin = properties.valMin;
+        const valMax = properties.valMax;
+
+        /*
+         * Clamp the actual value into the [valMin; valMax] range.
+         */
+        if (value < valMin) {
+            value = valMin;
+        } else if (value > valMax) {
+            value = valMax;
+        }
+
+        value = Math.round(value);
+        this._properties.val = value;
+    }
+}
 
 /*
  * Creates a knob element.
  */
-export function createKnob(width, height) {
+export function createKnob(width : number, height : number) {
     const heightString = height.toString();
     const widthString = width.toString();
     const smaller = width < height ? width : height;
@@ -46,291 +345,16 @@ export function createKnob(width, height) {
     inputDiv.appendChild(input);
     div.appendChild(inputDiv);
 
-    /*
-     * The knob object.
-     */
-    const knob = {
-        '_canvas': canvas,
-        '_div': div,
-        '_height': height,
-        '_input': input,
-        '_inputDiv': inputDiv,
-        '_listeners': [],
-        '_mousebutton': false,
-        '_previousVal': 0,
-        '_timeout': null,
-        '_timeoutDoubleTap': null,
-        '_touchCount': 0,
-        '_width': width,
 
-        /*
-         * Notify listeners about value changes.
-         */
-        '_notifyUpdate': function () {
-            const properties = this._properties;
-            const value = properties.val;
-            const listeners = this._listeners;
-            const numListeners = listeners.length;
-
-            /*
-             * Call all listeners.
-             */
-            for (let i = 0; i < numListeners; i++) {
-                const listener = listeners[i];
-
-                /*
-                 * Call listener, if it exists.
-                 */
-                if (listener !== null) {
-                    listener(this, value);
-                }
-
-            }
-
-        },
-
-        /*
-         * Properties of this knob.
-         */
-        '_properties': {
-            'angleEnd': 2.0 * Math.PI,
-            'angleOffset': -0.5 * Math.PI,
-            'angleStart': 0,
-            'colorBG': '#181818',
-            'colorFG': '#ff8800',
-            'colorLabel': '#ffffff',
-            'fnStringToValue': function (string) {
-                return parseInt(string);
-            },
-            'fnValueToString': function (value) {
-                return value.toString();
-            },
-            'label': null,
-            'needle': false,
-            'readonly': false,
-            'textScale': 1.0,
-            'trackWidth': 0.4,
-            'valMin': 0,
-            'valMax': 100,
-            'val': 0
-        },
-
-        /*
-         * Abort value change, restoring the previous value.
-         */
-        'abort': function () {
-            const previousValue = this._previousVal;
-            const properties = this._properties;
-            properties.val = previousValue;
-            this.redraw();
-        },
-
-        /*
-         * Adds an event listener.
-         */
-        'addListener': function (listener) {
-            const listeners = this._listeners;
-            listeners.push(listener);
-        },
-
-        /*
-         * Commit value, indicating that it is no longer temporary.
-         */
-        'commit': function () {
-            const properties = this._properties;
-            const value = properties.val;
-            this._previousVal = value;
-            this.redraw();
-            this._notifyUpdate();
-        },
-
-        /*
-         * Returns the value of a property of this knob.
-         */
-        'getProperty': function (key) {
-            const properties = this._properties;
-            const value = properties[key];
-            return value;
-        },
-
-        /*
-         * Returns the current value of the knob.
-         */
-        'getValue': function () {
-            const properties = this._properties;
-            const value = properties.val;
-            return value;
-        },
-
-        /*
-         * Return the DOM node representing this knob.
-         */
-        'node': function () {
-            const div = this._div;
-            return div;
-        },
-
-        /*
-         * Redraw the knob on the canvas.
-         */
-        'redraw': function () {
-            this.resize();
-            const properties = this._properties;
-            const needle = properties.needle;
-            const angleStart = properties.angleStart;
-            const angleOffset = properties.angleOffset;
-            const angleEnd = properties.angleEnd;
-            const actualStart = angleStart + angleOffset;
-            const actualEnd = angleEnd + angleOffset;
-            const label = properties.label;
-            const value = properties.val;
-            const valueToString = properties.fnValueToString;
-            const valueStr = valueToString(value);
-            const valMin = properties.valMin;
-            const valMax = properties.valMax;
-            const relValue = (value - valMin) / (valMax - valMin);
-            const relAngle = relValue * (angleEnd - angleStart);
-            const angleVal = actualStart + relAngle;
-            const colorTrack = properties.colorBG;
-            const colorFilling = properties.colorFG;
-            const colorLabel = properties.colorLabel;
-            const textScale = properties.textScale;
-            const trackWidth = properties.trackWidth;
-            const height = this._height;
-            const width = this._width;
-            const smaller = width < height ? width : height;
-            const centerX = 0.5 * width;
-            const centerY = 0.5 * height;
-            const radius = 0.4 * smaller;
-            const labelY = centerY + radius;
-            const lineWidth = Math.round(trackWidth * radius);
-            const labelSize = Math.round(0.8 * lineWidth);
-            const labelSizeString = labelSize.toString();
-            const fontSize = (0.2 * smaller) * textScale;
-            const fontSizeString = fontSize.toString();
-            const canvas = this._canvas;
-            const ctx = canvas.getContext('2d');
-
-            /*
-             * Clear the canvas.
-             */
-            ctx.clearRect(0, 0, width, height);
-
-            /*
-             * Draw the track.
-             */
-            ctx.beginPath();
-            ctx.arc(centerX, centerY, radius, actualStart, actualEnd);
-            ctx.lineCap = 'butt';
-            ctx.lineWidth = lineWidth;
-            ctx.strokeStyle = colorTrack;
-            ctx.stroke();
-
-            /*
-             * Draw the filling.
-             */
-            ctx.beginPath();
-
-            /*
-             * Check if we're in needle mode.
-             */
-            if (needle) {
-                ctx.arc(centerX, centerY, radius, angleVal - 0.1, angleVal + 0.1);
-            } else {
-                ctx.arc(centerX, centerY, radius, actualStart, angleVal);
-            }
-
-            ctx.lineCap = 'butt';
-            ctx.lineWidth = lineWidth;
-            ctx.strokeStyle = colorFilling;
-            ctx.stroke();
-
-            /*
-             * Draw the number.
-             */
-            ctx.font = fontSizeString + 'px sans-serif';
-            ctx.fillStyle = colorFilling;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(valueStr, centerX, centerY);
-
-            /*
-             * Draw the label
-             */
-            if (label !== null) {
-                ctx.font = labelSizeString + 'px sans-serif';
-                ctx.fillStyle = colorLabel;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(label, centerX, labelY);
-            }
-
-            /*
-             * Set the color and font size of the input element.
-             */
-            const elemInput = this._input;
-            elemInput.style.color = colorFilling;
-            elemInput.style.fontSize = fontSizeString + 'px';
-        },
-
-        /*
-         * This is called as the canvas or the surrounding DIV is resized.
-         */
-        'resize': function () {
-            const canvas = this._canvas;
-            const ctx = canvas.getContext('2d');
-            const scale = window.devicePixelRatio;
-            canvas.style.height = this._height + 'px';
-            canvas.style.width = this._width + 'px';
-            canvas.height = Math.floor(this._height * scale);
-            canvas.width = Math.floor(this._width * scale);
-            ctx.scale(scale, scale);
-        },
-
-        /*
-         * Sets the value of a property of this knob.
-         */
-        'setProperty': function (key, value) {
-            this._properties[key] = value;
-            this.redraw();
-        },
-
-        /*
-         * Sets the value of this knob.
-         */
-        'setValue': function (value) {
-            this.setValueFloating(value);
-            this.commit();
-        },
-
-        /*
-         * Sets floating (temporary) value of this knob.
-         */
-        'setValueFloating': function (value) {
-            const properties = this._properties;
-            const valMin = properties.valMin;
-            const valMax = properties.valMax;
-
-            /*
-             * Clamp the actual value into the [valMin; valMax] range.
-             */
-            if (value < valMin) {
-                value = valMin;
-            } else if (value > valMax) {
-                value = valMax;
-            }
-
-            value = Math.round(value);
-            this.setProperty('val', value);
-        }
-
-    };
+    const knob = new Knob(width, height, canvas, div, input, inputDiv);
 
     /*
      * Convert mouse event to value.
      */
-    const mouseEventToValue = function (e, properties) {
-        const canvas = e.target;
+    const mouseEventToValue = function (e : MouseEvent, properties : KnobProperties) {
+        if (!e.target) return;
+        const canvas = <HTMLCanvasElement>e.target;
+
         const width = canvas.scrollWidth;
         const height = canvas.scrollHeight;
         const centerX = 0.5 * width;
@@ -377,8 +401,9 @@ export function createKnob(width, height) {
     /*
      * Convert touch event to value.
      */
-    const touchEventToValue = function (e, properties) {
-        const canvas = e.target;
+    const touchEventToValue = function (e : TouchEvent, properties : KnobProperties) {
+        const canvas = <HTMLCanvasElement>e.target;
+        if (!canvas) return;
         const rect = canvas.getBoundingClientRect();
         const offsetX = rect.left;
         const offsetY = rect.top;
@@ -450,7 +475,7 @@ export function createKnob(width, height) {
     /*
      * Show input element on double click.
      */
-    const doubleClickListener = function (e) {
+    const doubleClickListener = function (e : MouseEvent) {
         const properties = knob._properties;
         const readonly = properties.readonly;
 
@@ -471,7 +496,7 @@ export function createKnob(width, height) {
     /*
      * This is called when the mouse button is depressed.
      */
-    const mouseDownListener = function (e) {
+    const mouseDownListener = function (e : MouseEvent) {
         const btn = e.buttons;
 
         /*
@@ -487,7 +512,8 @@ export function createKnob(width, height) {
             if (!readonly) {
                 e.preventDefault();
                 const val = mouseEventToValue(e, properties);
-                knob.setValueFloating(val);
+                if (val)
+                 knob.setValueFloating(val);
             }
 
             knob._mousebutton = true;
@@ -519,7 +545,7 @@ export function createKnob(width, height) {
     /*
      * This is called when the mouse cursor is moved.
      */
-    const mouseMoveListener = function (e) {
+    const mouseMoveListener = function (e : MouseEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -535,7 +561,8 @@ export function createKnob(width, height) {
             if (!readonly) {
                 e.preventDefault();
                 const val = mouseEventToValue(e, properties);
-                knob.setValueFloating(val);
+                if (val)
+                    knob.setValueFloating(val);
             }
 
         }
@@ -545,7 +572,7 @@ export function createKnob(width, height) {
     /*
      * This is called when the mouse button is released.
      */
-    const mouseUpListener = function (e) {
+    const mouseUpListener = function (e : MouseEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -560,8 +587,9 @@ export function createKnob(width, height) {
              */
             if (!readonly) {
                 e.preventDefault();
-                const val = mouseEventToValue(e, properties);
-                knob.setValue(val);
+                const val = mouseEventToValue(e, properties)
+                if (val)
+                    knob.setValue(val);
             }
 
         }
@@ -572,7 +600,7 @@ export function createKnob(width, height) {
     /*
      * This is called when the drag action is canceled.
      */
-    const mouseCancelListener = function (e) {
+    const mouseCancelListener = function (e : MouseEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -588,7 +616,7 @@ export function createKnob(width, height) {
     /*
      * This is called when a user touches the element.
      */
-    const touchStartListener = function (e) {
+    const touchStartListener = function (e : TouchEvent) {
         const properties = knob._properties;
         const readonly = properties.readonly;
 
@@ -653,7 +681,8 @@ export function createKnob(width, height) {
 
                 knob._touchCount++;
                 const val = touchEventToValue(e, properties);
-                knob.setValueFloating(val);
+                if (val)
+                    knob.setValueFloating(val);
             }
 
         }
@@ -663,7 +692,7 @@ export function createKnob(width, height) {
     /*
      * This is called when a user moves a finger on the element.
      */
-    var touchMoveListener = function (e) {
+    var touchMoveListener = function (e : TouchEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -688,7 +717,8 @@ export function createKnob(width, height) {
                 if (singleTouch) {
                     e.preventDefault();
                     const val = touchEventToValue(e, properties);
-                    knob.setValueFloating(val);
+                    if (val)
+                        knob.setValueFloating(val);
                 }
 
             }
@@ -700,7 +730,7 @@ export function createKnob(width, height) {
     /*
      * This is called when a user lifts a finger off the element.
      */
-    const touchEndListener = function (e) {
+    const touchEndListener = function (e : TouchEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -738,7 +768,7 @@ export function createKnob(width, height) {
     /*
      * This is called when a user cancels a touch action.
      */
-    const touchCancelListener = function (e) {
+    const touchCancelListener = function (e : TouchEvent) {
         const btn = knob._mousebutton;
 
         /*
@@ -757,15 +787,15 @@ export function createKnob(width, height) {
     /*
      * This is called when the size of the canvas changes.
      */
-    const resizeListener = function (e) {
+    const resizeListener = function (e : Event) {
         knob.redraw();
     };
 
     /*
      * This is called when the mouse wheel is moved.
      */
-    const scrollListener = function (e) {
-        const readonly = knob.getProperty('readonly');
+    const scrollListener = function (e : WheelEvent) {
+        const readonly = knob.getProperties().readonly;
 
         /*
          * If knob is not read only, process mouse wheel event.
@@ -796,7 +826,7 @@ export function createKnob(width, height) {
     /*
      * This is called when the user presses a key on the keyboard.
      */
-    const keyDownListener = function (e) {
+    const keyDownListener = function (e : KeyboardEvent) {
         const k = e.key;
 
         /*
@@ -805,7 +835,8 @@ export function createKnob(width, height) {
         if ((k === 'Enter') || (k === 'Escape')) {
             const inputDiv = knob._inputDiv;
             inputDiv.style.display = 'none';
-            const input = e.target;
+            if (!e.target) return;
+            const input = <HTMLInputElement>e.target;
 
             /*
              * Only evaluate value when user pressed enter.
