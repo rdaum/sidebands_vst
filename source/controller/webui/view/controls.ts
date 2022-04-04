@@ -1,17 +1,20 @@
 import * as SidebandsModel from '../model/sidebands_model';
 import * as VstModel from "../model/vst_model";
 import {createKnob} from "./pureknob";
+import {controller, IDependent} from "../model/vst_model";
 
 export interface IParameterControl {
     pTag: SidebandsModel.Tag;
 
     updateSelectedGenerator(gennum: number): void;
-    refresh() : void;
+
+    refresh(): void;
 }
 
 abstract class ParameterControl implements IParameterControl {
-    pTag : SidebandsModel.Tag;
-    constructor(pTag : SidebandsModel.Tag) {
+    pTag: SidebandsModel.Tag;
+
+    constructor(pTag: SidebandsModel.Tag) {
         this.pTag = pTag;
     }
 
@@ -32,7 +35,7 @@ abstract class ParameterControl implements IParameterControl {
         this.refresh();
     }
 
-    abstract refresh() : void;
+    abstract refresh(): void;
 }
 
 abstract class BaseParameterControlView<ElementType extends HTMLElement> extends ParameterControl {
@@ -55,15 +58,15 @@ export class Toggle extends BaseParameterControlView<HTMLInputElement> {
     }
 
     refresh() {
-        VstModel.controller.getParameterObject(SidebandsModel.ParamIDFor(this.pTag)).then( (p) => {
+        VstModel.controller.getParameterObject(SidebandsModel.ParamIDFor(this.pTag)).then((p) => {
             this.element.checked = p.normalized == 1;
         });
     }
 }
 
-export class ParameterKnob extends BaseParameterControlView<HTMLElement> {
+export class ParameterKnob extends BaseParameterControlView<HTMLElement> implements IDependent {
     readonly knobView: any;
-    readonly parameter: VstModel.IRangeParameter;
+    parameter: VstModel.IRangeParameter;
 
     constructor(tag: SidebandsModel.Tag, parameter: VstModel.IRangeParameter) {
         let knobView = createKnob(48, 48);
@@ -82,11 +85,22 @@ export class ParameterKnob extends BaseParameterControlView<HTMLElement> {
 
         knobView.value = this.normalizedToPlain(parameter.normalized);
         knobView.addListener(this.knobListener.bind(this));
+
+        controller.subscribeParameter(parameter.info.id, this)
+    }
+
+    changed(parameter: VstModel.IParameter): void {
+        // Don't propagate the change if it's not our parameter or if the value has already been updated.
+        if (parameter.info.id == this.parameter.info.id && parameter.normalized != this.parameter.normalized) {
+            // setValueNoNotify to avoid infinite refresh loop because of call back into knobListener
+            this.knobView.setValueNoNotify(this.normalizedToPlain(parameter.normalized));
+            this.parameter = <VstModel.IRangeParameter>parameter;
+        }
     }
 
     refresh() {
-        VstModel.controller.getParameterObject(SidebandsModel.ParamIDFor(this.pTag)).then( (p) => {
-            this.knobView.value = this.normalizedToPlain(p.normalized);
+        VstModel.controller.getParameterObject(SidebandsModel.ParamIDFor(this.pTag)).then((p) => {
+            this.changed(p);
         });
     }
 
@@ -115,7 +129,7 @@ function buildKnob(elem: Element, tag: SidebandsModel.Tag, param: VstModel.IRang
     return knob;
 }
 
-export function addKnob(elem: Element | null, tag: SidebandsModel.Tag) : Promise<ParameterKnob> {
+export function addKnob(elem: Element | null, tag: SidebandsModel.Tag): Promise<ParameterKnob> {
     return new Promise<ParameterKnob>((resolve) => {
         VstModel.controller.getParameterObject(SidebandsModel.ParamIDFor(tag)).then((param) => {
             if (param.isRangeParameter) {

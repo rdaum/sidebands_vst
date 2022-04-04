@@ -210,7 +210,7 @@ h3 {
 .graphical-env-container {
     margin: 5px;
     border-radius: 5px;
-    background: #afe9dd;
-    box-shadow: inset 5px 5px 8px #526e68,
-    inset -5px -5px 8px #ffffff;
+    background: #F6BE00;
+    box-shadow: inset 5px 5px 10px #745900,
+    inset -5px -5px 10px #ffff00;
 }

@@ -113,12 +113,13 @@ class Knob {
     /*
      * Commit value, indicating that it is no longer temporary.
      */
-    commit() {
+    commit(notify : boolean = true) {
         const properties = this._properties;
         const value = properties.val;
         this._previousVal = value;
         this.redraw();
-        this._notifyUpdate();
+        if (notify)
+            this._notifyUpdate();
     }
 
     /*
@@ -149,6 +150,11 @@ class Knob {
     set value(value: number) {
         this.setValueFloating(value);
         this.commit();
+    }
+
+    setValueNoNotify(value: number) {
+        this.setValueFloating(value);
+        this.commit(false);
     }
 
     /*

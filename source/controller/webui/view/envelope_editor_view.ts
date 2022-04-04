@@ -1,9 +1,9 @@
 import {addKnob, IParameterControl} from "./controls";
 import * as Model from "../model/sidebands_model";
+import {ParamTag, ParseTag, TargetTag} from "../model/sidebands_model";
 import {MakeEnvelopeEditor, MakeGraphicalEnvelopeEditor} from "./templates";
 import {GD, GeneratorView} from "./views";
-import {ParamTag, Tag} from "../model/sidebands_model";
-import {controller, getParameterObject, IRangeParameter, ValueOf} from "../model/vst_model";
+import {controller, IDependent, IParameter, IRangeParameter, ValueOf} from "../model/vst_model";
 
 
 export class EnvelopeEditorKnobView implements GeneratorView {
@@ -103,9 +103,10 @@ function EnvelopeRampCoefficient(start_level: number, end_level: number, length_
 
 type SegmentList = { [index: number]: Segment };
 
-export class GraphicalEnvelopeEditorView implements GeneratorView {
+export class GraphicalEnvelopeEditorView implements GeneratorView, IDependent {
     private segments: SegmentList;
     private canvas: HTMLCanvasElement | null;
+    private draggingSegment : Segment | null;
 
     constructor(readonly element: HTMLDivElement, private gennum: number, readonly target: Model.TargetTag) {
         const targetPrefix = Model.TargetTag[target].toString().toLowerCase();
@@ -113,11 +114,37 @@ export class GraphicalEnvelopeEditorView implements GeneratorView {
         element.appendChild(MakeGraphicalEnvelopeEditor(targetPrefix));
         this.canvas = element.querySelector(`#${targetPrefix}-graph-env-canvas`);
         this.segments = {};
+        this.draggingSegment = null;
 
+        // // Subscribe for parameter changes for all envelope parameters.
+        for (const param of [Model.ParamTag.TAG_ENV_HT, Model.ParamTag.TAG_ENV_AR, ParamTag.TAG_ENV_AL,
+            Model.ParamTag.TAG_ENV_DR1, ParamTag.TAG_ENV_DL1,
+            ParamTag.TAG_ENV_DR2,
+            ParamTag.TAG_ENV_SL,
+            ParamTag.TAG_ENV_RR1,
+            ParamTag.TAG_ENV_RL1,
+            ParamTag.TAG_ENV_RR2,]) {
+            controller.subscribeParameter(Model.ParamIDFor({Generator: this.gennum, Param: param, Target: target}), this);
+        }
+
+        if (this.canvas) {
+            this.canvas.addEventListener('mousedown', e => {
+                this.onMouseDown(e);
+            })
+            this.canvas.addEventListener('mousemove', e => {
+                this.onMouseMove(e);
+            })
+            this.canvas.addEventListener('mouseup', e => {
+                this.onMouseUp(e);
+            })
+        }
+        this.refresh();
+    }
+
+    refresh() {
         this.updateSegments().then((segments) => {
             this.redraw();
         });
-
     }
 
     loadSegmentParams(index: number,
@@ -184,8 +211,6 @@ export class GraphicalEnvelopeEditorView implements GeneratorView {
 
         // Once all segment params are loaded we can then proceed to do the calculations of points.
         return new Promise((resolve, reject) => {
-
-
             Promise.all(promises).then((segmentParams) => {
                 let totalDuration = 0;
                 for (const segmentParam of segmentParams) {
@@ -242,18 +267,82 @@ export class GraphicalEnvelopeEditorView implements GeneratorView {
         });
     }
 
+    onMouseDown(event : MouseEvent) {
+        if (!this.draggingSegment) {
+            for (const sid in this.segments) {
+                const s = this.segments[sid];
+                if (!s.points) continue;
+                if (!s.points.dragBox) continue;
+                if (event.offsetX >= s.points.dragBox[0] &&
+                event.offsetY >= s.points.dragBox[1] &&
+                event.offsetX <= s.points.dragBox[0] + s.points.dragBox[2] &&
+                event.offsetY <= s.points.dragBox[1] + s.points.dragBox[3]) {
+                    this.draggingSegment = s;
+                }
+            }
+        }
+    }
+
+    onMouseMove(event : MouseEvent) {
+        if (!this.draggingSegment) return;
+        if (!this.canvas) return;
+        if (!this.draggingSegment.params|| !this.draggingSegment.points || !this.draggingSegment.points.width) return;
+        if (event.offsetX < 0 && event.offsetY < 0) return;
+        if (event.offsetX > this.canvas.width || event.offsetY > this.canvas.height) return;
+
+        console.log(event);
+
+        let changed = false;
+
+        const deltaX = event.movementX;
+        const deltaY = event.movementY;
+        const rateParam = this.draggingSegment.params.rateParam;
+        if (rateParam && deltaX) {
+            const deltaR = deltaX / this.draggingSegment.points.width;
+            const newValue = Math.max(rateParam.normalized + deltaR, 0.0001);
+            controller.setParamNormalized(rateParam.info.id, newValue);
+            changed = true;
+        }
+
+        const levelParam = this.draggingSegment.params.endLevelParam;
+        if (levelParam && deltaY) {
+            // float change_n = 1 - (y / getHeight());
+            const deltaL = 1 - (event.offsetY / this.canvas.height);
+            controller.setParamNormalized(levelParam.info.id, deltaL);
+            changed = true;
+        }
+
+        if (changed)
+            this.refresh();
+    }
+
+    onMouseUp(event : MouseEvent) {
+        console.log("mouse up");
+        if (!this.draggingSegment) return;
+        this.draggingSegment = null;
+    }
+
     node(): HTMLElement {
         return this.element;
     }
 
+    changed(parameter: IParameter): void {
+        let tag = ParseTag(parameter.info.id);
+        if (tag.Generator == this.gennum && tag.Target == this.target) {
+            this.refresh();
+        }
+    }
+
     updateSelectedGenerator(gennum: number): void {
         this.gennum = gennum;
+        this.refresh();
     }
 
     redraw() {
         if (!this.segments || !this.canvas) return;
         let ctx = this.canvas.getContext("2d");
         if (!ctx) return;
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.beginPath();
         ctx.moveTo(0, this.canvas.height);
         let x = 0;

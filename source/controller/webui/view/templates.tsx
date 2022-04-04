@@ -38,19 +38,19 @@ function EnvelopeKnobs(attributes : Attributes, contents: string[]) {
         </div>
         <span>&nbsp;</span>
         <div class="parameter d1-rate">
-            <label>Decay1 Rate</label>
+            <label>Decay1 Time</label>
             <div id={target_str + "_d1_r"}></div>
         </div>
         <div class="parameter d2-rate">
-            <label>Decay2 Rate</label>
+            <label>Decay2 Time</label>
             <div id={target_str + "_d2_r"}></div>
         </div>
         <div class="parameter r1-rate">
-            <label>Release1 Rate</label>
+            <label>Release1 Time</label>
             <div id={target_str + "_r1_r"}></div>
         </div>
         <div class="parameter r2-date">
-            <label>Release2 Rate</label>
+            <label>Release2 Time</label>
             <div id={target_str + "_r2_r"}></div>
         </div>
 
