@@ -1,7 +1,7 @@
 import * as SidebandsModel from '../model/sidebands_model';
 import * as VstModel from "../model/vst_model";
 import {createKnob} from "./pureknob";
-import {controller, IDependent} from "../model/vst_model";
+import {controller, IDependent, IRangeParameter} from "../model/vst_model";
 
 export interface IParameterControl {
     pTag: SidebandsModel.Tag;
@@ -91,10 +91,11 @@ export class ParameterKnob extends BaseParameterControlView<HTMLElement> impleme
 
     changed(parameter: VstModel.IParameter): void {
         // Don't propagate the change if it's not our parameter or if the value has already been updated.
-        if (parameter.info.id == this.parameter.info.id && parameter.normalized != this.parameter.normalized) {
-            // setValueNoNotify to avoid infinite refresh loop because of call back into knobListener
-            this.knobView.setValueNoNotify(this.normalizedToPlain(parameter.normalized));
-            this.parameter = <VstModel.IRangeParameter>parameter;
+        if (parameter.info.id == this.parameter.info.id &&
+            parameter.normalized != this.parameter.normalized) {
+            this.parameter =<IRangeParameter>parameter;
+            this.knobView.setValueFloating(this.normalizedToPlain(parameter.normalized));
+            this.knobView.commit(false);
         }
     }
 

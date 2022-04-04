@@ -152,11 +152,6 @@ class Knob {
         this.commit();
     }
 
-    setValueNoNotify(value: number) {
-        this.setValueFloating(value);
-        this.commit(false);
-    }
-
     /*
      * Sets floating (temporary) value of this knob.
      */

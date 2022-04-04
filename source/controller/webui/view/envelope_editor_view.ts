@@ -89,6 +89,7 @@ interface SegmentPoints {
 }
 
 interface Segment {
+    id: number;
     params: SegmentParams;
     points: SegmentPoints | null;
 }
@@ -101,12 +102,41 @@ function EnvelopeRampCoefficient(start_level: number, end_level: number, length_
     return 1.0 + (Math.log(end_level) - Math.log(start_level)) / length_in_samples;
 }
 
+
+interface SegmentDecl {
+    rateParam: Model.ParamTag | null;
+    startLevelParam: Model.ParamTag | null;
+    endLevelParam: Model.ParamTag | null;
+}
+
+const kSegmentDecls: { [id: number]: SegmentDecl } = {
+    0: {rateParam: Model.ParamTag.TAG_ENV_HT, startLevelParam: null, endLevelParam: null},
+    1: {rateParam: Model.ParamTag.TAG_ENV_AR, startLevelParam: null, endLevelParam: ParamTag.TAG_ENV_AL},
+    2: {
+        rateParam: Model.ParamTag.TAG_ENV_DR1,
+        startLevelParam: ParamTag.TAG_ENV_AL,
+        endLevelParam: ParamTag.TAG_ENV_DL1
+    },
+    3: {
+        rateParam: Model.ParamTag.TAG_ENV_DR2,
+        startLevelParam: ParamTag.TAG_ENV_DL1,
+        endLevelParam: ParamTag.TAG_ENV_SL
+    },
+    4: {rateParam: null, startLevelParam: Model.ParamTag.TAG_ENV_SL, endLevelParam: ParamTag.TAG_ENV_SL},
+    5: {
+        rateParam: Model.ParamTag.TAG_ENV_RR1,
+        startLevelParam: ParamTag.TAG_ENV_SL,
+        endLevelParam: ParamTag.TAG_ENV_RL1
+    },
+    6: {rateParam: Model.ParamTag.TAG_ENV_RR2, startLevelParam: ParamTag.TAG_ENV_RL1, endLevelParam: null},
+}
+
 type SegmentList = { [index: number]: Segment };
 
 export class GraphicalEnvelopeEditorView implements GeneratorView, IDependent {
     private segments: SegmentList;
     private canvas: HTMLCanvasElement | null;
-    private draggingSegment : Segment | null;
+    private draggingSegment: Segment | null;
 
     constructor(readonly element: HTMLDivElement, private gennum: number, readonly target: Model.TargetTag) {
         const targetPrefix = Model.TargetTag[target].toString().toLowerCase();
@@ -124,7 +154,11 @@ export class GraphicalEnvelopeEditorView implements GeneratorView, IDependent {
             ParamTag.TAG_ENV_RR1,
             ParamTag.TAG_ENV_RL1,
             ParamTag.TAG_ENV_RR2,]) {
-            controller.subscribeParameter(Model.ParamIDFor({Generator: this.gennum, Param: param, Target: target}), this);
+            controller.subscribeParameter(Model.ParamIDFor({
+                Generator: this.gennum,
+                Param: param,
+                Target: target
+            }), this);
         }
 
         if (this.canvas) {
@@ -141,8 +175,8 @@ export class GraphicalEnvelopeEditorView implements GeneratorView, IDependent {
         this.refresh();
     }
 
-    refresh() {
-        this.updateSegments().then((segments) => {
+    refresh(ids: Array<number> | null = null) {
+        this.updateSegments(ids).then((segments) => {
             this.redraw();
         });
     }
@@ -180,53 +214,45 @@ export class GraphicalEnvelopeEditorView implements GeneratorView, IDependent {
 
     }
 
-    emptySegment(): Segment {
+    emptySegment(id: number): Segment {
         return {
+            id: id,
             params: {
                 rateParam: null, endLevelParam: null, startLevelParam: null
             }, points: null
         };
     }
 
-    updateSegments(): Promise<SegmentList> {
-        this.segments = {
-            0: this.emptySegment(),
-            1: this.emptySegment(),
-            2: this.emptySegment(),
-            3: this.emptySegment(),
-            4: this.emptySegment(),
-            5: this.emptySegment(),
-            6: this.emptySegment(),
+    updateSegments(updatedSegments: Array<number> | null = null): Promise<SegmentList> {
+        if (!updatedSegments) updatedSegments = [0, 1, 2, 3, 4, 5, 6];
+        let refreshPromises: Array<Promise<SegmentParams>> = [];
+        for (const us of updatedSegments) {
+            this.segments[us] = this.emptySegment(us);
+            const sdecl = kSegmentDecls[us];
+            refreshPromises.push(this.loadSegmentParams(
+                us,
+                sdecl.rateParam, sdecl.startLevelParam, sdecl.endLevelParam
+            ))
         }
-
-        const promises = [
-            this.loadSegmentParams(0, Model.ParamTag.TAG_ENV_HT, null, null),
-            this.loadSegmentParams(1, Model.ParamTag.TAG_ENV_AR, null, ParamTag.TAG_ENV_AL),
-            this.loadSegmentParams(2, Model.ParamTag.TAG_ENV_DR1, ParamTag.TAG_ENV_AL, ParamTag.TAG_ENV_DL1),
-            this.loadSegmentParams(3, Model.ParamTag.TAG_ENV_DR2, ParamTag.TAG_ENV_DL1, ParamTag.TAG_ENV_SL),
-            this.loadSegmentParams(4, null, ParamTag.TAG_ENV_SL, ParamTag.TAG_ENV_SL),
-            this.loadSegmentParams(5, Model.ParamTag.TAG_ENV_RR1, ParamTag.TAG_ENV_SL, ParamTag.TAG_ENV_RL1),
-            this.loadSegmentParams(6, Model.ParamTag.TAG_ENV_RR2, ParamTag.TAG_ENV_RL1, null)
-        ];
 
         // Once all segment params are loaded we can then proceed to do the calculations of points.
         return new Promise((resolve, reject) => {
-            Promise.all(promises).then((segmentParams) => {
+            Promise.all(refreshPromises).then((segmentParams) => {
                 let totalDuration = 0;
-                for (const segmentParam of segmentParams) {
-                    if (segmentParam.rateParam) {
-                        if (Model.ParseTag(segmentParam.rateParam.info.id).Param == Model.ParamTag.TAG_ENV_SL) {
-                            totalDuration += kSustainDuration;
-                        } else {
-                            totalDuration += ValueOf(segmentParam.rateParam);
-                        }
+                for (const sd in this.segments) {
+                    if (!this.segments[sd] || !this.segments[sd].params) continue;
+                    const segmentParam = this.segments[sd].params;
+                    if (!segmentParam.rateParam) continue;
+                    if (Model.ParseTag(segmentParam.rateParam.info.id).Param == Model.ParamTag.TAG_ENV_SL) {
+                        totalDuration += kSustainDuration;
+                    } else {
+                        totalDuration += ValueOf(segmentParam.rateParam);
                     }
                 }
-                console.log(`total duration: ${totalDuration}`)
                 if (this.canvas) {
                     let xpos = 0;
-                    let height = this.canvas.height;
-                    let width = this.canvas.width;
+                    const height = this.canvas.height;
+                    const width = this.canvas.width;
                     for (const s in this.segments) {
                         const segment = this.segments[s];
                         let duration = 0;
@@ -267,35 +293,33 @@ export class GraphicalEnvelopeEditorView implements GeneratorView, IDependent {
         });
     }
 
-    onMouseDown(event : MouseEvent) {
+    onMouseDown(event: MouseEvent) {
         if (!this.draggingSegment) {
             for (const sid in this.segments) {
                 const s = this.segments[sid];
                 if (!s.points) continue;
                 if (!s.points.dragBox) continue;
                 if (event.offsetX >= s.points.dragBox[0] &&
-                event.offsetY >= s.points.dragBox[1] &&
-                event.offsetX <= s.points.dragBox[0] + s.points.dragBox[2] &&
-                event.offsetY <= s.points.dragBox[1] + s.points.dragBox[3]) {
+                    event.offsetY >= s.points.dragBox[1] &&
+                    event.offsetX <= s.points.dragBox[0] + s.points.dragBox[2] &&
+                    event.offsetY <= s.points.dragBox[1] + s.points.dragBox[3]) {
                     this.draggingSegment = s;
                 }
             }
         }
     }
 
-    onMouseMove(event : MouseEvent) {
+    onMouseMove(event: MouseEvent) {
         if (!this.draggingSegment) return;
         if (!this.canvas) return;
-        if (!this.draggingSegment.params|| !this.draggingSegment.points || !this.draggingSegment.points.width) return;
+        if (!this.draggingSegment.params || !this.draggingSegment.points || !this.draggingSegment.points.width) return;
         if (event.offsetX < 0 && event.offsetY < 0) return;
         if (event.offsetX > this.canvas.width || event.offsetY > this.canvas.height) return;
-
-        console.log(event);
+        if (!this.draggingSegment.points.dragBox) return;
 
         let changed = false;
 
-        const deltaX = event.movementX;
-        const deltaY = event.movementY;
+        const deltaX = event.offsetX - this.draggingSegment.points.dragBox[0] + kDragboxHalfWidthHeight;
         const rateParam = this.draggingSegment.params.rateParam;
         if (rateParam && deltaX) {
             const deltaR = deltaX / this.draggingSegment.points.width;
@@ -305,20 +329,15 @@ export class GraphicalEnvelopeEditorView implements GeneratorView, IDependent {
         }
 
         const levelParam = this.draggingSegment.params.endLevelParam;
-        if (levelParam && deltaY) {
+        if (levelParam) {
             // float change_n = 1 - (y / getHeight());
             const deltaL = 1 - (event.offsetY / this.canvas.height);
             controller.setParamNormalized(levelParam.info.id, deltaL);
             changed = true;
         }
-
-        if (changed)
-            this.refresh();
     }
 
-    onMouseUp(event : MouseEvent) {
-        console.log("mouse up");
-        if (!this.draggingSegment) return;
+    onMouseUp(event: MouseEvent) {
         this.draggingSegment = null;
     }
 
@@ -329,7 +348,16 @@ export class GraphicalEnvelopeEditorView implements GeneratorView, IDependent {
     changed(parameter: IParameter): void {
         let tag = ParseTag(parameter.info.id);
         if (tag.Generator == this.gennum && tag.Target == this.target) {
-            this.refresh();
+            let updatedSegments: Array<number> = [];
+            for (const sd in this.segments) {
+                const segment = this.segments[sd];
+                if (!segment.params) continue;
+                if (segment.params.rateParam?.info.id == parameter.info.id ||
+                    segment.params.endLevelParam?.info.id == parameter.info.id ||
+                    segment.params.startLevelParam?.info.id == parameter.info.id)
+                    updatedSegments.push(segment.id);
+            }
+            this.refresh(updatedSegments);
         }
     }
 
@@ -342,7 +370,6 @@ export class GraphicalEnvelopeEditorView implements GeneratorView, IDependent {
         if (!this.segments || !this.canvas) return;
         let ctx = this.canvas.getContext("2d");
         if (!ctx) return;
-        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.beginPath();
         ctx.moveTo(0, this.canvas.height);
         let x = 0;
@@ -361,6 +388,7 @@ export class GraphicalEnvelopeEditorView implements GeneratorView, IDependent {
                 ctx.lineTo(x++, this.canvas?.height - height);
             }
         }
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.stroke();
         ctx.beginPath();
         for (const sid in this.segments) {
