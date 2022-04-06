@@ -151,7 +151,15 @@ smtg_add_vst3plugin(sidebands
         source/controller/webview_controller_bindings.h
 
         source/controller/webui/index.ts
-        source/controller/webui/pureknob.ts
+        source/controller/webui/view/pureknob.ts
+        source/controller/webui/view/templates.tsx
+        source/controller/webui/view/controls.ts
+        source/controller/webui/view/envelope_editor_view.ts
+        source/controller/webui/view/generator_tab_view.ts
+        source/controller/webui/view/main_view.ts
+        source/controller/webui/view/views.ts
+        source/controller/webui/model/sidebands_model.ts
+        source/controller/webui/model/vst_model.ts
         source/controller/webui/style.css
         source/controller/webui/index.html
         )

@@ -90,9 +90,8 @@ export class ParameterKnob extends BaseParameterControlView<HTMLElement> impleme
     }
 
     changed(parameter: VstModel.IParameter): void {
-        // Don't propagate the change if it's not our parameter or if the value has already been updated.
         if (parameter.info.id == this.parameter.info.id &&
-            parameter.normalized != this.parameter.normalized) {
+            this.knobView.val != this.normalizedToPlain(parameter.normalized)) {
             this.parameter =<IRangeParameter>parameter;
             this.knobView.setValueFloating(this.normalizedToPlain(parameter.normalized));
             this.knobView.commit(false);
@@ -101,6 +100,7 @@ export class ParameterKnob extends BaseParameterControlView<HTMLElement> impleme
 
     refresh() {
         VstModel.controller.getParameterObject(SidebandsModel.ParamIDFor(this.pTag)).then((p) => {
+            this.parameter = <IRangeParameter>p;
             this.changed(p);
         });
     }
