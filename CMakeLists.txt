@@ -93,6 +93,23 @@ ELSE()
     set(PLATFORM_LIBRARIES tbb)
 ENDIF()
 
+IF (WIN32)
+    set(WEBVIEW_PLATFORM_SOURCES
+            source/controller/webview/win32/webview_win32.h
+            source/controller/webview/win32/webview_win32.cc
+            source/controller/webview/win32/webview_edge_chromium.h
+            source/controller/webview/win32/webview_edge_chromium.cc)
+ENDIF()
+
+if(UNIX AND NOT APPLE)
+    set(WEBVIEW_PLATFORM_SOURCES
+            source/controller/webview/gtk/webview_gtk.h)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
+    pkg_check_modules(GTKMM3 REQUIRED gtkmm-3.0)
+    pkg_check_modules(WEBKIT2GTK REQUIRED webkit2gtk-4.0 )
+endif()
+
 smtg_enable_vst3_sdk()
 smtg_add_vst3plugin(sidebands
         source/constants.h
@@ -141,10 +158,8 @@ smtg_add_vst3plugin(sidebands
 
         source/controller/webview/webview.h
         source/controller/webview/webview.cc
-        source/controller/webview/win32/webview_win32.h
-        source/controller/webview/win32/webview_win32.cc
-        source/controller/webview/win32/webview_edge_chromium.h
-        source/controller/webview/win32/webview_edge_chromium.cc
+        "${WEBVIEW_PLATFORM_SOURCES}"
+
         source/controller/webview_pluginview.h
         source/controller/webview_pluginview.cc
         source/controller/webview_controller_bindings.cc
@@ -187,20 +202,18 @@ if (WIN32)
     target_link_libraries(sidebands PRIVATE WIL::WIL Dwmapi Shlwapi)
 endif()
 
-add_custom_target(typed-html-install COMMAND npm install --saved typed-html)
-#add_custom_target(typescript-compile
-#        COMMAND tsc --module es6 --outDir ${CMAKE_CURRENT_BINARY_DIR}
-#        SOURCES source/controller/webui/index.ts source/controller/webui/templates.tsx
-#        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui
-#)
-#add_dependencies(typescript-compile typed-html-install)
+if(UNIX AND NOT APPLE)
+    target_include_directories(sidebands PRIVATE ${GTK3_INCLUDE_DIRS} ${WEBKIT2GTK_INCLUDE_DIRS} ${GTKMM3_INCLUDE_DIRS})
+    target_link_libraries(sidebands PRIVATE ${GTK3_LIBRARIES} ${WEBKIT2GTK_LIBRARIES} ${GTKMM3_LIBRARIES})
+endif()
 
-add_custom_target(webpack-install COMMAND npm install --saved-dev webpack webpack-cli)
-add_custom_target(ts-install COMMAND npm install --saved-dev typescript ts-loader ts-node)
+add_custom_target(npm-dependencies-install
+        COMMAND npm install -D
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui)
 add_custom_target(perform-webpack
         COMMAND npx webpack --config ${CMAKE_SOURCE_DIR}/source/controller/webui/webpack.config.js --env outdir=${CMAKE_BINARY_DIR}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui)
-add_dependencies(perform-webpack webpack-install ts-install typed-html-install)
+add_dependencies(perform-webpack npm-dependencies-install)
 add_dependencies(sidebands perform-webpack)
 
 smtg_target_add_plugin_resource(sidebands source/controller/webui/index.html)
