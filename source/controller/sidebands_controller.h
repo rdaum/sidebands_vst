@@ -62,7 +62,7 @@ public:
 
 private:
   std::unique_ptr<PatchController> patch_controller_;
-  Steinberg::ViewRect view_rect_{0, 0, 800, 1100};
+  Steinberg::ViewRect view_rect_{0, 0, 1024, 1200};
   std::unique_ptr<WebviewControllerBindings> webview_controller_bindings_;
   sidebands::ui::WebviewPluginView *webview_pluginview_;
 };

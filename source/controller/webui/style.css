@@ -28,6 +28,32 @@ body {
     margin-right: 32px;
 }
 
+.main-header {
+    display: flex;
+    height: 100px;
+    width: 100%;
+}
+
+.product-name {
+    height: 25px;
+    font-size: xxx-large;
+    color: var(--red-orange-color-wheel);
+    padding-right: 25px;
+}
+
+.main-viz {
+    width: 100%;
+    flex-grow: 1;
+}
+
+.company-name {
+    width: 50px;
+    font-size: larger;
+    color: var(--raisin-black);
+    padding-left: 25px;
+
+}
+
 .tabs {
     display: flex;
     overflow: hidden;
@@ -46,19 +72,6 @@ body {
     display: flex;
 }
 
-input[type="checkbox"] {
-    display: none;
-}
-input[type="checkbox"] {
-    background: url("MetalSwitchOff.png");
-    width: 78px;
-    height: 22px;
-}
-input[type="checkbox"]:checked {
-    background: url("MetalSwitchOn.png");
-    width: 78px;
-    height: 22px;
-}
 
 .tabs-label {
     font-size: larger;
@@ -92,6 +105,17 @@ input[type="checkbox"]:checked {
     box-shadow: 7px 7px 4px -3px var(--active);
 }
 
+.editor-row {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.settings-editor {
+    width: 150px;
+    margin-left: auto !important;
+}
+
 .editor-panel {
     box-shadow: 7px 7px 4px -3px var(--editor-region);
     background-color: var(--editor-region);
@@ -100,11 +124,12 @@ input[type="checkbox"]:checked {
     border-radius: 5px;
     font-size: smaller;
     text-align: center;
+    display: flex;
+    flex-direction: row;
 }
 
 .harmonics-editor {
-    display: flex;
-    width: 250px;
+    width: 175px;
 }
 
 .parameter {
@@ -125,6 +150,21 @@ h3 {
     grid-column-gap: 0px;
     grid-row-gap: 0px;
     width: 400px;
+}
+
+
+.harmonics-viz {
+    width: 380px;
+}
+
+
+.harmonics-viz-container {
+    width: 100%;
+    margin: 5px;
+    border-radius: 5px;
+    background: #F6BE00;
+    box-shadow: inset 5px 5px 10px #745900,
+    inset -5px -5px 10px #ffff00;
 }
 
 .hold {
@@ -167,47 +207,19 @@ h3 {
     grid-area: 2 / 6 / 3 / 7;
 }
 
-.main-header {
-    display: flex;
-    height: 75px;
-    width: 100%;
-}
-
-.product-name {
-    display: flex;
-    height: 25px;
-    align-items: flex-start;
-    width: 100%;
-    color: var(--red-orange-color-wheel)
-}
-
-.company-name {
-    display: flex;
-    justify-content: right;
-    align-items: flex-start;
-    width: 50px;
-    font-size: medium;
-    color: var(--raisin-black)
-}
-
-.editor-row {
-    display: flex;
-}
-
-.harmonics-viz {
-    width: 380px;
-}
-
-.env-viz {
-    width: 380px;
-}
 
 .lfo-panel {
     width: 400px;
     height: 200px;
 }
 
+
+.env-viz {
+    width: 370px;
+}
+
 .graphical-env-container {
+    width: 100%;
     margin: 5px;
     border-radius: 5px;
     background: #F6BE00;

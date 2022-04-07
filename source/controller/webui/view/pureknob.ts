@@ -51,16 +51,16 @@ class Knob {
             colorFG: '#ff8800',
             colorLabel: '#ffffff',
             fnStringToValue: function (str: string) {
-                return parseInt(str);
+                return parseFloat(str);
             },
             fnValueToString: function (value: any) {
                 return value.toString();
             },
             label: null,
-            needle: false,
+            needle: true,
             readonly: false,
             textScale: 1.0,
-            trackWidth: 0.4,
+            trackWidth: 0.2,
             valMin: 0,
             valMax: 100,
             val: 0
@@ -509,7 +509,7 @@ export function createKnob(width: number, height: number) {
                 e.preventDefault();
                 const val = mouseEventToValue(e, properties);
                 if (val)
-                    knob.setValueFloating(val);
+                    knob.value = val;
             }
 
             knob._mousebutton = true;
@@ -558,7 +558,7 @@ export function createKnob(width: number, height: number) {
                 e.preventDefault();
                 const val = mouseEventToValue(e, properties);
                 if (val)
-                    knob.setValueFloating(val);
+                    knob.value = val;
             }
 
         }
@@ -678,7 +678,7 @@ export function createKnob(width: number, height: number) {
                 knob._touchCount++;
                 const val = touchEventToValue(e, properties);
                 if (val)
-                    knob.setValueFloating(val);
+                    knob.value = val;
             }
 
         }
@@ -714,7 +714,7 @@ export function createKnob(width: number, height: number) {
                     e.preventDefault();
                     const val = touchEventToValue(e, properties);
                     if (val)
-                        knob.setValueFloating(val);
+                        knob.value = val;
                 }
 
             }

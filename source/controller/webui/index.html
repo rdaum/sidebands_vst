@@ -8,7 +8,10 @@
 <body id="sidebands_view">
 
 <div class="main-header">
-    <h1 class="product-name">sidebands</h1>
+    <span class="product-name">sidebands</span>
+    <div class="editor-panel main-viz">
+        <div class="harmonics-viz-container"></div>
+    </div>
     <h2 class="company-name">daum audio works</h2>
 </div>
 <!-- generator tabs -->
@@ -22,19 +25,22 @@
                 <label>Ratio</label>
                 <div id="carrier_ratio"></div>
             </div>
-            <span>&nbsp;</span>
             <div class="parameter">
                 <label>Mod Ratio</label>
                 <div id="modulation_ratio"></div>
             </div>
-            <span>&nbsp;</span>
             <div class="parameter">
                 <label>Mod Index</label>
                 <div id="modulation_index"></div>
             </div>
         </div>
-         <span>&nbsp;</span>
-        <div class="harmonics-viz editor-panel" id="harmonics-visual"></div>
+        <div class="harmonics-viz editor-panel">
+            <div class="harmonics-viz-container"  id="harmonics-visual">
+            </div>
+        </div>
+        <div class="settings-editor editor-panel">
+            presets here
+        </div>
     </span>
 
     <h3>AMPLITUDE ENVELOPE</h3>
@@ -42,7 +48,9 @@
         <div id="a_env_area">
         </div>
         <div class="env-viz editor-panel" id="a_env-graphical"></div>
-
+        <div class="settings-editor editor-panel">
+            presets here
+        </div>
     </span>
 
     <h3>MODULATION ENVELOPE</h3>
@@ -51,11 +59,17 @@
         </div>
 
         <div class="env-viz editor-panel" id="k_env-graphical"></div>
+        <div class="settings-editor editor-panel">
+            presets here
+        </div>
     </span>
     <h3>LOW FREQUENCY OSCILLATOR</h3>
     <span class="editor-row">
         <div id="lfo" class="lfo-panel editor-panel">
 
+        </div>
+        <div class="settings-editor editor-panel">
+            presets here
         </div>
     </span>
 </div>
