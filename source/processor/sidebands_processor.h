@@ -48,6 +48,7 @@ public:
   /** For persistence */
   Steinberg::tresult PLUGIN_API setState(Steinberg::IBStream *state) override;
   Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream *state) override;
+  Steinberg::tresult notify(Steinberg::Vst::IMessage *message) override;
 
 private:
   void SendEnvelopeStageChangedEvent(int note_id, int gennum, TargetTag target, off_t stage);

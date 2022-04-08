@@ -145,6 +145,46 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
   return kResultOk;
 }
 
+tresult SidebandsProcessor::notify(Vst::IMessage *message) {
+  if (!FIDStringsEqual(message->getMessageID(), kRequestAnalysisBufferMessageID)) {
+    return ComponentBase::notify(message);
+  }
+
+  const void *data;
+  Steinberg::uint32 size;
+  auto attributes = message->getAttributes();
+
+  int64 buffer_size;
+  int64 analysis_note;
+  int64 sample_rate;
+  attributes->getInt(kRequestAnalysisBufferSize, buffer_size);
+  attributes->getInt(kRequestAnalysisBufferNote, analysis_note);
+  attributes->getInt(kRequestAnalysisBufferSampleRate, sample_rate);
+
+  // Produce buffer by making a one-off player, but with the same patch we have
+  // now.
+  auto analyis_player = std::make_unique<Player>(patch_.get(), sample_rate);
+  analyis_player->NoteOn(std::chrono::high_resolution_clock::now(), 1, 1.0, analysis_note);
+
+  std::vector<Sample32> buffer(buffer_size);
+  analyis_player->Perform32(nullptr, buffer.data(), buffer_size);
+
+  // Send a response with the buffer data.
+  if (auto env_change_message = owned(allocateMessage())) {
+    env_change_message->setMessageID(kResponseAnalysisBufferMessageID);
+    auto *attributes = env_change_message->getAttributes();
+    attributes->setInt(kResponseAnalysisBufferSampleRate, sample_rate);
+    attributes->setInt(kResponseAnalysisBufferSize, buffer.size());
+    attributes->setInt(kResponseAnalysisBufferNote, analysis_note);
+    attributes->setBinary(kResponseAnalysisBufferData, buffer.data(), buffer.size());
+    sendMessage(env_change_message);
+
+    return Steinberg::kResultOk;
+  }
+
+  return Steinberg::kResultFalse;
+}
+
 tresult PLUGIN_API
 SidebandsProcessor::setupProcessing(Vst::ProcessSetup &newSetup) {
   LOG(INFO) << "Sidebands setupProcessing sampleRate: " << newSetup.sampleRate

@@ -47,6 +47,8 @@ export declare function selectUnit(unitId: number): Promise<void>;
 
 export declare function subscribeParameter(tag: number) : Promise<void>;
 
+export declare function sendMessage(messageId: number, message : {[attrId: string]: any}) : Promise<void>;
+
 export interface IDependent {
     changed(parameter : IParameter) : void;
 }
@@ -109,17 +111,45 @@ export class Controller {
     selectUnit(unitId: number): Promise<void> {
         return selectUnit(unitId);
     }
+
+    sendMessage(messageId: number, message : {[attrId: string]: any}) : Promise<void> {
+        return sendMessage(messageId, message);
+    }
 }
 
 export const controller = new Controller;
 
 export {}
 
+interface EnvelopeStageChangeMessage {
+    messageID: string;
+    kEnvelopeStageGennumAttr: number;
+    kEnvelopeStageNoteIDAttr: number;
+    kEnvelopeStageTargetAttr: number;
+    kEnvelopeStageStageAttr: number;
+}
+
+interface AnalysisBufferMessage {
+    messageID: string;
+    kResponseAnalysisBufferSampleRate: number;
+    kResponseAnalysisBufferSize: number;
+    kResponseAnalysisBufferNote: number;
+    kResponseAnalysisBufferData: Uint8Array;
+}
+
 declare global {
     function notifyParameterChange(parameter :IParameter) : void;
+    function receiveEnvelopeStageChange(payload : EnvelopeStageChangeMessage) : void;
+    function receiveAnalysisBuffer(payload : AnalysisBufferMessage) : void;
 }
 
 const _global = window;
 _global.notifyParameterChange = function (parameter :IParameter) : void {
     controller.notifyParameterChange(parameter);
+}
+_global.receiveEnvelopeStageChange = function(payload : EnvelopeStageChangeMessage) : void {
+    console.log(payload);
+}
+_global.receiveAnalysisBuffer = function(payload : AnalysisBufferMessage) : void {
+    console.log(payload);
 }

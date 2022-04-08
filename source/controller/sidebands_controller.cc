@@ -138,25 +138,11 @@ SidebandsController::endEditFromHost(Steinberg::Vst::ParamID paramID) {
 
 Steinberg::tresult
 SidebandsController::notify(Steinberg::Vst::IMessage *message) {
-  if (!FIDStringsEqual(message->getMessageID(), kEnvelopeStageMessageID)) {
-    return ComponentBase::notify(message);
-  }
-
-  const void *data;
-  Steinberg::uint32 size;
-  auto attributes = message->getAttributes();
-
-  int64 gennum;
-  int64 note_id;
-  int64 target;
-  int64 stage;
-
-  attributes->getInt(kEnvelopeStageNoteIDAttr, note_id);
-  attributes->getInt(kEnvelopeStageGennumAttr, gennum);
-  attributes->getInt(kEnvelopeStageTargetAttr, target);
-  attributes->getInt(kEnvelopeStageStageAttr, stage);
-
-  return Steinberg::kResultOk;
+  auto *ml = webview_controller_bindings_->message_listener();
+  if (!ml) return ComponentBase::notify(message);
+  tresult res = ml->Notify(message);
+  if (res != Steinberg::kResultOk) return ComponentBase::notify(message);
+  return res;
 }
 
 } // namespace sidebands

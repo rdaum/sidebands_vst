@@ -1,6 +1,12 @@
 #include "controller/webview_controller_bindings.h"
 
+#include <locale>
+#include <codecvt>
+
 #include <public.sdk/source/vst/utility/stringconvert.h>
+
+#include "globals.h"
+#include "pluginterfaces/base/ustring.h"
 
 namespace sidebands {
 
@@ -62,6 +68,70 @@ private:
 
 } // namespace
 
+void WebviewMessageListener::Subscribe(
+    const std::string &receiver, const std::string &message_id,
+    const std::vector<MessageAttribute> &attributes) {
+  subscriptions_[message_id] = {message_id, attributes, receiver};
+}
+
+json WebviewMessageListener::SerializeMessage(
+    Steinberg::Vst::IMessage *message,
+    const WebviewMessageListener::MessageDescriptor &descriptor) {
+  auto attributes = message->getAttributes();
+
+  json j = {{"messageId", message->getMessageID()}};
+  for (const auto &attr : descriptor.attributes) {
+    switch (attr.type) {
+    case MessageAttribute::Type::INT:
+      Steinberg::int64 i;
+      if (attributes->getInt(attr.name.c_str(), i) == Steinberg::kResultTrue) {
+        j[attr.name] = i;
+      }
+      break;
+    case MessageAttribute::Type::FLOAT:
+      double f;
+      if (attributes->getFloat(attr.name.c_str(), f) ==
+          Steinberg::kResultTrue) {
+        j[attr.name] = f;
+      }
+      break;
+    case MessageAttribute::Type::STRING:
+      Steinberg::Vst::TChar str[128];
+      if (attributes->getString(attr.name.c_str(), str,
+                                128 * sizeof(Steinberg::Vst::TChar)) ==
+          Steinberg::kResultTrue) {
+        j[attr.name] = str;
+      }
+      break;
+    case MessageAttribute::Type::BINARY:
+      const void *addr;
+      Steinberg::uint32 size;
+      if (attributes->getBinary(attr.name.c_str(), addr, size) ==
+          Steinberg::kResultTrue) {
+        std::vector<uint8_t> data(size);
+        std::memcpy(data.data(), addr, size);
+        j[attr.name] = data;
+      }
+      break;
+    }
+  }
+  return j;
+}
+
+Steinberg::tresult
+WebviewMessageListener::Notify(Steinberg::Vst::IMessage *message) {
+  auto *msg_id = message->getMessageID();
+
+  const auto &it = subscriptions_.find(msg_id);
+  if (it == subscriptions_.end())
+    return Steinberg::kResultFalse;
+
+  auto json = SerializeMessage(message, it->second.descriptor);
+  auto send_message_js = it->second.notify_function + "(" + json.dump() + ");";
+  webview_->EvalJS(send_message_js, [](const nlohmann::json &res) {});
+  return Steinberg::kResultOk;
+}
+
 WebviewControllerBindings::WebviewControllerBindings(
     Steinberg::Vst::EditControllerEx1 *controller)
     : thread_checker_(Steinberg::Vst::ThreadChecker::create()),
@@ -96,12 +166,56 @@ WebviewControllerBindings::WebviewControllerBindings(
                    BindCallback(&WebviewControllerBindings::GetSelectedUnit));
   DeclareJSBinding("selectUnit",
                    BindCallback(&WebviewControllerBindings::SelectUnit));
+  DeclareJSBinding("sendMessage",
+                   BindCallback(&WebviewControllerBindings::DoSendMessage));
 }
 
 void WebviewControllerBindings::Bind(webview::Webview *webview) {
+  message_listener_ = std::make_unique<WebviewMessageListener>(webview);
   for (auto &binding : bindings_) {
     webview->BindFunction(binding.first, binding.second);
   }
+  message_listener_->Subscribe(
+      "receiveEnvelopeStageChange", sidebands::kEnvelopeStageMessageID,
+      {
+          {
+              kEnvelopeStageNoteIDAttr,
+              WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kEnvelopeStageGennumAttr,
+              WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kEnvelopeStageTargetAttr,
+              WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kEnvelopeStageStageAttr,
+              WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+      });
+  message_listener_->Subscribe(
+      "receiveAnalysisBuffer", sidebands::kResponseAnalysisBufferMessageID,
+      {
+          {
+              kResponseAnalysisBufferSampleRate,
+              WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kResponseAnalysisBufferSize,
+              WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kResponseAnalysisBufferNote,
+              WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kResponseAnalysisBufferData,
+              WebviewMessageListener::MessageAttribute::Type::BINARY,
+          },
+      }
+      );
 }
 
 webview::Webview::FunctionBinding
@@ -219,6 +333,39 @@ json WebviewControllerBindings::SubscribeParameter(webview::Webview *webview,
     param_dep_proxy_ = std::make_unique<ParameterDependenciesProxy>(webview);
   }
   param->addDependent(param_dep_proxy_.get());
+  return true;
+}
+
+json WebviewControllerBindings::DoSendMessage(webview::Webview *webview,
+                                            const json &in) {
+  thread_checker_->test();
+  std::string messageId = in[0];
+  json attributes = in[1];
+  if (auto msg = owned(controller_->allocateMessage())) {
+    msg->setMessageID(messageId.c_str());
+    auto msg_attrs = msg->getAttributes();
+    for (const auto &k : attributes.items()) {
+      auto type = k.value().type();
+      auto attr_id = k.key().c_str();
+      if (type == json::value_t::number_float) {
+        msg_attrs->setFloat(attr_id, k.value());
+      } else if (type == json::value_t::number_integer ||
+                 type == json::value_t::number_unsigned ||
+                 type == json::value_t::boolean) {
+        msg_attrs->setInt(attr_id, k.value());
+      } else if (type == json::value_t::string) {
+        std::string str = k.value();
+        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+        std::wstring wide = converter.from_bytes(str);
+        msg_attrs->setString(attr_id, wide.c_str());
+      } else if (type == json::value_t::binary) {
+        json::binary_t b = k.value();
+        msg_attrs->setBinary(attr_id, b.data(), b.size());
+      }
+    }
+    controller_->sendMessage(msg);
+  }
+
   return true;
 }
 
