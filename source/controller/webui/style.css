@@ -162,9 +162,9 @@ h3 {
     width: 100%;
     margin: 5px;
     border-radius: 5px;
-    background: #F6BE00;
-    box-shadow: inset 5px 5px 10px #745900,
-    inset -5px -5px 10px #ffff00;
+    background: #80d2ff;
+    box-shadow: inset 7px 7px 14px #65a6c9,
+    inset -7px -7px 14px #9bfeff;
 }
 
 .hold {
@@ -222,7 +222,7 @@ h3 {
     width: 100%;
     margin: 5px;
     border-radius: 5px;
-    background: #F6BE00;
-    box-shadow: inset 5px 5px 10px #745900,
-    inset -5px -5px 10px #ffff00;
+    background: #80d2ff;
+    box-shadow: inset 7px 7px 14px #65a6c9,
+    inset -7px -7px 14px #9bfeff;
 }

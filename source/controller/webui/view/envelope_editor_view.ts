@@ -373,7 +373,7 @@ export class GraphicalEnvelopeEditorView implements GeneratorView, IDependent {
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.beginPath();
         ctx.lineWidth = 3;
-        ctx.strokeStyle = "#141414";
+        ctx.strokeStyle = "#1e2a96";
         ctx.moveTo(0, this.canvas.height);
         let x = 0;
         for (const sid in this.segments) {
