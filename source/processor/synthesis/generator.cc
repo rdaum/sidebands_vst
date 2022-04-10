@@ -27,6 +27,24 @@ void Generator::Produce(SampleRate sample_rate, GeneratorPatch &patch,
   }
 }
 
+void Generator::Synthesize(SampleRate sample_rate, GeneratorPatch &patch,
+                        OscBuffer &out_buffer,
+                        Steinberg::Vst::ParamValue base_freq) {
+  auto frames_per_buffer = out_buffer.size();
+  OscParams params(frames_per_buffer);
+
+
+  params.note_freq = base_freq;
+  params.K = patch.ParameterGetterFor(TARGET_K)();
+  params.C = patch.ParameterGetterFor(TARGET_C)();
+  params.R = patch.ParameterGetterFor(TARGET_R)();
+  params.S = patch.ParameterGetterFor(TARGET_S)();
+  params.M = patch.ParameterGetterFor(TARGET_M)();
+
+  auto o = MakeOscillator(patch.osc_type());
+  o->Perform(sample_rate, out_buffer, params);
+}
+
 void Generator::Perform(SampleRate sample_rate, GeneratorPatch &patch,
                         OscBuffer &out_buffer,
                         Steinberg::Vst::ParamValue base_freq) {

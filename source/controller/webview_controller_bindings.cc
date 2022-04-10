@@ -176,7 +176,7 @@ void WebviewControllerBindings::Bind(webview::Webview *webview) {
     webview->BindFunction(binding.first, binding.second);
   }
   message_listener_->Subscribe(
-      "receiveEnvelopeStageChange", sidebands::kEnvelopeStageMessageID,
+      "receiveMessage", sidebands::kEnvelopeStageMessageID,
       {
           {
               kEnvelopeStageNoteIDAttr,
@@ -196,7 +196,7 @@ void WebviewControllerBindings::Bind(webview::Webview *webview) {
           },
       });
   message_listener_->Subscribe(
-      "receiveAnalysisBuffer", sidebands::kResponseAnalysisBufferMessageID,
+      "receiveMessage", sidebands::kResponseAnalysisBufferMessageID,
       {
           {
               kResponseAnalysisBufferSampleRate,
@@ -207,7 +207,7 @@ void WebviewControllerBindings::Bind(webview::Webview *webview) {
               WebviewMessageListener::MessageAttribute::Type::INT,
           },
           {
-              kResponseAnalysisBufferNote,
+              kResponseAnalysisBufferFreq,
               WebviewMessageListener::MessageAttribute::Type::INT,
           },
           {
@@ -217,7 +217,7 @@ void WebviewControllerBindings::Bind(webview::Webview *webview) {
       }
       );
   message_listener_->Subscribe(
-      "receiveSpectrumBuffer", sidebands::kResponseSpectrumBufferMessageID,
+      "receiveMessage", sidebands::kResponseSpectrumBufferMessageID,
       {
           {
               kResponseSpectrumBufferSampleRate,
@@ -228,7 +228,7 @@ void WebviewControllerBindings::Bind(webview::Webview *webview) {
               WebviewMessageListener::MessageAttribute::Type::INT,
           },
           {
-              kResponseSpectrumBufferNote,
+              kResponseSpectrumBufferFreq,
               WebviewMessageListener::MessageAttribute::Type::INT,
           },
           {

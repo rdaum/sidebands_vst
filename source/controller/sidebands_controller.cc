@@ -149,7 +149,7 @@ SidebandsController::ProduceFFTResponseMessageFor(
     if (analysis_attrs->getInt(kResponseAnalysisBufferSize, buffer_size) !=
         Steinberg::kResultOk)
       return nullptr;
-    if (analysis_attrs->getInt(kResponseAnalysisBufferNote, analysis_note) !=
+    if (analysis_attrs->getInt(kResponseAnalysisBufferFreq, analysis_note) !=
         Steinberg::kResultOk)
       return nullptr;
 
@@ -169,7 +169,7 @@ SidebandsController::ProduceFFTResponseMessageFor(
     auto *attributes = env_change_message->getAttributes();
     attributes->setInt(kResponseSpectrumBufferSampleRate, sample_rate);
     attributes->setInt(kResponseSpectrumBufferSize, buffer_size);
-    attributes->setInt(kResponseSpectrumBufferNote, analysis_note);
+    attributes->setInt(kResponseSpectrumBufferFreq, analysis_note);
     attributes->setBinary(kResponseSpectrumBufferData, &sbuffer[1],
                           sbuffer.size() * sizeof(double));
 

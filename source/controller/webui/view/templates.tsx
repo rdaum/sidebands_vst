@@ -80,10 +80,18 @@ export function MakeEnvelopeEditor(targetPrefix : string) {
 function GraphicalEnvelope(attributes : Attributes, contents: string[]) {
     let target_str = attributes['target-prefix'];
     return <div id={target_str + "-graph-env"} class="graphical-env-container">
-        <canvas id={target_str + "-graph-env-canvas"}></canvas>
+        <canvas id={target_str + "-graph-env-canvas"} class="viz-canvas"></canvas>
     </div>;
 }
 
 export function MakeGraphicalEnvelopeEditor(targetPrefix : string) {
     return MakeElement(<GraphicalEnvelope target-prefix={targetPrefix}/>);
+}
+
+function HarmonicsView(attributes : Attributes, contents: string[]) {
+    return <canvas class={"graph-harmonics-canvas viz-canvas"}></canvas>;
+}
+
+export function MakeHarmonicsView() {
+    return MakeElement(<HarmonicsView/>);
 }

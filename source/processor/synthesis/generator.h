@@ -23,6 +23,11 @@ class Generator {
   Generator();
   virtual ~Generator() = default;
 
+  // Just synthesize, no modulation. For analysis.
+  void Synthesize(SampleRate sample_rate, GeneratorPatch &patch,
+                    OscBuffer &out_buffer, Steinberg::Vst::ParamValue base_freq);
+
+  // Synthesize and apply modulation and envelope.
   void Perform(SampleRate sample_rate, GeneratorPatch &patch,
                OscBuffer &out_buffer, Steinberg::Vst::ParamValue base_freq);
 

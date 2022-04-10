@@ -4,7 +4,7 @@ import * as Model from "../model/sidebands_model";
 import * as Env from "./envelope_editor_view";
 import {GD, GeneratorView, View} from "./views";
 import {addTab, GeneratorTabView} from "./generator_tab_view";
-import {kNumGenerators} from "../model/sidebands_model";
+import * as Viz from './harmonics_analysis_view';
 
 export class MainView implements View {
     controls: Array<IParameterControl>;
@@ -53,6 +53,12 @@ export class MainView implements View {
                     Param: Model.ParamTag.TAG_OSC,
                     Target: Model.TargetTag.TARGET_K
                 }).then(pushControl);
+
+            let viz_area = GD("harmonics-visual");
+            if (viz_area)
+                this.subViews.push(
+                    new Viz.HarmonicsAnaylsisView(<HTMLDivElement>viz_area, selectedUnit)
+                );
 
             let a_env_area = GD("a_env_area");
             if (a_env_area)

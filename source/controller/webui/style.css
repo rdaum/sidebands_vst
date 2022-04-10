@@ -153,10 +153,27 @@ h3 {
 }
 
 
+.env-viz {
+    width: 370px;
+}
+
+.graphical-env-container {
+    width: 100%;
+    margin: 5px;
+    padding: 0px;
+    border-radius: 5px;
+    background: #80d2ff;
+    box-shadow: inset 7px 7px 14px #65a6c9,
+    inset -7px -7px 14px #9bfeff;
+}
+
+.viz-canvas {
+    width: 100%;
+}
+
 .harmonics-viz {
     width: 380px;
 }
-
 
 .harmonics-viz-container {
     width: 100%;
@@ -213,16 +230,3 @@ h3 {
     height: 200px;
 }
 
-
-.env-viz {
-    width: 370px;
-}
-
-.graphical-env-container {
-    width: 100%;
-    margin: 5px;
-    border-radius: 5px;
-    background: #80d2ff;
-    box-shadow: inset 7px 7px 14px #65a6c9,
-    inset -7px -7px 14px #9bfeff;
-}

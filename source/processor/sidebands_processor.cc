@@ -146,26 +146,28 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
 }
 
 tresult SidebandsProcessor::notify(Vst::IMessage *message) {
-  if (!FIDStringsEqual(message->getMessageID(), kRequestAnalysisBufferMessageID)) {
+  if (!FIDStringsEqual(message->getMessageID(),
+                       kRequestAnalysisBufferMessageID)) {
     return ComponentBase::notify(message);
   }
 
   auto attributes = message->getAttributes();
 
   int64 buffer_size;
-  int64 analysis_note;
+  int64 frequency;
   int64 sample_rate;
+  int64 gennum;
   attributes->getInt(kRequestAnalysisBufferSize, buffer_size);
-  attributes->getInt(kRequestAnalysisBufferNote, analysis_note);
+  attributes->getInt(kRequestAnalysisBufferFreq, frequency);
   attributes->getInt(kRequestAnalysisBufferSampleRate, sample_rate);
+  attributes->getInt(kRequestAnalysisBufferGennnum, gennum);
 
-  // Produce buffer by making a one-off player, but with the same patch we have
-  // now.
-  auto analyis_player = std::make_unique<Player>(patch_.get(), sample_rate);
-  analyis_player->NoteOn(std::chrono::high_resolution_clock::now(), 1, 1.0, analysis_note);
-
-  std::vector<Sample32> buffer(buffer_size);
-  analyis_player->Perform32(nullptr, buffer.data(), buffer_size);
+  // Produce buffer by making a one-off generator
+  ModFMOscillator oscillator;
+  Generator analysis_generator;
+  OscBuffer buffer(buffer_size);
+  analysis_generator.Synthesize(sample_rate, *patch_->generators_[gennum],
+                                buffer, frequency);
 
   // Send a response with the buffer data.
   if (auto env_change_message = owned(allocateMessage())) {
@@ -173,8 +175,10 @@ tresult SidebandsProcessor::notify(Vst::IMessage *message) {
     auto *attributes = env_change_message->getAttributes();
     attributes->setInt(kResponseAnalysisBufferSampleRate, sample_rate);
     attributes->setInt(kResponseAnalysisBufferSize, buffer.size());
-    attributes->setInt(kResponseAnalysisBufferNote, analysis_note);
-    attributes->setBinary(kResponseAnalysisBufferData, buffer.data(), buffer.size());
+    attributes->setInt(kResponseAnalysisBufferFreq, frequency);
+
+    attributes->setBinary(kResponseAnalysisBufferData, &buffer[0],
+                          buffer.size() * sizeof(double));
     sendMessage(env_change_message);
 
     return Steinberg::kResultOk;
@@ -191,7 +195,8 @@ SidebandsProcessor::setupProcessing(Vst::ProcessSetup &newSetup) {
 
   player_ = std::make_unique<Player>(patch_.get(), newSetup.sampleRate);
   // Connect asynchronous events to update the UI.
-  player_->events.EnvelopeStageChange.connect(&SidebandsProcessor::SendEnvelopeStageChangedEvent, this);
+  player_->events.EnvelopeStageChange.connect(
+      &SidebandsProcessor::SendEnvelopeStageChangedEvent, this);
 
   return AudioEffect::setupProcessing(newSetup);
 }
