@@ -27,4 +27,10 @@ constexpr const char *kResponseAnalysisBufferSize = "kResponseAnalysisBufferSize
 constexpr const char *kResponseAnalysisBufferNote = "kResponseAnalysisBufferNote";
 constexpr const char *kResponseAnalysisBufferData = "kResponseAnalysisBufferData";
 
+constexpr const char *kResponseSpectrumBufferMessageID = "kResponseSpectrumBufferMessageID";
+constexpr const char *kResponseSpectrumBufferSampleRate = "kResponseSpectrumBufferSampleRate";
+constexpr const char *kResponseSpectrumBufferSize = "kResponseSpectrumBufferSize";
+constexpr const char *kResponseSpectrumBufferNote = "kResponseSpectrumBufferNote";
+constexpr const char *kResponseSpectrumBufferData = "kResponseSpectrumBufferData";
+
 } // namespace sidebands

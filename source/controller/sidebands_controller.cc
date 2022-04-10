@@ -7,6 +7,7 @@
 #include "controller/patch_controller.h"
 #include "controller/webview_controller_bindings.h"
 #include "controller/webview_pluginview.h"
+#include "dsp/fft.h"
 #include "globals.h"
 #include "sidebands_cids.h"
 #include "tags.h"
@@ -136,12 +137,66 @@ SidebandsController::endEditFromHost(Steinberg::Vst::ParamID paramID) {
   return endEdit(paramID);
 }
 
+IPtr<Steinberg::Vst::IMessage>
+SidebandsController::ProduceFFTResponseMessageFor(
+    Steinberg::Vst::IMessage *message) {
+  if (auto env_change_message = owned(allocateMessage())) {
+    auto analysis_attrs = message->getAttributes();
+    int64 sample_rate, buffer_size, analysis_note;
+    if (analysis_attrs->getInt(kResponseAnalysisBufferSampleRate,
+                               sample_rate) != Steinberg::kResultOk)
+      return nullptr;
+    if (analysis_attrs->getInt(kResponseAnalysisBufferSize, buffer_size) !=
+        Steinberg::kResultOk)
+      return nullptr;
+    if (analysis_attrs->getInt(kResponseAnalysisBufferNote, analysis_note) !=
+        Steinberg::kResultOk)
+      return nullptr;
+
+    const double *buffer_data;
+    uint32 buffer_data_size;
+    if (analysis_attrs->getBinary(kResponseAnalysisBufferData,
+                                  (const void *&)buffer_data,
+                                  buffer_data_size) != Steinberg::kResultOk)
+      return nullptr;
+    auto fft_buffer =
+        ScalarToComplex(buffer_data, buffer_data_size / sizeof(double));
+    HanningWindow(fft_buffer);
+    FFT(fft_buffer);
+    std::valarray<double> sbuffer = ComplexToScalar(fft_buffer);
+
+    env_change_message->setMessageID(kResponseSpectrumBufferMessageID);
+    auto *attributes = env_change_message->getAttributes();
+    attributes->setInt(kResponseSpectrumBufferSampleRate, sample_rate);
+    attributes->setInt(kResponseSpectrumBufferSize, buffer_size);
+    attributes->setInt(kResponseSpectrumBufferNote, analysis_note);
+    attributes->setBinary(kResponseSpectrumBufferData, &sbuffer[1],
+                          sbuffer.size() * sizeof(double));
+
+    return env_change_message;
+  }
+  return nullptr;
+}
+
 Steinberg::tresult
 SidebandsController::notify(Steinberg::Vst::IMessage *message) {
   auto *ml = webview_controller_bindings_->message_listener();
-  if (!ml) return ComponentBase::notify(message);
+  if (!ml)
+    return ComponentBase::notify(message);
+
+  // Intercept buffer request response and provide an FFT spectrum analysis
+  // along with it.
+  if (FIDStringsEqual(message->getMessageID(),
+                      kResponseAnalysisBufferMessageID)) {
+    auto fft_message = ProduceFFTResponseMessageFor(message);
+    if (fft_message) {
+      ml->Notify(fft_message);
+    }
+  }
+
   tresult res = ml->Notify(message);
-  if (res != Steinberg::kResultOk) return ComponentBase::notify(message);
+  if (res != Steinberg::kResultOk)
+    return ComponentBase::notify(message);
   return res;
 }
 

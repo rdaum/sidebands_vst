@@ -108,7 +108,7 @@ json WebviewMessageListener::SerializeMessage(
       Steinberg::uint32 size;
       if (attributes->getBinary(attr.name.c_str(), addr, size) ==
           Steinberg::kResultTrue) {
-        std::vector<uint8_t> data(size);
+        std::vector<double> data(size / sizeof(double));
         std::memcpy(data.data(), addr, size);
         j[attr.name] = data;
       }
@@ -216,6 +216,28 @@ void WebviewControllerBindings::Bind(webview::Webview *webview) {
           },
       }
       );
+  message_listener_->Subscribe(
+      "receiveSpectrumBuffer", sidebands::kResponseSpectrumBufferMessageID,
+      {
+          {
+              kResponseSpectrumBufferSampleRate,
+              WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kResponseSpectrumBufferSize,
+              WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kResponseSpectrumBufferNote,
+              WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kResponseSpectrumBufferData,
+              WebviewMessageListener::MessageAttribute::Type::BINARY,
+          },
+      }
+  );
+
 }
 
 webview::Webview::FunctionBinding

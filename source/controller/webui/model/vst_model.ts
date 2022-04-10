@@ -134,13 +134,22 @@ interface AnalysisBufferMessage {
     kResponseAnalysisBufferSampleRate: number;
     kResponseAnalysisBufferSize: number;
     kResponseAnalysisBufferNote: number;
-    kResponseAnalysisBufferData: Uint8Array;
+    kResponseAnalysisBufferData: Float64Array;
+}
+
+interface SpectrumBufferMessage {
+    messageID: string;
+    kResponseSpectrumBufferSampleRate: number;
+    kResponseSpectrumBufferSize: number;
+    kResponseSpectrumBufferNote: number;
+    kResponseSpectrumBufferData: Float64Array;
 }
 
 declare global {
     function notifyParameterChange(parameter :IParameter) : void;
     function receiveEnvelopeStageChange(payload : EnvelopeStageChangeMessage) : void;
     function receiveAnalysisBuffer(payload : AnalysisBufferMessage) : void;
+    function receiveSpectrumBuffer(payload : SpectrumBufferMessage) : void;
 }
 
 const _global = window;
@@ -151,5 +160,8 @@ _global.receiveEnvelopeStageChange = function(payload : EnvelopeStageChangeMessa
     console.log(payload);
 }
 _global.receiveAnalysisBuffer = function(payload : AnalysisBufferMessage) : void {
+    console.log(payload);
+}
+_global.receiveSpectrumBuffer = function(payload : SpectrumBufferMessage) : void {
     console.log(payload);
 }

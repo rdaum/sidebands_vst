@@ -150,8 +150,6 @@ tresult SidebandsProcessor::notify(Vst::IMessage *message) {
     return ComponentBase::notify(message);
   }
 
-  const void *data;
-  Steinberg::uint32 size;
   auto attributes = message->getAttributes();
 
   int64 buffer_size;

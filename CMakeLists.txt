@@ -136,6 +136,8 @@ smtg_add_vst3plugin(sidebands
         source/dsp/integrator.cc
         source/dsp/dc_block.h
         source/dsp/dc_block.cc
+        source/dsp/fft.cc
+        source/dsp/fft.h
 
         source/processor/synthesis/envgen.h
         source/processor/synthesis/envgen.cc
