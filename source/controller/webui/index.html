@@ -15,73 +15,86 @@
 <div class="tabs" id="generator_selector">
 </div>
 <div class="generator-editor">
-    <h3>AMPLITUDE</h3>
-    <span class="editor-row">
-        <div id="a_ctrl" class="editor-panel ampl-editor">
-            <div class="parameter">
-                <img id='a_switch' src="MetalSwitchOn.png">
+    <div class="section">
+        <div class="section-header">AMPLITUDE</div>
+        <div class="editor-row">
+            <div id="a_ctrl" class="editor-panel ampl-editor">
+                <div class="parameter">
+                    <img id='a_switch' src="MetalSwitchOn.png">
+                </div>
+                <div class="parameter">
+                    <label>Level</label>
+                    <div id="a_level"></div>
+                </div>
+                <div class="parameter">
+                    <label>Vel. Sens</label>
+                    <div id="velsense"></div>
+                </div>
             </div>
-            <div class="parameter">
-                <label>Level</label>
-                <div id="a_level"></div>
+            <div id="a_env_area">
             </div>
-            <div class="parameter">
-                <label>Vel. Sens</label>
-                <div id="velsense"></div>
-            </div>
-        </div>
-        <div id="a_env_area">
-        </div>
-        <div class="env-viz editor-panel" id="a_env-graphical"></div>
-        <div class="settings-editor editor-panel">
-            presets here
-        </div>
-    </span>
-    <h3>HARMONICS</h3>
-    <span class="editor-row">
-        <div class="harmonics-editor editor-panel" id="generator_editor">
-            <div class="parameter">
-                <label>Ratio</label>
-                <div id="carrier_ratio"></div>
-            </div>
-            <div class="parameter">
-                <label>Mod Ratio</label>
-                <div id="modulation_ratio"></div>
-            </div>
-            <div class="parameter">
-                <label>Mod Index</label>
-                <div id="modulation_index"></div>
+            <div class="env-viz editor-panel" id="a_env-graphical"></div>
+            <div class="settings-editor editor-panel">
+                presets here
             </div>
         </div>
-        <div id="harmonics-viz" class="harmonics-viz editor-panel">
-            <div class="harmonics-viz-container"  id="harmonics-visual">
+    </div>
+    <div class="section">
+        <div class="section-header">HARMONICS</div>
+        <span class="editor-row">
+            <div class="harmonics-editor editor-panel" id="generator_editor">
+                <div class="parameter">
+                    <label>Ratio</label>
+                    <div id="carrier_ratio"></div>
+                </div>
+                <div class="parameter">
+                    <label>Mod Ratio</label>
+                    <div id="modulation_ratio"></div>
+                </div>
+                <div class="parameter">
+                    <label>Mod Index</label>
+                    <div id="modulation_index"></div>
+                </div>
+            </div>
+            <div id="harmonics-viz" class="harmonics-viz editor-panel">
+                <div class="harmonics-viz-container"  id="harmonics-visual">
+                </div>
+            </div>
+            <div id="spectrum-viz" class="harmonics-viz editor-panel">
+                <div class="harmonics-viz-container"  id="spectrum-visual">
+                </div>
+            </div>
+            <div class="settings-editor editor-panel">
+                presets here
+            </div>
+        </span>
+    </div>
+    <div class="section">
+        <div class="section-header">
+            <button class="mod-add-button" id="mod-add">+</button>
+            <span>MODULATION</span>
+        </div>
+        <div class="editor-row">
+            <div class="modulation-selector-panel editor-panel" id="mod-selector">
+                <label for="mod_type_selector">Target</label>
+                <select id="mod_target_selector" name="mod_type" class="mod-selector-select">
+                    <option value="harmonics-index">FM Index</option>
+                    <option value="harmonics-ratio">FM Ratio</option>
+                </select>
+                <label for="mod_type_selector">Type</label>
+                <select id="mod_type_selector" name="mod_type" class="mod-selector-select">
+                    <option value="envelope">Envelope</option>
+                    <option value="lfo">LFO</option>
+                </select>
+            </div>
+            <div id="k_env_area">
+            </div>
+            <div class="env-viz editor-panel" id="k_env-graphical"></div>
+            <div class="settings-editor editor-panel">
+                presets here
             </div>
         </div>
-        <div id="spectrum-viz" class="harmonics-viz editor-panel">
-            <div class="harmonics-viz-container"  id="spectrum-visual">
-            </div>
-        </div>
-        <div class="settings-editor editor-panel">
-            presets here
-        </div>
-    </span>
-    <h3>MODULATION</h3>
-    <span class="editor-row">
-        <div class="modulation-selector-panel editor-panel" id="mod-selector">
-            <label for="mod_type_selector">Type</label>
-            <select id="mod_type_selector" name="mod_type" class="mod-selector-select">
-                <option value="envelope">Envelope</option>
-                <option value="lfo">LFO</option>
-            </select>
-        </div>
-        <div id="k_env_area">
-        </div>
-
-        <div class="env-viz editor-panel" id="k_env-graphical"></div>
-        <div class="settings-editor editor-panel">
-            presets here
-        </div>
-    </span>
+    </div>
 </div>
 </body>
 </html>

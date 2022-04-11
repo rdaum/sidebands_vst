@@ -12,7 +12,7 @@ function Tab(attributes : Attributes, contents: string[]) {
     let gennum = parseInt(gennum_str.toString());
     return <span id={`generator_${gennum}`} is-selected='false' class='tabs-span tab-inactive'>
         <div class='tabs-label-div'>
-            <label class='tabs-label'>#{gennum + 1}</label>
+            <label class='tabs-label'>{gennum + 1}</label>
         </div>
     </span>;
 }
@@ -92,3 +92,4 @@ function HarmonicsView(attributes : Attributes, contents: string[]) {
 export function MakeHarmonicsView() {
     return MakeElement(<HarmonicsView/>);
 }
+

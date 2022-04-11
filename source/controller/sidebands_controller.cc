@@ -1,3 +1,4 @@
+#define NOMINMAX
 #include "controller/sidebands_controller.h"
 
 #include <absl/strings/str_format.h>
@@ -159,11 +160,16 @@ Steinberg::tresult SidebandsController::ProduceFFTResponseMessageFor(
       ScalarToComplex(buffer_data, buffer_data_size / sizeof(double));
   HanningWindow(fft_buffer);
   FFT(fft_buffer);
-  std::valarray<double> sbuffer = ComplexToScalar(fft_buffer);
-
-  analysis_attrs->setBinary(kBufferDataAttr, &sbuffer[1],
-                            (sbuffer.size() / 2) * sizeof(double));
-  analysis_attrs->setInt(kBufferSizeAttr, buffer_size / 2);
+  size_t sbuffer_size = fft_buffer.size() / 2;
+  std::valarray<double> sbuffer(sbuffer_size);
+  for (int i =0; i < sbuffer_size; i++) {
+    sbuffer[i] = std::abs(fft_buffer[i]);
+  }
+  sbuffer = sbuffer / (sbuffer.max() / 2);
+  sbuffer -= 1;
+  analysis_attrs->setBinary(kBufferDataAttr, &sbuffer[0],
+                            sbuffer_size * sizeof(double));
+  analysis_attrs->setInt(kBufferSizeAttr, sbuffer_size);
 
   return Steinberg::kResultTrue;
 }

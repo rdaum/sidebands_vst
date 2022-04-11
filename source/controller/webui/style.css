@@ -1,7 +1,26 @@
 @font-face {
     font-family: "TorontoSubwayW01-Regular";
     src: url("//db.onlinewebfonts.com/t/6032045c739406c023ba28081d83924a.eot");
-    src: url("//db.onlinewebfonts.com/t/6032045c739406c023ba28081d83924a.eot?#iefix") format("embedded-opentype"), url("//db.onlinewebfonts.com/t/6032045c739406c023ba28081d83924a.woff2") format("woff2"), url("//db.onlinewebfonts.com/t/6032045c739406c023ba28081d83924a.woff") format("woff"), url("//db.onlinewebfonts.com/t/6032045c739406c023ba28081d83924a.ttf") format("truetype"), url("//db.onlinewebfonts.com/t/6032045c739406c023ba28081d83924a.svg#TorontoSubwayW01-Regular") format("svg");
+    src: url("//db.onlinewebfonts.com/t/6032045c739406c023ba28081d83924a.eot?#iefix") format("embedded-opentype"),
+    url("//db.onlinewebfonts.com/t/6032045c739406c023ba28081d83924a.woff2") format("woff2"),
+    url("//db.onlinewebfonts.com/t/6032045c739406c023ba28081d83924a.woff") format("woff"),
+    url("//db.onlinewebfonts.com/t/6032045c739406c023ba28081d83924a.ttf") format("truetype"),
+    url("//db.onlinewebfonts.com/t/6032045c739406c023ba28081d83924a.svg#TorontoSubwayW01-Regular") format("svg");
+}
+
+@font-face {
+    font-family: "atari_st";
+    src: url("//db.onlinewebfonts.com/t/7a7d5578bd2ddba4a33b77d1f90fa994.eot");
+    src: url("//db.onlinewebfonts.com/t/7a7d5578bd2ddba4a33b77d1f90fa994.eot?#iefix") format("embedded-opentype"),
+    url("//db.onlinewebfonts.com/t/7a7d5578bd2ddba4a33b77d1f90fa994.woff2") format("woff2"),
+    url("//db.onlinewebfonts.com/t/7a7d5578bd2ddba4a33b77d1f90fa994.woff") format("woff"),
+    url("//db.onlinewebfonts.com/t/7a7d5578bd2ddba4a33b77d1f90fa994.ttf") format("truetype"),
+    url("//db.onlinewebfonts.com/t/7a7d5578bd2ddba4a33b77d1f90fa994.svg#Atari ST 8x16 System Font") format("svg");
+}
+
+canvas{
+    font-smooth: never;
+    -webkit-font-smoothing : none;
 }
 
 :root {
@@ -65,12 +84,11 @@ body {
 
 .tabs-label-div {
     display: flex;
+    font-size: x-large;
 }
-
 
 .tabs-label {
     font-size: larger;
-    font-style: oblique;
     width: 100%;
     align-self: flex-start;
     color: var(--eerie-black);
@@ -150,7 +168,7 @@ h3 {
     grid-template-rows: repeat(2, 1fr);
     grid-column-gap: 0px;
     grid-row-gap: 0px;
-    width: 400px;
+    width: 375px;
 }
 
 .env-viz {
@@ -184,6 +202,44 @@ h3 {
     inset -7px -7px 14px #9bfeff;
 }
 
+.section {
+    padding-top: 10px;
+}
+
+.section-header {
+    margin: 5px;
+    padding-left: 5px;
+    font-size: larger;
+    font-weight: bold;
+
+    border-radius: 5px 5px 0 0;
+    background-color: var(--header-region);
+    color: var(--header-text);
+    display: flex;
+    flex-direction: row;
+}
+
+.mod-add-button {
+    font-size: large;
+    background-color: var(--header-region);
+    color: var(--header-text);
+    margin-right: 20px;
+    margin-bottom: 2px;
+    border: none;
+    background: linear-gradient(145deg, #2e2c2c, #272525);
+    box-shadow: 2px 2px 2px #1a1919;
+}
+
+.mod-add-button:hover {
+    background: linear-gradient(145deg, #272525, #2e2c2c);
+    box-shadow: 2px 2px 5px #1a1919, -2px -2px 5px #3c3939;
+}
+
+.mod-add-button:active {
+    background: #2b2929;
+    box-shadow: inset 2px 2px 5px #1a1919,
+    inset -2px -2px 5px #3c3939;
+}
 
 .modulation-selector-panel {
     display: flex;
@@ -197,6 +253,7 @@ h3 {
     padding: 2px;
     font-family: 'TorontoSubwayW01-Regular';
 }
+
 
 .hold {
     grid-area: 1 / 1 / 2 / 2;

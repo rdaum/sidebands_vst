@@ -1,7 +1,7 @@
 import {addKnob, IParameterControl} from "./controls";
 import * as VstModel from "../model/vst_model";
 import * as Model from "../model/sidebands_model";
-import {TargetTag} from "../model/sidebands_model";
+import {ParamIDFor, ParamTag, TargetTag} from "../model/sidebands_model";
 import * as Env from "./envelope_editor_view";
 import {GD, GeneratorView, View} from "./views";
 import {addTab, GeneratorTabView} from "./generator_tab_view";
@@ -79,20 +79,28 @@ export class MainView implements View {
                 this.subViews.push(
                     new Viz.HarmonicsAnaylsisView(<HTMLDivElement>hviz_area, selectedUnit,
                         "kRequestAnalysisBufferMessageID", "kResponseAnalysisBufferMessageID",
-                        64)
+                        64, "WAVEFORM")
                 );
             let sviz_area = GD("spectrum-visual");
             if (sviz_area)
                 this.subViews.push(
                     new Viz.HarmonicsAnaylsisView(<HTMLDivElement>sviz_area, selectedUnit,
                         "kRequestSpectrumBufferMessageID", "kResponseSpectrumBufferMessageID",
-                        256)
+                        256, "HARMONICS")
                 );
 
             let a_env_area = GD("a_env_area");
             if (a_env_area)
                 this.subViews.push(
                     new Env.EnvelopeEditorKnobView(<HTMLDivElement>a_env_area, selectedUnit, Model.TargetTag.TARGET_A));
+
+            VstModel.controller.getParameterObject(ParamIDFor({
+                Generator: selectedUnit, Param: ParamTag.TAG_MOD_TYPE,
+                Target: TargetTag.TARGET_NA
+            })).then((p) => {
+
+            });
+
             let k_env_area = GD("k_env_area");
             if (k_env_area)
                 this.subViews.push(

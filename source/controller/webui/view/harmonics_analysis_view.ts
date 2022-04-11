@@ -17,7 +17,8 @@ export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSub
     private canvas: HTMLCanvasElement | null;
 
     constructor(readonly element: HTMLDivElement, private gennum: number,
-                readonly requestMsgId: string, readonly responseMsgId : string, readonly frequency : number) {
+                readonly requestMsgId: string, readonly responseMsgId : string, readonly frequency : number,
+                readonly title : string) {
         console.log(element);
         element.appendChild(MakeHarmonicsView());
         this.canvas = element.querySelector('.graph-harmonics-canvas');
@@ -36,6 +37,7 @@ export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSub
         if (!this.canvas) return;
         let ctx = this.canvas.getContext("2d");
         if (!ctx) return;
+        ctx.imageSmoothingEnabled = false;
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.beginPath();
         ctx.lineWidth = 1;
@@ -46,9 +48,11 @@ export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSub
         for (let i = 0; i < msg.bufferData.length; i++) {
             const x = i * scalefactor;
             const y = msg.bufferData[i] * this.canvas.height / 2;
-            ctx.lineTo(x, (this.canvas.height / 2) + y);
+            ctx.lineTo(x, (this.canvas.height / 2) - y);
         }
         ctx.stroke();
+        ctx.font = "atari_st";
+        ctx.strokeText(this.title, this.canvas.width - ctx.measureText(this.title).width - 12, 12);
     }
 
     refresh() {
