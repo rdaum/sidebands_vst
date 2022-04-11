@@ -15,10 +15,20 @@ const kHarmonicParams = [
 
 export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSubscriber {
     private canvas: HTMLCanvasElement | null;
+    private font : FontFace | null = null;
 
     constructor(readonly element: HTMLDivElement, private gennum: number,
                 readonly requestMsgId: string, readonly responseMsgId : string, readonly frequency : number,
                 readonly title : string) {
+
+        const st_font = new FontFace('atari_st', 'url(//db.onlinewebfonts.com/t/7a7d5578bd2ddba4a33b77d1f90fa994.woff2)');
+        st_font.load().then((font) => {
+            document.fonts.add(font);
+            this.font = font;
+            console.log(`Font ${this.font.family} loaded: ${this.font.loaded}`);
+            this.refresh();
+        });
+
         console.log(element);
         element.appendChild(MakeHarmonicsView());
         this.canvas = element.querySelector('.graph-harmonics-canvas');
@@ -51,8 +61,9 @@ export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSub
             ctx.lineTo(x, (this.canvas.height / 2) - y);
         }
         ctx.stroke();
-        ctx.font = "atari_st";
-        ctx.strokeText(this.title, this.canvas.width - ctx.measureText(this.title).width - 12, 12);
+        ctx.font = "16px atari_st";
+        ctx.fillStyle = "#1e2a96";
+        ctx.fillText(this.title, this.canvas.width - ctx.measureText(this.title).width - 12, 20);
     }
 
     refresh() {

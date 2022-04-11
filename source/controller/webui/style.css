@@ -18,9 +18,13 @@
     url("//db.onlinewebfonts.com/t/7a7d5578bd2ddba4a33b77d1f90fa994.svg#Atari ST 8x16 System Font") format("svg");
 }
 
-canvas{
-    font-smooth: never;
-    -webkit-font-smoothing : none;
+.offscreen {
+    position: absolute;
+    left: -100000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
 }
 
 :root {
@@ -155,6 +159,7 @@ h3 {
 .viz-canvas {
     margin: 0;
     padding: 0;
+    font-family: atari_st;
 }
 
 .ampl-editor {
