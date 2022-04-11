@@ -10,30 +10,20 @@ namespace sidebands {
 double EnvelopeRampCoefficient(double start_level, double end_level,
                                size_t length_in_samples);
 
-constexpr const char *kEnvelopeStageMessageID = "kEnvelopeStageMessageID";
-constexpr const char *kEnvelopeStageNoteIDAttr = "kEnvelopeStageNoteIDAttr";
-constexpr const char *kEnvelopeStageGennumAttr = "kEnvelopeStageGennumAttr";
-constexpr const char *kEnvelopeStageTargetAttr = "kEnvelopeStageTargetAttr";
-constexpr const char *kEnvelopeStageStageAttr = "kEnvelopeStageStageAttr";
-
 constexpr const char *kRequestAnalysisBufferMessageID = "kRequestAnalysisBufferMessageID";
-constexpr const char *kRequestAnalysisBufferGennnum = "kRequestAnalysisBufferGennnum";
-constexpr const char *kRequestAnalysisBufferSampleRate = "kRequestAnalysisBufferSampleRate";
-constexpr const char *kRequestAnalysisBufferSize = "kRequestAnalysisBufferSize";
-constexpr const char *kRequestAnalysisBufferFreq = "kRequestAnalysisBufferFreq";
-
 constexpr const char *kResponseAnalysisBufferMessageID = "kResponseAnalysisBufferMessageID";
-constexpr const char *kResponseAnalysisBufferGennum = "kResponseAnalysisBufferGennum";
-constexpr const char *kResponseAnalysisBufferSampleRate = "kResponseAnalysisBufferSampleRate";
-constexpr const char *kResponseAnalysisBufferSize = "kResponseAnalysisBufferSize";
-constexpr const char *kResponseAnalysisBufferFreq = "kResponseAnalysisBufferFreq";
-constexpr const char *kResponseAnalysisBufferData = "kResponseAnalysisBufferData";
-
+constexpr const char *kRequestSpectrumBufferMessageID = "kRequestSpectrumBufferMessageID";
 constexpr const char *kResponseSpectrumBufferMessageID = "kResponseSpectrumBufferMessageID";
-constexpr const char *kResponseSpectrumBufferGennum = "kResponseSpectrumBufferGennum";
-constexpr const char *kResponseSpectrumBufferSampleRate = "kResponseSpectrumBufferSampleRate";
-constexpr const char *kResponseSpectrumBufferSize = "kResponseSpectrumBufferSize";
-constexpr const char *kResponseSpectrumBufferFreq = "kResponseSpectrumBufferFreq";
-constexpr const char *kResponseSpectrumBufferData = "kResponseSpectrumBufferData";
+constexpr const char *kEnvelopeStageMessageID = "kEnvelopeStageMessageID";
+
+constexpr const char *kNoteIdAttr = "noteId";
+constexpr const char *kTargetAttr = "target";
+constexpr const char *kEnvelopeStageAttr = "envelopeStage";
+constexpr const char *kGennumAttr = "gennum";
+constexpr const char *kSampleRateAttr = "sampleRate";
+constexpr const char *kBufferSizeAttr = "bufferSize";
+constexpr const char *kBufferDataAttr = "bufferData";
+constexpr const char *kFreqAttr = "frequency";
+
 
 } // namespace sidebands

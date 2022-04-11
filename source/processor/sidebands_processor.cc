@@ -147,7 +147,9 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
 
 tresult SidebandsProcessor::notify(Vst::IMessage *message) {
   if (!FIDStringsEqual(message->getMessageID(),
-                       kRequestAnalysisBufferMessageID)) {
+                       kRequestAnalysisBufferMessageID) &&
+      !FIDStringsEqual(message->getMessageID(),
+                       kRequestSpectrumBufferMessageID)) {
     return ComponentBase::notify(message);
   }
 
@@ -157,10 +159,10 @@ tresult SidebandsProcessor::notify(Vst::IMessage *message) {
   int64 frequency;
   int64 sample_rate;
   int64 gennum;
-  attributes->getInt(kRequestAnalysisBufferSize, buffer_size);
-  attributes->getInt(kRequestAnalysisBufferFreq, frequency);
-  attributes->getInt(kRequestAnalysisBufferSampleRate, sample_rate);
-  attributes->getInt(kRequestAnalysisBufferGennnum, gennum);
+  attributes->getInt(kBufferSizeAttr, buffer_size);
+  attributes->getInt(kFreqAttr, frequency);
+  attributes->getInt(kSampleRateAttr, sample_rate);
+  attributes->getInt(kGennumAttr, gennum);
 
   // Produce buffer by making a one-off generator
   ModFMOscillator oscillator;
@@ -171,14 +173,21 @@ tresult SidebandsProcessor::notify(Vst::IMessage *message) {
 
   // Send a response with the buffer data.
   if (auto env_change_message = owned(allocateMessage())) {
-    env_change_message->setMessageID(kResponseAnalysisBufferMessageID);
-    auto *attributes = env_change_message->getAttributes();
-    attributes->setInt(kResponseAnalysisBufferSampleRate, sample_rate);
-    attributes->setInt(kResponseAnalysisBufferSize, buffer.size());
-    attributes->setInt(kResponseAnalysisBufferFreq, frequency);
 
-    attributes->setBinary(kResponseAnalysisBufferData, &buffer[0],
-                          buffer.size() * sizeof(double));
+    if (FIDStringsEqual(message->getMessageID(),
+                        kRequestAnalysisBufferMessageID))
+      env_change_message->setMessageID(kResponseAnalysisBufferMessageID);
+    else
+      env_change_message->setMessageID(kResponseSpectrumBufferMessageID);
+
+    auto *resp_attributes = env_change_message->getAttributes();
+    resp_attributes->setInt(kSampleRateAttr, sample_rate);
+    resp_attributes->setInt(kBufferSizeAttr, buffer.size());
+    resp_attributes->getInt(kGennumAttr, gennum);
+    resp_attributes->setInt(kFreqAttr, frequency);
+
+    resp_attributes->setBinary(kBufferDataAttr, &buffer[0],
+                               buffer.size() * sizeof(double));
     sendMessage(env_change_message);
 
     return Steinberg::kResultOk;
@@ -234,10 +243,10 @@ void SidebandsProcessor::SendEnvelopeStageChangedEvent(int note_id, int gennum,
   if (auto env_change_message = owned(allocateMessage())) {
     env_change_message->setMessageID(kEnvelopeStageMessageID);
     auto *attributes = env_change_message->getAttributes();
-    attributes->setInt(kEnvelopeStageNoteIDAttr, note_id);
-    attributes->setInt(kEnvelopeStageGennumAttr, gennum);
-    attributes->setInt(kEnvelopeStageTargetAttr, target);
-    attributes->setInt(kEnvelopeStageStageAttr, stage);
+    attributes->setInt(kNoteIdAttr, note_id);
+    attributes->setInt(kGennumAttr, gennum);
+    attributes->setInt(kTargetAttr, target);
+    attributes->setInt(kEnvelopeStageAttr, stage);
     sendMessage(env_change_message);
   }
 }

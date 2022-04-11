@@ -137,45 +137,35 @@ SidebandsController::endEditFromHost(Steinberg::Vst::ParamID paramID) {
   return endEdit(paramID);
 }
 
-IPtr<Steinberg::Vst::IMessage>
-SidebandsController::ProduceFFTResponseMessageFor(
+Steinberg::tresult SidebandsController::ProduceFFTResponseMessageFor(
     Steinberg::Vst::IMessage *message) {
-  if (auto env_change_message = owned(allocateMessage())) {
-    auto analysis_attrs = message->getAttributes();
-    int64 sample_rate, buffer_size, analysis_note;
-    if (analysis_attrs->getInt(kResponseAnalysisBufferSampleRate,
-                               sample_rate) != Steinberg::kResultOk)
-      return nullptr;
-    if (analysis_attrs->getInt(kResponseAnalysisBufferSize, buffer_size) !=
-        Steinberg::kResultOk)
-      return nullptr;
-    if (analysis_attrs->getInt(kResponseAnalysisBufferFreq, analysis_note) !=
-        Steinberg::kResultOk)
-      return nullptr;
+  auto analysis_attrs = message->getAttributes();
+  int64 sample_rate, buffer_size, analysis_note;
+  if (analysis_attrs->getInt(kSampleRateAttr, sample_rate) !=
+      Steinberg::kResultOk)
+    return Steinberg::kResultFalse;
+  if (analysis_attrs->getInt(kBufferSizeAttr, buffer_size) !=
+      Steinberg::kResultOk)
+    return Steinberg::kResultFalse;
+  if (analysis_attrs->getInt(kFreqAttr, analysis_note) != Steinberg::kResultOk)
+    return Steinberg::kResultFalse;
 
-    const double *buffer_data;
-    uint32 buffer_data_size;
-    if (analysis_attrs->getBinary(kResponseAnalysisBufferData,
-                                  (const void *&)buffer_data,
-                                  buffer_data_size) != Steinberg::kResultOk)
-      return nullptr;
-    auto fft_buffer =
-        ScalarToComplex(buffer_data, buffer_data_size / sizeof(double));
-    HanningWindow(fft_buffer);
-    FFT(fft_buffer);
-    std::valarray<double> sbuffer = ComplexToScalar(fft_buffer);
+  const double *buffer_data;
+  uint32 buffer_data_size;
+  if (analysis_attrs->getBinary(kBufferDataAttr, (const void *&)buffer_data,
+                                buffer_data_size) != Steinberg::kResultOk)
+    return Steinberg::kResultFalse;
+  auto fft_buffer =
+      ScalarToComplex(buffer_data, buffer_data_size / sizeof(double));
+  HanningWindow(fft_buffer);
+  FFT(fft_buffer);
+  std::valarray<double> sbuffer = ComplexToScalar(fft_buffer);
 
-    env_change_message->setMessageID(kResponseSpectrumBufferMessageID);
-    auto *attributes = env_change_message->getAttributes();
-    attributes->setInt(kResponseSpectrumBufferSampleRate, sample_rate);
-    attributes->setInt(kResponseSpectrumBufferSize, buffer_size);
-    attributes->setInt(kResponseSpectrumBufferFreq, analysis_note);
-    attributes->setBinary(kResponseSpectrumBufferData, &sbuffer[1],
-                          sbuffer.size() * sizeof(double));
+  analysis_attrs->setBinary(kBufferDataAttr, &sbuffer[1],
+                            (sbuffer.size() / 2) * sizeof(double));
+  analysis_attrs->setInt(kBufferSizeAttr, buffer_size / 2);
 
-    return env_change_message;
-  }
-  return nullptr;
+  return Steinberg::kResultTrue;
 }
 
 Steinberg::tresult
@@ -184,17 +174,16 @@ SidebandsController::notify(Steinberg::Vst::IMessage *message) {
   if (!ml)
     return ComponentBase::notify(message);
 
-  // Intercept buffer request response and provide an FFT spectrum analysis
-  // along with it.
+  tresult res;
+
+  // Intercept buffer responses for spectrum and transform it to provide an FFT.
   if (FIDStringsEqual(message->getMessageID(),
-                      kResponseAnalysisBufferMessageID)) {
-    auto fft_message = ProduceFFTResponseMessageFor(message);
-    if (fft_message) {
-      ml->Notify(fft_message);
-    }
+                      kResponseSpectrumBufferMessageID)) {
+    res = ProduceFFTResponseMessageFor(message);
+    if (res != Steinberg::kResultOk) return res;
   }
 
-  tresult res = ml->Notify(message);
+  res = ml->Notify(message);
   if (res != Steinberg::kResultOk)
     return ComponentBase::notify(message);
   return res;

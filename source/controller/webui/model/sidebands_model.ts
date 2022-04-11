@@ -58,26 +58,18 @@ export function ParamIDFor(tag: Tag): number {
 
 export interface EnvelopeStageChangeMessage {
     messageID: string;
-    kEnvelopeStageGennumAttr: number;
-    kEnvelopeStageNoteIDAttr: number;
-    kEnvelopeStageTargetAttr: number;
-    kEnvelopeStageStageAttr: number;
+    gennum: number;
+    noteId: number;
+    target: number;
+    envelopeStage: number;
 }
 
 export interface AnalysisBufferMessage {
     messageID: string;
-    kResponseAnalysisBufferSampleRate: number;
-    kResponseAnalysisBufferSize: number;
-    kResponseAnalysisBufferFreq: number;
-    kResponseAnalysisBufferGennum: number;
-    kResponseAnalysisBufferData: Float64Array;
+    sampleRate: number;
+    bufferSize: number;
+    frequency: number;
+    gennum: number;
+    bufferData: Float64Array;
 }
 
-export interface SpectrumBufferMessage {
-    messageID: string;
-    kResponseSpectrumBufferSampleRate: number;
-    kResponseSpectrumBufferSize: number;
-    kResponseSpectrumBufferFreq: number;
-    kResponseSpectrumBufferGennum: number;
-    kResponseSpectrumBufferData: Float64Array;
-}

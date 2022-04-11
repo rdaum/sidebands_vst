@@ -54,10 +54,19 @@ export class MainView implements View {
                     Target: Model.TargetTag.TARGET_K
                 }).then(pushControl);
 
-            let viz_area = GD("harmonics-visual");
-            if (viz_area)
+            let hviz_area = GD("harmonics-visual");
+            if (hviz_area)
                 this.subViews.push(
-                    new Viz.HarmonicsAnaylsisView(<HTMLDivElement>viz_area, selectedUnit)
+                    new Viz.HarmonicsAnaylsisView(<HTMLDivElement>hviz_area, selectedUnit,
+                        "kRequestAnalysisBufferMessageID", "kResponseAnalysisBufferMessageID",
+                        64)
+                );
+            let sviz_area = GD("spectrum-visual");
+            if (sviz_area)
+                this.subViews.push(
+                    new Viz.HarmonicsAnaylsisView(<HTMLDivElement>sviz_area, selectedUnit,
+                        "kRequestSpectrumBufferMessageID", "kResponseSpectrumBufferMessageID",
+                        256)
                 );
 
             let a_env_area = GD("a_env_area");

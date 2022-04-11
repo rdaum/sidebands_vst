@@ -179,63 +179,47 @@ void WebviewControllerBindings::Bind(webview::Webview *webview) {
       "receiveMessage", sidebands::kEnvelopeStageMessageID,
       {
           {
-              kEnvelopeStageNoteIDAttr,
+              kEnvelopeStageAttr,
               WebviewMessageListener::MessageAttribute::Type::INT,
           },
           {
-              kEnvelopeStageGennumAttr,
+              kGennumAttr,
               WebviewMessageListener::MessageAttribute::Type::INT,
           },
           {
-              kEnvelopeStageTargetAttr,
+              kTargetAttr,
               WebviewMessageListener::MessageAttribute::Type::INT,
           },
           {
-              kEnvelopeStageStageAttr,
+              kEnvelopeStageAttr,
               WebviewMessageListener::MessageAttribute::Type::INT,
           },
       });
+  const std::vector< WebviewMessageListener::MessageAttribute> buffer_attrs {
+      {
+          kSampleRateAttr,
+          WebviewMessageListener::MessageAttribute::Type::INT,
+      },
+      {
+          kBufferSizeAttr,
+          WebviewMessageListener::MessageAttribute::Type::INT,
+      },
+      {
+          kFreqAttr,
+          WebviewMessageListener::MessageAttribute::Type::INT,
+      },
+      {
+          kBufferDataAttr,
+          WebviewMessageListener::MessageAttribute::Type::BINARY,
+      },
+  };
   message_listener_->Subscribe(
       "receiveMessage", sidebands::kResponseAnalysisBufferMessageID,
-      {
-          {
-              kResponseAnalysisBufferSampleRate,
-              WebviewMessageListener::MessageAttribute::Type::INT,
-          },
-          {
-              kResponseAnalysisBufferSize,
-              WebviewMessageListener::MessageAttribute::Type::INT,
-          },
-          {
-              kResponseAnalysisBufferFreq,
-              WebviewMessageListener::MessageAttribute::Type::INT,
-          },
-          {
-              kResponseAnalysisBufferData,
-              WebviewMessageListener::MessageAttribute::Type::BINARY,
-          },
-      }
-      );
+      buffer_attrs);
+
   message_listener_->Subscribe(
       "receiveMessage", sidebands::kResponseSpectrumBufferMessageID,
-      {
-          {
-              kResponseSpectrumBufferSampleRate,
-              WebviewMessageListener::MessageAttribute::Type::INT,
-          },
-          {
-              kResponseSpectrumBufferSize,
-              WebviewMessageListener::MessageAttribute::Type::INT,
-          },
-          {
-              kResponseSpectrumBufferFreq,
-              WebviewMessageListener::MessageAttribute::Type::INT,
-          },
-          {
-              kResponseSpectrumBufferData,
-              WebviewMessageListener::MessageAttribute::Type::BINARY,
-          },
-      }
+      buffer_attrs/**/
   );
 
 }

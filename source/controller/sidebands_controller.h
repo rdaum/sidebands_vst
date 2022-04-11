@@ -61,7 +61,7 @@ public:
   DELEGATE_REFCOUNT(EditController)
 
 private:
-  Steinberg::IPtr<Steinberg::Vst::IMessage> ProduceFFTResponseMessageFor(Steinberg::Vst::IMessage *message);
+  Steinberg::tresult ProduceFFTResponseMessageFor(Steinberg::Vst::IMessage *message);
 
   std::unique_ptr<PatchController> patch_controller_;
   Steinberg::ViewRect view_rect_{0, 0, 1024, 1200};

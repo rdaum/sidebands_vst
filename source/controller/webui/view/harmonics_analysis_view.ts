@@ -16,7 +16,8 @@ const kHarmonicParams = [
 export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSubscriber {
     private canvas: HTMLCanvasElement | null;
 
-    constructor(readonly element: HTMLDivElement, private gennum: number) {
+    constructor(readonly element: HTMLDivElement, private gennum: number,
+                readonly requestMsgId: string, readonly responseMsgId : string, readonly frequency : number) {
         console.log(element);
         element.appendChild(MakeHarmonicsView());
         this.canvas = element.querySelector('.graph-harmonics-canvas');
@@ -27,7 +28,7 @@ export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSub
             }), this);
         }
 
-        controller.subscribeMessage("kResponseAnalysisBufferMessageID", this);
+        controller.subscribeMessage(this.responseMsgId, this);
         this.refresh();
     }
 
@@ -37,25 +38,27 @@ export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSub
         if (!ctx) return;
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         ctx.beginPath();
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 1;
         ctx.strokeStyle = "#1e2a96";
         ctx.moveTo(0, this.canvas.height);
         const msg = <AnalysisBufferMessage>message;
-        const scalefactor = this.canvas.width / msg.kResponseAnalysisBufferSize;
-        for (let i = 0; i < msg.kResponseAnalysisBufferData.length; i++) {
+        const scalefactor = this.canvas.width / msg.bufferSize;
+        for (let i = 0; i < msg.bufferData.length; i++) {
             const x = i * scalefactor;
-            const y = msg.kResponseAnalysisBufferData[i] * this.canvas.height / 2;
+            const y = msg.bufferData[i] * this.canvas.height / 2;
             ctx.lineTo(x, (this.canvas.height / 2) + y);
         }
         ctx.stroke();
     }
 
     refresh() {
-        controller.sendMessage("kRequestAnalysisBufferMessageID",
-            {kRequestAnalysisBufferSampleRate: 32768,
-                kRequestAnalysisBufferGennum: this.gennum,
-                kRequestAnalysisBufferSize: 1024,
-                kRequestAnalysisBufferFreq: 64});
+        controller.sendMessage(this.requestMsgId,
+            {
+                sampleRate: 32768,
+                gennum: this.gennum,
+                bufferSize: 1024,
+                frequency: this.frequency
+            });
     }
 
     node(): HTMLElement {

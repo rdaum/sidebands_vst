@@ -41,17 +41,12 @@ body {
     padding-right: 25px;
 }
 
-.main-viz {
-    width: 100%;
-    flex-grow: 1;
-}
-
 .company-name {
     width: 50px;
     font-size: larger;
     color: var(--raisin-black);
     padding-left: 25px;
-
+    margin-left: auto !important;
 }
 
 .tabs {
@@ -108,12 +103,12 @@ body {
 .editor-row {
     display: flex;
     flex-direction: row;
-    width: 100%;
 }
 
 .settings-editor {
     width: 150px;
     margin-left: auto !important;
+    flex: none;
 }
 
 .editor-panel {
@@ -128,10 +123,6 @@ body {
     flex-direction: row;
 }
 
-.harmonics-editor {
-    width: 175px;
-}
-
 .parameter {
     border-radius: 5px 5px 0 0;
 }
@@ -143,6 +134,29 @@ h3 {
     color: var(--header-text);
 }
 
+.viz-canvas {
+    margin: 0;
+    padding: 0;
+}
+
+.harmonics-editor {
+    display: flex;
+    flex-direction: column;
+}
+
+.harmonics-viz {
+}
+
+.harmonics-viz-container {
+    display: flex;
+    width: 100%;
+    margin: 5px;
+    border-radius: 5px;
+    background: #80d2ff;
+    box-shadow: inset 7px 7px 14px #65a6c9,
+    inset -7px -7px 14px #9bfeff;
+}
+
 .envelope-editor {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
@@ -151,7 +165,6 @@ h3 {
     grid-row-gap: 0px;
     width: 400px;
 }
-
 
 .env-viz {
     width: 370px;
@@ -167,22 +180,6 @@ h3 {
     inset -7px -7px 14px #9bfeff;
 }
 
-.viz-canvas {
-    width: 100%;
-}
-
-.harmonics-viz {
-    width: 380px;
-}
-
-.harmonics-viz-container {
-    width: 100%;
-    margin: 5px;
-    border-radius: 5px;
-    background: #80d2ff;
-    box-shadow: inset 7px 7px 14px #65a6c9,
-    inset -7px -7px 14px #9bfeff;
-}
 
 .hold {
     grid-area: 1 / 1 / 2 / 2;
