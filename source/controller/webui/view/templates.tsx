@@ -13,9 +13,6 @@ function Tab(attributes : Attributes, contents: string[]) {
     return <span id={`generator_${gennum}`} is-selected='false' class='tabs-span tab-inactive'>
         <div class='tabs-label-div'>
             <label class='tabs-label'>#{gennum + 1}</label>
-            <input class='label-toggle' type='checkbox' id={`generator_${gennum}_toggle`}/>
-        </div>
-        <div id={`generator_${gennum}_level`}>
         </div>
     </span>;
 }

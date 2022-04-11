@@ -15,6 +15,28 @@
 <div class="tabs" id="generator_selector">
 </div>
 <div class="generator-editor">
+    <h3>AMPLITUDE</h3>
+    <span class="editor-row">
+        <div id="a_ctrl" class="editor-panel ampl-editor">
+            <div class="parameter">
+                <img id='a_switch' src="MetalSwitchOn.png">
+            </div>
+            <div class="parameter">
+                <label>Level</label>
+                <div id="a_level"></div>
+            </div>
+            <div class="parameter">
+                <label>Vel. Sens</label>
+                <div id="velsense"></div>
+            </div>
+        </div>
+        <div id="a_env_area">
+        </div>
+        <div class="env-viz editor-panel" id="a_env-graphical"></div>
+        <div class="settings-editor editor-panel">
+            presets here
+        </div>
+    </span>
     <h3>HARMONICS</h3>
     <span class="editor-row">
         <div class="harmonics-editor editor-panel" id="generator_editor">
@@ -43,32 +65,19 @@
             presets here
         </div>
     </span>
-
-    <h3>AMPLITUDE ENVELOPE</h3>
+    <h3>MODULATION</h3>
     <span class="editor-row">
-        <div id="a_env_area">
+        <div class="modulation-selector-panel editor-panel" id="mod-selector">
+            <label for="mod_type_selector">Type</label>
+            <select id="mod_type_selector" name="mod_type" class="mod-selector-select">
+                <option value="envelope">Envelope</option>
+                <option value="lfo">LFO</option>
+            </select>
         </div>
-        <div class="env-viz editor-panel" id="a_env-graphical"></div>
-        <div class="settings-editor editor-panel">
-            presets here
-        </div>
-    </span>
-
-    <h3>MODULATION ENVELOPE</h3>
-    <span class="editor-row">
         <div id="k_env_area">
         </div>
 
         <div class="env-viz editor-panel" id="k_env-graphical"></div>
-        <div class="settings-editor editor-panel">
-            presets here
-        </div>
-    </span>
-    <h3>LOW FREQUENCY OSCILLATOR</h3>
-    <span class="editor-row">
-        <div id="lfo" class="lfo-panel editor-panel">
-
-        </div>
         <div class="settings-editor editor-panel">
             presets here
         </div>

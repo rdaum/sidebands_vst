@@ -5,8 +5,6 @@ import * as Model from "../model/sidebands_model";
 
 export class GeneratorTabView implements View {
     readonly element: HTMLElement;
-    toggle: Toggle;
-    controls: Array<IParameterControl>;
 
     constructor(readonly gennum: number, readonly selectDelegate: SelectedGeneratorDelegate, parent: HTMLElement) {
         this.gennum = gennum;
@@ -19,25 +17,6 @@ export class GeneratorTabView implements View {
         })
         this.element = rootTabElement;
         parent.appendChild(this.element);
-
-        // Now activate/build controls that live inside our HTML.
-        const toggleInput = this.element.querySelector(`#generator_${gennum}_toggle`);
-        this.toggle = new Toggle({
-            Generator: this.gennum,
-            Param: Model.ParamTag.TAG_GENERATOR_TOGGLE,
-            Target: Model.TargetTag.TARGET_NA
-        }, <HTMLInputElement>toggleInput);
-
-        this.controls = [this.toggle];
-
-        const knobElement = this.element.querySelector(`#generator_${gennum}_level`);
-        addKnob(knobElement, {
-            Generator: this.gennum,
-            Param: Model.ParamTag.TAG_OSC,
-            Target: Model.TargetTag.TARGET_A
-        }).then((c) =>
-            this.controls.push(c)
-        )
     }
 
     select() {

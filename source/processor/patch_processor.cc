@@ -276,7 +276,7 @@ void GeneratorPatch::BeginParameterChange(
     const auto &last_v_opt = GetLastValue(p_queue);
     if (last_v_opt) {
       auto nv = param.min + (last_v_opt.value() * (param.max - param.min));
-      LOG(INFO) << "Setting non-Sample accurate parameter: " << TagStr(param_id)
+      LOG(INFO) << "Setting non-Sample accurate parameter: " << TagStr(param_id) << " (" << param_id << ")"
                 << " to  " << nv << " (was: " << *param.v.v << ")";
 
       *param.v.v = nv;

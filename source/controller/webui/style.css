@@ -77,13 +77,13 @@ body {
 }
 
 .tab-active {
-    height: 55px;
+    height: 32px;
     background-color: var(--active);
     box-shadow: 7px 7px 4px -3px var(--active);
 }
 
 .tab-inactive {
-    height: 32px;
+    height: 24px;
     align-self: flex-end;
 }
 
@@ -106,7 +106,7 @@ body {
 }
 
 .settings-editor {
-    width: 150px;
+    width: 120px;
     margin-left: auto !important;
     flex: none;
 }
@@ -139,6 +139,33 @@ h3 {
     padding: 0;
 }
 
+.ampl-editor {
+    display: flex;
+    flex-direction: column;
+}
+
+.envelope-editor {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    grid-column-gap: 0px;
+    grid-row-gap: 0px;
+    width: 400px;
+}
+
+.env-viz {
+}
+
+.graphical-env-container {
+    width: 100%;
+    margin: 5px;
+    padding: 0px;
+    border-radius: 5px;
+    background: #80d2ff;
+    box-shadow: inset 7px 7px 14px #65a6c9,
+    inset -7px -7px 14px #9bfeff;
+}
+
 .harmonics-editor {
     display: flex;
     flex-direction: column;
@@ -157,29 +184,19 @@ h3 {
     inset -7px -7px 14px #9bfeff;
 }
 
-.envelope-editor {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    grid-template-rows: repeat(2, 1fr);
-    grid-column-gap: 0px;
-    grid-row-gap: 0px;
-    width: 400px;
+
+.modulation-selector-panel {
+    display: flex;
+    flex-direction: column;
 }
 
-.env-viz {
-    width: 370px;
+.mod-selector-select {
+    background: var(--raisin-black);
+    color: var(--silver);
+    border: 6px solid transparent;
+    padding: 2px;
+    font-family: 'TorontoSubwayW01-Regular';
 }
-
-.graphical-env-container {
-    width: 100%;
-    margin: 5px;
-    padding: 0px;
-    border-radius: 5px;
-    background: #80d2ff;
-    box-shadow: inset 7px 7px 14px #65a6c9,
-    inset -7px -7px 14px #9bfeff;
-}
-
 
 .hold {
     grid-area: 1 / 1 / 2 / 2;

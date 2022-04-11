@@ -1,10 +1,12 @@
 import {addKnob, IParameterControl} from "./controls";
 import * as VstModel from "../model/vst_model";
 import * as Model from "../model/sidebands_model";
+import {TargetTag} from "../model/sidebands_model";
 import * as Env from "./envelope_editor_view";
 import {GD, GeneratorView, View} from "./views";
 import {addTab, GeneratorTabView} from "./generator_tab_view";
 import * as Viz from './harmonics_analysis_view';
+import {Switch} from "./switch";
 
 export class MainView implements View {
     controls: Array<IParameterControl>;
@@ -35,6 +37,24 @@ export class MainView implements View {
                 this.controls.push(c);
             };
 
+            this.subViews.push(
+                new Switch(<HTMLImageElement>GD('a_switch'), {
+                    Generator: selectedUnit,
+                    Param: Model.ParamTag.TAG_GENERATOR_TOGGLE,
+                    Target: TargetTag.TARGET_NA
+                }));
+            addKnob(GD('a_level'),
+                {
+                    Generator: selectedUnit,
+                    Param: Model.ParamTag.TAG_OSC,
+                    Target: Model.TargetTag.TARGET_A
+                }).then(pushControl);
+            addKnob(GD('velsense'),
+                {
+                    Generator: selectedUnit,
+                    Param: Model.ParamTag.TAG_ENV_VS,
+                    Target: Model.TargetTag.TARGET_A
+                }).then(pushControl);
             addKnob(GD('carrier_ratio'),
                 {
                     Generator: selectedUnit,

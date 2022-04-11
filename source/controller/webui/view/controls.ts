@@ -139,4 +139,3 @@ export function addKnob(elem: Element | null, tag: SidebandsModel.Tag): Promise<
         })
     });
 }
-
