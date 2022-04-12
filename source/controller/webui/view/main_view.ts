@@ -95,7 +95,7 @@ export class MainView implements View {
                     new Env.EnvelopeEditorKnobView(<HTMLDivElement>a_env_area, selectedUnit, Model.TargetTag.TARGET_A));
 
             VstModel.controller.getParameterObject(ParamIDFor({
-                Generator: selectedUnit, Param: ParamTag.TAG_MOD_TYPE,
+                Generator: selectedUnit, Param: ParamTag.TAG_MODULATIONS,
                 Target: TargetTag.TARGET_NA
             })).then((p) => {
 

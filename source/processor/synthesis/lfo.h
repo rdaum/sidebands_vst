@@ -17,7 +17,7 @@ public:
                   const GeneratorPatch::ModParams *parameters) override;
 
   bool Playing() const override;
-  ModType mod_type() const override;
+  Modulation::Type mod_type() const override;
 
 private:
   double phase_ = 0.0;

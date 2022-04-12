@@ -1,8 +1,9 @@
 #pragma once
 
-#include <pluginterfaces/vst/ivstparameterchanges.h>
 #include <pluginterfaces/vst/vsttypes.h>
 #include <public.sdk/source/vst/vstparameters.h>
+
+#include "processor/util/processor_param_value.h"
 
 #include <cassert>
 
@@ -16,23 +17,25 @@ using Steinberg::Vst::ParamValue;
 
 // Fork of Steinberg::SampleAccurate::Parameter that supports parameter value
 // in ranges and whatever else I end up needing.
-class SampleAccurateValue {
+class SampleAccurateValue : public ProcessorParameterValue {
 public:
   SampleAccurateValue(ParamID pid, ParamValue initValue, ParamValue min,
                       ParamValue max) ;
 
-  void setValue(ParamValue v) ;
-  void setValueNormalized(ParamValue v) ;
-  ParamValue getValue() const ;
-  ParamValue getValueNormalized() const ;
-  ParamValue Min() const { return min_plain_; }
-  ParamValue Max() const { return max_plain_; }
-  ParamID getParamID() const ;
-  bool hasChanges() const ;
-  void beginChanges(IParamValueQueue *valueQueue) ;
-  ParamValue advance(int32 numSamples) ;
-  ParamValue flushChanges() ;
-  ParamValue endChanges() ;
+  void setValue(ParamValue v) override ;
+  void setValueNormalized(ParamValue v) override ;
+  ParamValue getValue() const override ;
+  ParamValue getValueNormalized() const override ;
+  ParamValue Min() const override { return min_plain_; }
+  ParamValue Max() const override { return max_plain_; }
+  ParamID getParamID() const override  ;
+
+  bool hasChanges() const override ;
+  void beginChanges(IParamValueQueue *valueQueue) override ;
+  ParamValue advance(int32 numSamples) override ;
+  ParamValue flushChanges() override ;
+  ParamValue endChanges() override ;
+
   template <typename Proc> void advance(int32 numSamples, Proc p) ;
   template <typename Proc> void flushChanges(Proc p) ;
   template <typename Proc> void endChanges(Proc p) ;

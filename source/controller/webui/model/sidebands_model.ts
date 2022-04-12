@@ -19,7 +19,7 @@ export enum ParamTag {
     TAG_LFO_AMP,
     TAG_LFO_VS,
     TAG_LFO_TYPE,
-    TAG_MOD_TYPE,
+    TAG_MODULATIONS,
 }
 
 export enum TargetTag {

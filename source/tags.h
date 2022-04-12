@@ -35,14 +35,14 @@ enum ParamTag {
   TAG_LFO_AMP,
   TAG_LFO_VS,
   TAG_LFO_TYPE,
-  TAG_MOD_TYPE,
+  TAG_MODULATIONS,
   TAG_NUM_TAGS
 };
 
 constexpr const char *kParamNames[]{
     "SELECT",  "TOGGLE", "OSC",      "ENV_A",         "ENV_AL",
     "ENV_D",   "ENV_S",  "ENV_R",    "ENV_VS",        "LFO_FREQ",
-    "LFO_AMP", "LFO_VS", "LFO_TYPE", "MOD_TYPE"};
+    "LFO_AMP", "LFO_VS", "LFO_TYPE", "MODULATIONS"};
 
 enum TargetTag {
   TARGET_NA,
@@ -71,16 +71,16 @@ constexpr const TargetTag kModulationTargets[]{
 
 // Composed of both param and subparam, key for patch param lookup
 struct ParamKey {
-  ParamTag p_tag;
+  ParamTag parameter;
   TargetTag target;
 
   bool operator==(const ParamKey &k) const {
-    return k.p_tag == p_tag && k.target == target;
+    return k.parameter == parameter && k.target == target;
   }
 
   struct Hash {
     size_t operator()(const ParamKey &k) const {
-      return std::hash<ParamTag>()(k.p_tag) ^ std::hash<TargetTag>()(k.target);
+      return std::hash<ParamTag>()(k.parameter) ^ std::hash<TargetTag>()(k.target);
     }
   };
 };

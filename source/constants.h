@@ -16,9 +16,12 @@ enum class LFOType { SIN, COS };
 constexpr LFOType kLFOTypes[]{LFOType::SIN, LFOType::COS};
 constexpr int kNumLFOTypes = sizeof(kLFOTypes) / sizeof(LFOType);
 
-enum class ModType { NONE, ADSR_ENVELOPE, LFO };
-constexpr ModType kModTypes[]{ModType::NONE, ModType::ADSR_ENVELOPE,
-                                     ModType::LFO};
-constexpr int kNumModTypes = sizeof(kModTypes) / sizeof(ModType);
+namespace Modulation {
+  enum Type {
+    Envelope,
+    LFO,
+    NumModulators
+  };
+}  //  Modulation
 
 } // namespace sidebands

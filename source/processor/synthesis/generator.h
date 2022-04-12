@@ -45,9 +45,8 @@ class Generator {
  private:
   void Produce(SampleRate sample_rate, GeneratorPatch &patch, OscParam &buffer, TargetTag target);
   void ConfigureModulators(const GeneratorPatch &patch);
-  IModulationSource *ModulatorFor(const GeneratorPatch &patch, TargetTag dest);
 
-  std::unique_ptr<IModulationSource> modulators_[NUM_TARGETS][kNumModTypes];
+  std::unique_ptr<IModulationSource> modulators_[NUM_TARGETS][Modulation::NumModulators];
   ParamValue velocity_ = 0;
   std::unique_ptr<IOscillator> o_;
 };

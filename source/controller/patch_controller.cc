@@ -50,18 +50,18 @@ IPtr<RangeParameter> GenericParameter(Steinberg::Vst::UnitID unit_id,
 IPtr<RangeParameter> ModTypeParameter(Steinberg::Vst::UnitID unit_id,
                                       TargetTag target, uint32_t gen_num) {
   std::string full_name =
-      absl::StrFormat("Gen %d Mod Type %s", gen_num, kTargetNames[target]);
+      absl::StrFormat("Gen %d Mod Types %s (bitset)", gen_num, kTargetNames[target]);
 
   auto info = ParameterInfo{
-      .id = TagFor(gen_num, TAG_MOD_TYPE, target),
-      .stepCount = 1,
+      .id = TagFor(gen_num, TAG_MODULATIONS, target),
+      .stepCount = 0,
       .defaultNormalizedValue = 0,
       .unitId = unit_id,
   };
   Steinberg::UString(info.title, USTRINGSIZE(info.title))
       .assign(USTRING(full_name.c_str()));
 
-  return new RangeParameter(info, 0, kNumModTypes - 1);
+  return new RangeParameter(info, 0, 255);
 }
 
 IPtr<RangeParameter> OscillatorParameter(Steinberg::Vst::UnitID unit_id,
@@ -224,10 +224,6 @@ PatchController::LoadPatch(Steinberg::IBStream *stream,
       ParamValue v;
       CHECK(streamer.readDouble(v))
           << "Unable to read value for param id: " << id;
-      auto p = edit_controller->normalizedParamToPlain(id, v);
-      if (TargetFor(id) == TARGET_C && GeneratorFor(id) == 0 &&
-          ParamFor(id) == TAG_OSC) {
-      }
       edit_controller->setParamNormalized(id, v);
     }
   }

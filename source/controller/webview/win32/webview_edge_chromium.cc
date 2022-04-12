@@ -35,6 +35,9 @@ EdgeChromiumBrowser::EdgeChromiumBrowser(HWND parent_window, bool debug,
 }
 
 EdgeChromiumBrowser::~EdgeChromiumBrowser() {
+  wv2_controller_->Release();
+  webview2_->Release();
+  settings_->Release();
   LOG(INFO) << "Destroying EdgeChromiumBrowser: " << this;
 }
 

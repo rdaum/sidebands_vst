@@ -19,20 +19,25 @@ void Generator::Produce(SampleRate sample_rate, GeneratorPatch &patch,
   auto mod_opt = patch.ModulationParams(target);
   if (mod_opt) {
     OscBuffer mod_a(buffer.size());
-    auto mod = ModulatorFor(patch, target);
-    if (mod) {
-      mod->Amplitudes(sample_rate, mod_a, velocity_, mod_opt);
-      VmulInplace(buffer, mod_a);
+    auto mod_types = patch.ModTypesFor(target);
+    for (int i = 0; i < Modulation::NumModulators; i++) {
+      Modulation::Type mod_type = Modulation::Type(i);
+      if (mod_types.test(mod_type)) {
+        auto &modulator = modulators_[target][mod_type];
+        if (modulator) {
+          modulator->Amplitudes(sample_rate, mod_a, velocity_, mod_opt);
+          VmulInplace(buffer, mod_a);
+        }
+      }
     }
   }
 }
 
 void Generator::Synthesize(SampleRate sample_rate, GeneratorPatch &patch,
-                        OscBuffer &out_buffer,
-                        Steinberg::Vst::ParamValue base_freq) {
+                           OscBuffer &out_buffer,
+                           Steinberg::Vst::ParamValue base_freq) {
   auto frames_per_buffer = out_buffer.size();
   OscParams params(frames_per_buffer);
-
 
   params.note_freq = base_freq;
   params.K = patch.ParameterGetterFor(TARGET_K)();
@@ -77,10 +82,15 @@ void Generator::NoteOn(
   }
 
   velocity_ = velocity;
-  for (auto dest : kModulationTargets) {
-    auto *modulator = ModulatorFor(patch, dest);
-    if (modulator) {
-      modulator->On(sample_rate, patch.ModulationParams(dest));
+  for (auto target : kModulationTargets) {
+    auto mod_types = patch.ModTypesFor(target);
+    for (int i = 0; i < Modulation::NumModulators; i++) {
+      Modulation::Type mod_type = Modulation::Type(i);
+      if (mod_types.test(mod_type)) {
+        auto &modulator = modulators_[target][mod_type];
+        if (modulator)
+          modulator->On(sample_rate, patch.ModulationParams(target));
+      }
     }
   }
   events.GeneratorOn(this);
@@ -88,10 +98,15 @@ void Generator::NoteOn(
 
 void Generator::NoteRelease(SampleRate sample_rate, const GeneratorPatch &patch,
                             uint8_t note) {
-  for (auto dest : kModulationTargets) {
-    auto *modulator = ModulatorFor(patch, dest);
-    if (modulator) {
-      modulator->Release(sample_rate, patch.ModulationParams(dest));
+  for (auto target : kModulationTargets) {
+    auto mod_types = patch.ModTypesFor(target);
+    for (int i = 0; i < Modulation::NumModulators; i++) {
+      Modulation::Type mod_type = Modulation::Type(i);
+      if (mod_types.test(mod_type)) {
+        auto &modulator = modulators_[target][mod_type];
+        if (modulator)
+          modulator->Release(sample_rate, patch.ModulationParams(target));
+      }
     }
   }
   events.GeneratorRelease(this);
@@ -99,8 +114,8 @@ void Generator::NoteRelease(SampleRate sample_rate, const GeneratorPatch &patch,
 
 void Generator::Reset() {
   for (const auto &target : kModulationTargets) {
-    for (const auto &mod_type : kModTypes) {
-      auto &mod = modulators_[target][off_t(mod_type)];
+    for (int i = 0; i < Modulation::NumModulators; i++) {
+      auto &mod = modulators_[target][i];
       if (mod)
         mod->Reset();
     }
@@ -109,35 +124,24 @@ void Generator::Reset() {
 
 void Generator::ConfigureModulators(const GeneratorPatch &patch) {
   for (const auto &target : kModulationTargets) {
-    for (const auto &mod_type : kModTypes) {
-      switch (mod_type) {
-      case ModType::NONE:
-        modulators_[target][off_t(mod_type)].reset();
-        break;
-      case ModType::ADSR_ENVELOPE: {
-        auto envgen = std::make_unique<EnvelopeGenerator>();
-        // When the amplitude envelope is done, this generator is done.
-        envgen->events.Done.connect([target, this] {
-          if (target == TARGET_A) {
-            events.GeneratorOff(this);
-          }
-        });
-        envgen->events.StageChange.connect([target, this, &patch](off_t stage) {
-          events.EnvelopeStageChange(patch.gennum(), target, stage);
-        });
-        modulators_[target][off_t(mod_type)] = std::move(envgen);
-      } break;
-      case ModType::LFO:
-        modulators_[target][off_t(mod_type)] = std::make_unique<LFO>();
-        break;
-      }
+    auto mod_types = patch.ModTypesFor(target);
+    if (mod_types.test(Modulation::Envelope)) {
+      auto envgen = std::make_unique<EnvelopeGenerator>();
+      // When the amplitude envelope is done, this generator is done.
+      envgen->events.Done.connect([target, this] {
+        if (target == TARGET_A) {
+          events.GeneratorOff(this);
+        }
+      });
+      envgen->events.StageChange.connect([target, this, &patch](off_t stage) {
+        events.EnvelopeStageChange(patch.gennum(), target, stage);
+      });
+      modulators_[target][Modulation::Envelope] = std::move(envgen);
+    }
+    if (mod_types.test(Modulation::LFO)) {
+      modulators_[target][Modulation::LFO] = std::make_unique<LFO>();
     }
   }
-}
-
-IModulationSource *Generator::ModulatorFor(const GeneratorPatch &patch,
-                                           TargetTag dest) {
-  return modulators_[dest][off_t(patch.ModTypeFor(dest))].get();
 }
 
 } // namespace sidebands

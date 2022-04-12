@@ -114,7 +114,7 @@ void EnvelopeGenerator::Reset() {
   current_stage_ = 0;
 }
 
-ModType EnvelopeGenerator::mod_type() const { return ModType::ADSR_ENVELOPE; }
+Modulation::Type EnvelopeGenerator::mod_type() const { return Modulation::Envelope; }
 
 bool EnvelopeGenerator::Playing() const {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);

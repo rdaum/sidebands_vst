@@ -1,6 +1,8 @@
 #pragma once
 
 #include <deque>
+#include <bitset>
+
 #include <pluginterfaces/vst/ivstparameterchanges.h>
 #include <pluginterfaces/vst/vsttypes.h>
 
@@ -11,14 +13,16 @@
 #include <vector>
 
 #include "constants.h"
-#include "processor/util/sample_accurate_value.h"
 #include "tags.h"
+#include "processor/util/parameter.h"
+#include "processor/util/sample_accurate_value.h"
 
 namespace Steinberg {
 class IBStreamer;
 } // namespace Steinberg
 
 namespace sidebands {
+
 
 // Parameter value storage for patch parameters for each generator.
 class GeneratorPatch {
@@ -34,7 +38,7 @@ public:
   Steinberg::tresult LoadPatch(Steinberg::IBStreamer &stream);
   Steinberg::tresult SavePatch(Steinberg::IBStreamer &stream);
 
-  // Accessors for various parameters to insure locking.
+  // Accessors for various parameters to ensure locking.
   bool on() const;
   ParamValue c() const;
   ParamValue a() const;
@@ -54,48 +58,37 @@ public:
     SampleAccurateValue VS;  // velocity sensitivity
   };
   struct LFOValues {
-    ParamValue type;
+    Parameter type;
     SampleAccurateValue frequency;
     SampleAccurateValue amplitude;
     SampleAccurateValue velocity_sensivity;
   };
   struct ModParams {
     TargetTag target;
-    ParamValue mod_type;
+    BitsetParameter modulations; // bitset
     EnvelopeValues envelope_parameters;
     LFOValues lfo_parameters;
   };
 
   GeneratorPatch::ModParams *ModulationParams(TargetTag destination) const;
-  ModType ModTypeFor(TargetTag destination) const;
+  std::bitset<Modulation::NumModulators> ModTypesFor(TargetTag destination) const;
   std::function<double()> ParameterGetterFor(TargetTag dest) const;
   uint32_t gennum() const { return gennum_; }
 
 private:
-  void DeclareParameter(SampleAccurateValue *value);
-  void DeclareParameter(ParamID param_id, Steinberg::Vst::ParamValue *value,
-                        ParamValue min, ParamValue max);
+  void DeclareParameter(ProcessorParameterValue *value);
 
   const uint32_t gennum_;
 
   mutable std::mutex patch_mutex_;
 
-  ParamValue on_;
+  Parameter on_;
   SampleAccurateValue c_, a_, m_, k_, r_, s_, portamento_;
-  ParamValue osc_type_;
+  Parameter osc_type_;
 
   std::unique_ptr<ModParams> mod_targets_[NUM_TARGETS];
 
-  struct Param {
-    union {
-      ParamValue *v;
-      SampleAccurateValue *sv;
-    } v;
-    bool sa;
-    ParamValue min;
-    ParamValue max;
-  };
-  std::unordered_map<ParamKey, Param, ParamKey::Hash> parameters_;
+  std::unordered_map<ParamKey, ProcessorParameterValue*, ParamKey::Hash> parameters_;
   std::deque<Steinberg::Vst::ParamID> sa_changed_params_;
 };
 

@@ -66,7 +66,6 @@ void AnalogOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
   params.K *= 10;
 
   // We start by producing a pulse train using a variant of ModFM.
-  // Modulator ratio is hardcoded, so we only look at C and K and note_freq values from params.
   // Modulation index controls width of pulse.
   buffer = exp(params.K * cos(omega_m) -params.K) * cos(omega_c);
 

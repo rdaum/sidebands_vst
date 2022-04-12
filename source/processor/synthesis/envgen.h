@@ -34,7 +34,7 @@ public:
                   ParamValue velocity,
                   const GeneratorPatch::ModParams *parameters) override;
   bool Playing() const override;
-  ModType mod_type() const override;
+  Modulation::Type mod_type() const override;
 
   EnvelopeEvents events;
 

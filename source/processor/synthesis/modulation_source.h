@@ -22,7 +22,7 @@ public:
                           ParamValue velocity,
                           const GeneratorPatch::ModParams *parameters) = 0;
   virtual bool Playing() const = 0;
-  virtual ModType mod_type() const = 0;
+  virtual Modulation::Type mod_type() const = 0;
 };
 
 } // namespace sidebands

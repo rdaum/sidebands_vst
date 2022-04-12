@@ -43,7 +43,7 @@ void LFO::Amplitudes(SampleRate sample_rate, OscBuffer &buffer,
       phase_ -= kTwoPi;
   }
 
-  buffer = kLFOTypes[off_t(lfo_values.type)] == LFOType::SIN ? Vsin(phases)
+  buffer = kLFOTypes[off_t(lfo_values.type.getValue())] == LFOType::SIN ? Vsin(phases)
                                                              : Vcos(phases);
 
   last_level_ = buffer[0];
@@ -57,6 +57,6 @@ void LFO::Amplitudes(SampleRate sample_rate, OscBuffer &buffer,
 
 bool LFO::Playing() const { return playing_; }
 
-ModType LFO::mod_type() const { return ModType::LFO; }
+Modulation::Type LFO::mod_type() const { return Modulation::LFO; }
 
 } // namespace sidebands
