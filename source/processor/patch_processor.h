@@ -2,6 +2,7 @@
 
 #include <deque>
 #include <bitset>
+#include <memory>
 
 #include <pluginterfaces/vst/ivstparameterchanges.h>
 #include <pluginterfaces/vst/vsttypes.h>
