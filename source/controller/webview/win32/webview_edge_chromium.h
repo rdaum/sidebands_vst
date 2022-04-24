@@ -44,7 +44,6 @@ private:
       ICoreWebView2PermissionRequestedEventArgs  *args);
   bool SetFilePaths();
 
-  wchar_t virtual_server_path_[MAX_PATH];
   wchar_t user_data_path_[MAX_PATH];
 
   ICoreWebView2 *webview2_ = nullptr;

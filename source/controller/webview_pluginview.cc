@@ -1,11 +1,10 @@
 #include "controller/webview_pluginview.h"
 
-#include "controller/webview_controller_bindings.h"
-#include "tags.h"
 #include <absl/strings/str_format.h>
 #include <glog/logging.h>
-#include <libgen.h>
-#include <dlfcn.h>
+
+#include "controller/webview_controller_bindings.h"
+#include "tags.h"
 
 
 namespace sidebands {

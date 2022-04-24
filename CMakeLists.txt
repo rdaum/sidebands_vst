@@ -57,7 +57,7 @@ FetchContent_MakeAvailable(glog)
 FetchContent_Declare(
         abseil
         GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
-        GIT_SHALLOW 1
+        GIT_TAG c2ef7033380a3d8661fee76465097422170fb653
 )
 FetchContent_MakeAvailable(abseil)
 

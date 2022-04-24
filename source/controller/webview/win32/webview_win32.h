@@ -37,6 +37,8 @@ public:
   void SetTitle(const std::string &title) override;
   void SetViewSize(int width, int height, SizeHint hints) override;
 
+  std::string ContentRootURI() const override;
+
 protected:
   virtual void Resize(){};
 

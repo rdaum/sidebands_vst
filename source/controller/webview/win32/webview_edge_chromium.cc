@@ -94,14 +94,6 @@ HRESULT EdgeChromiumBrowser::OnControllerCreated(
     return E_FAIL;
   }
 
-  // Set up a virtual host for our resources directory.
-  if (webview_2_10->SetVirtualHostNameToFolderMapping(
-      L"appassets.daumaudioworks", virtual_server_path_,
-      COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_DENY) != S_OK) {
-    LOG(ERROR) << "Unable to set virtual host name folder mapping";
-    return E_FAIL;
-  }
-
   if (webview2_->get_Settings(&settings_) != S_OK) {
     LOG(ERROR) << "Failure to retrieve settings";
     return E_FAIL;
@@ -186,23 +178,6 @@ bool EdgeChromiumBrowser::SetFilePaths() {
           SHGetFolderPathW(NULL, CSIDL_APPDATA, NULL, 0, user_data_path_))) {
     return false;
   }
-  wchar_t dll[MAX_PATH];
-  HMODULE hm = NULL;
-  if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                            GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                        L"SignatureFunctionForDLL", &hm) == 0) {
-    return false;
-  }
-  if (GetModuleFileNameW(hm, dll, sizeof(dll)) == 0) {
-    return false;
-  }
-  if (PathRemoveFileSpecW(dll) == 0) {
-    return false;
-  }
-  wchar_t path[MAX_PATH];
-  swprintf_s(path, MAX_PATH, L"%s\\..\\Resources\\", dll);
-
-  GetFullPathNameW(path, MAX_PATH, virtual_server_path_, nullptr);
 
   return true;
 }

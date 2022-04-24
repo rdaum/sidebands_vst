@@ -117,9 +117,35 @@ void WebviewWin32::SetViewSize(int width, int height, SizeHint hints) {
   }
 }
 
+std::string WebviewWin32::ContentRootURI() const {
+  wchar_t dll[MAX_PATH];
+  HMODULE hm = NULL;
+  if (GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
+                            GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                        L"SignatureFunctionForDLL", &hm) == 0) {
+    return "";
+  }
+  if (GetModuleFileNameW(hm, dll, sizeof(dll)) == 0) {
+    return "";
+  }
+  if (PathRemoveFileSpecW(dll) == 0) {
+    return "";
+  }
+  wchar_t path[MAX_PATH];
+  swprintf_s(path, MAX_PATH, L"%s\\..\\Resources\\", dll);
+
+  wchar_t virtual_server_path[MAX_PATH];
+
+  GetFullPathNameW(path, MAX_PATH, virtual_server_path, nullptr);
+
+  std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+  return converter.to_bytes(virtual_server_path);
+}
 
 // static
-std::unique_ptr<Webview> MakeWebview(bool debug, void *window,
+std::unique_ptr<Webview> MakeWebview(bool debug,
+                                     Steinberg::IPlugFrame *plug_frame,
+                                     void *window,
                                      WebviewCreatedCallback created_cb) {
   auto webview =
       std::make_unique<EdgeChromiumBrowser>((HWND)window, debug, created_cb);
