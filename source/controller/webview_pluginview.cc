@@ -1,19 +1,21 @@
 #include "controller/webview_pluginview.h"
 
-#include <glog/logging.h>
-
-#include "tags.h"
 #include "controller/webview_controller_bindings.h"
+#include "tags.h"
+#include <absl/strings/str_format.h>
+#include <glog/logging.h>
+#include <libgen.h>
+#include <dlfcn.h>
+
 
 namespace sidebands {
 namespace ui {
 
-WebviewPluginView::WebviewPluginView(Steinberg::Vst::EditController *controller,
-                                     WebviewControllerBindings *controller_bindings,
-                                     Steinberg::ViewRect *size)
-    : Steinberg::Vst::EditorView(controller, size), controller_bindings_(controller_bindings) {
-
-}
+WebviewPluginView::WebviewPluginView(
+    Steinberg::Vst::EditController *controller,
+    WebviewControllerBindings *controller_bindings, Steinberg::ViewRect *size)
+    : Steinberg::Vst::EditorView(controller, size),
+      controller_bindings_(controller_bindings) {}
 
 Steinberg::tresult
 WebviewPluginView::isPlatformTypeSupported(Steinberg::FIDString type) {
@@ -35,14 +37,14 @@ void WebviewPluginView::attachedToParent() {
   if (!webview_handle_) {
     auto init_function = [this](webview::Webview *webview) {
       controller_bindings_->Bind(webview);
-      webview->SetTitle("Sidebands VST");
+      webview->SetTitle("Sidebands VST Webview");
       webview->SetViewSize(rect.getWidth(), rect.getHeight(),
                            webview::Webview::SizeHint::kFixed);
-      webview->Navigate("https://appassets.daumaudioworks/index.html");
-      LOG(INFO) << "Done load sequence";
+
+      webview->Navigate(webview->ContentRootURI() + "/index.html");
     };
 
-    webview_handle_ = webview::MakeWebview(true, systemWindow, init_function);
+    webview_handle_ = webview::MakeWebview(true,  plugFrame, systemWindow, init_function);
   }
 
   EditorView::attachedToParent();

@@ -36,6 +36,7 @@
 #include <cstring>
 
 #include <nlohmann/json.hpp>
+#include "pluginterfaces/gui/iplugview.h"
 
 namespace webview {
 
@@ -76,6 +77,8 @@ public:
   virtual void SetViewSize(int width, int height,
                            SizeHint hints = SizeHint::kNone) = 0;
 
+  virtual std::string ContentRootURI() const = 0;
+
   /**
    * Navigate the webview to a URL.
    */
@@ -115,7 +118,9 @@ private:
 };
 
 using WebviewCreatedCallback = std::function<void(Webview *)>;
-std::unique_ptr<Webview> MakeWebview(bool debug, void *window,
+std::unique_ptr<Webview> MakeWebview(bool debug,
+                                     Steinberg::IPlugFrame *plug_frame,
+                                     void *window,
                                      WebviewCreatedCallback created_cb);
 
 } // namespace webview

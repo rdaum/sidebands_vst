@@ -361,9 +361,8 @@ json WebviewControllerBindings::DoSendMessage(webview::Webview *webview,
         msg_attrs->setInt(attr_id, k.value());
       } else if (type == json::value_t::string) {
         std::string str = k.value();
-        std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-        std::wstring wide = converter.from_bytes(str);
-        msg_attrs->setString(attr_id, wide.c_str());
+        msg_attrs->setString(attr_id,
+                             VST3::StringConvert::convert(str).c_str());
       } else if (type == json::value_t::binary) {
         json::binary_t b = k.value();
         msg_attrs->setBinary(attr_id, b.data(), b.size());

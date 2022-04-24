@@ -1,0 +1,11 @@
+{
+  "name": "sidebands",
+  "version": "1.0.0",
+  "description": "Sidebands VST",
+  "main": "main.js",
+  "devDependencies": {
+    "ts-loader": "^9.2.8",
+    "typed-html": "^3.0.1",
+    "webpack-cli": "^4.9.2"
+  }
+}

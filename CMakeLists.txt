@@ -12,10 +12,11 @@ include(NuGet)
 # Third party packages are pulled in via FetchContent
 include(FetchContent)
 
-# Glog
+# VST3SDK
 FetchContent_Declare(
         vst3sdk
         GIT_REPOSITORY https://github.com/steinbergmedia/vst3sdk.git
+        GIT_SHALLOW 1
 )
 FetchContent_MakeAvailable(vst3sdk)
 
@@ -48,6 +49,7 @@ endif ()
 FetchContent_Declare(
         glog
         GIT_REPOSITORY https://github.com/google/glog.git
+        GIT_SHALLOW 1
 )
 FetchContent_MakeAvailable(glog)
 
@@ -55,6 +57,7 @@ FetchContent_MakeAvailable(glog)
 FetchContent_Declare(
         abseil
         GIT_REPOSITORY https://github.com/abseil/abseil-cpp.git
+        GIT_SHALLOW 1
 )
 FetchContent_MakeAvailable(abseil)
 
@@ -62,6 +65,7 @@ FetchContent_MakeAvailable(abseil)
 FetchContent_Declare(
         vectorclass
         GIT_REPOSITORY https://github.com/vectorclass/version2.git
+        GIT_SHALLOW 1
 )
 FetchContent_MakeAvailable(vectorclass)
 
@@ -69,6 +73,7 @@ FetchContent_Declare(
         googletest
         GIT_REPOSITORY https://github.com/google/googletest.git
         GIT_TAG        release-1.11.0
+        GIT_SHALLOW 1
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
@@ -103,7 +108,8 @@ ENDIF()
 
 if(UNIX AND NOT APPLE)
     set(WEBVIEW_PLATFORM_SOURCES
-            source/controller/webview/gtk/webview_gtk.h)
+            source/controller/webview/gtk/webview_gtk.cc
+            )
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
     pkg_check_modules(GTKMM3 REQUIRED gtkmm-3.0)
@@ -129,6 +135,9 @@ smtg_add_vst3plugin(sidebands
 
         source/processor/util/sample_accurate_value.h
         source/processor/util/sample_accurate_value.cc
+        source/processor/util/parameter.cc
+        source/processor/util/parameter.h
+        source/processor/util/processor_param_value.h
 
         source/dsp/oscbuffer.cc
         source/dsp/oscbuffer.h
