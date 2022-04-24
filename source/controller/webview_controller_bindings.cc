@@ -209,6 +209,10 @@ void WebviewControllerBindings::Bind(webview::Webview *webview) {
           WebviewMessageListener::MessageAttribute::Type::INT,
       },
       {
+          kGennumAttr,
+          WebviewMessageListener::MessageAttribute::Type::INT,
+      },
+      {
           kBufferDataAttr,
           WebviewMessageListener::MessageAttribute::Type::BINARY,
       },

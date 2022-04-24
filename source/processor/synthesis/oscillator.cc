@@ -31,8 +31,9 @@ void ModFMOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
   VmulInplace(omega_c, T);
   VmulInplace(omega_m, T);
 
-  buffer = Vmul(Vexp(Vmul(Vmul(params.R, params.K), Vcos(omega_m))),
-                Vcos(Vadd(omega_c, Vmul(Vmul(params.S, params.K), Vsin(omega_m)))));
+  buffer = Vmul(
+      Vexp(Vmul(Vmul(params.R, params.K), Vcos(omega_m))),
+      Vcos(Vadd(omega_c, Vmul(Vmul(params.S, params.K), Vsin(omega_m)))));
 
   // normalize for K by dividing out exp of K
   VdivInplace(buffer, Vexp(params.K));
@@ -63,13 +64,14 @@ void AnalogOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
   VmulInplace(omega_c, T);
   VmulInplace(omega_m, T);
 
-  params.K *= 10;
+  params.K *= 20;
 
   // We start by producing a pulse train using a variant of ModFM.
   // Modulation index controls width of pulse.
   buffer = exp(params.K * cos(omega_m) -params.K) * cos(omega_c);
 
-  // To go to saw from pulse, we need to integrate and then dc block as per the paper.
+  // To go to saw from pulse, we need to integrate and then dc block as per the
+  // paper.
   int_.Filter(buffer);
   dc_.Filter(buffer);
 }

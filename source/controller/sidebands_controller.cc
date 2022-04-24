@@ -141,7 +141,7 @@ SidebandsController::endEditFromHost(Steinberg::Vst::ParamID paramID) {
 Steinberg::tresult SidebandsController::ProduceFFTResponseMessageFor(
     Steinberg::Vst::IMessage *message) {
   auto analysis_attrs = message->getAttributes();
-  int64 sample_rate, buffer_size, analysis_note;
+  int64 sample_rate, buffer_size, analysis_note, gennum;
   if (analysis_attrs->getInt(kSampleRateAttr, sample_rate) !=
       Steinberg::kResultOk)
     return Steinberg::kResultFalse;
@@ -149,6 +149,8 @@ Steinberg::tresult SidebandsController::ProduceFFTResponseMessageFor(
       Steinberg::kResultOk)
     return Steinberg::kResultFalse;
   if (analysis_attrs->getInt(kFreqAttr, analysis_note) != Steinberg::kResultOk)
+    return Steinberg::kResultFalse;
+  if (analysis_attrs->getInt(kGennumAttr, gennum) != Steinberg::kResultOk)
     return Steinberg::kResultFalse;
 
   const double *buffer_data;
@@ -170,6 +172,7 @@ Steinberg::tresult SidebandsController::ProduceFFTResponseMessageFor(
   analysis_attrs->setBinary(kBufferDataAttr, &sbuffer[0],
                             sbuffer_size * sizeof(double));
   analysis_attrs->setInt(kBufferSizeAttr, sbuffer_size);
+  analysis_attrs->setInt(kGennumAttr, gennum);
 
   return Steinberg::kResultTrue;
 }

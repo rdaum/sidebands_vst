@@ -83,7 +83,7 @@ WebviewWin32::WebviewWin32(HWND parent_window, bool debug,
   Resize();
 }
 
-void WebviewWin32::Terminate() { PostQuitMessage(0); }
+void WebviewWin32::Terminate() {}
 
 void WebviewWin32::SetTitle(const std::string &title) {
   SetWindowTextW(window_, winrt::to_hstring(title).c_str());

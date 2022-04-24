@@ -30,6 +30,22 @@ export class MainView implements View {
             }
         }
 
+        let g_hviz_area = GD("global-harmonics-visual");
+        if (g_hviz_area)
+            this.subViews.push(
+                new Viz.HarmonicsAnaylsisView(<HTMLDivElement>g_hviz_area, -1,
+                    "kRequestAnalysisBufferMessageID", "kResponseAnalysisBufferMessageID",
+                    64, "Waveform")
+            );
+        let g_sviz_area = GD("global-spectrum-visual");
+        if (g_sviz_area)
+            this.subViews.push(
+                new Viz.HarmonicsAnaylsisView(<HTMLDivElement>g_sviz_area, -1,
+                    "kRequestSpectrumBufferMessageID", "kResponseSpectrumBufferMessageID",
+                    256, "Spectrum")
+            );
+
+
         VstModel.controller.getSelectedUnit().then(selectedUnit => {
             generators[selectedUnit].select();
 
@@ -79,14 +95,14 @@ export class MainView implements View {
                 this.subViews.push(
                     new Viz.HarmonicsAnaylsisView(<HTMLDivElement>hviz_area, selectedUnit,
                         "kRequestAnalysisBufferMessageID", "kResponseAnalysisBufferMessageID",
-                        64, "WAVEFORM")
+                        64, "Waveform")
                 );
             let sviz_area = GD("spectrum-visual");
             if (sviz_area)
                 this.subViews.push(
                     new Viz.HarmonicsAnaylsisView(<HTMLDivElement>sviz_area, selectedUnit,
                         "kRequestSpectrumBufferMessageID", "kResponseSpectrumBufferMessageID",
-                        256, "HARMONICS")
+                        256, "Spectrum")
                 );
 
             let a_env_area = GD("a_env_area");

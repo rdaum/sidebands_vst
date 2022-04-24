@@ -1,5 +1,5 @@
 import * as Model from "../model/sidebands_model";
-import {AnalysisBufferMessage, ParamIDFor, ParamTag} from "../model/sidebands_model";
+import {AnalysisBufferMessage, kNumGenerators, ParamIDFor, ParamTag} from "../model/sidebands_model";
 import {MakeHarmonicsView} from "./templates";
 import {GeneratorView} from "./views";
 import {controller, IDependent, IMsgSubscriber, IParameter, Message} from "../model/vst_model";
@@ -33,10 +33,12 @@ export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSub
         element.appendChild(MakeHarmonicsView());
         this.canvas = element.querySelector('.graph-harmonics-canvas');
         for (const param of kHarmonicParams) {
-            controller.subscribeParameter(ParamIDFor({
-                Generator: gennum, Param: ParamTag.TAG_OSC,
-                Target: param
-            }), this);
+            for (let g = 0; g < kNumGenerators; g++) {
+                controller.subscribeParameter(ParamIDFor({
+                    Generator: g, Param: ParamTag.TAG_OSC,
+                    Target: param
+                }), this);
+            }
         }
 
         controller.subscribeMessage(this.responseMsgId, this);
@@ -44,6 +46,8 @@ export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSub
     }
 
     notify(messageId: string, message: Message): void {
+        const msg = <AnalysisBufferMessage>message;
+        if (msg.gennum != this.gennum) return;
         if (!this.canvas) return;
         let ctx = this.canvas.getContext("2d");
         if (!ctx) return;
@@ -53,7 +57,6 @@ export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSub
         ctx.lineWidth = 1;
         ctx.strokeStyle = "#1e2a96";
         ctx.moveTo(0, this.canvas.height);
-        const msg = <AnalysisBufferMessage>message;
         const scalefactor = this.canvas.width / msg.bufferSize;
         for (let i = 0; i < msg.bufferData.length; i++) {
             const x = i * scalefactor;
@@ -85,6 +88,7 @@ export class HarmonicsAnaylsisView implements GeneratorView, IDependent, IMsgSub
     }
 
     updateSelectedGenerator(gennum: number): void {
+        if (this.gennum == -1) return;
         this.gennum = gennum;
         this.refresh();
     }

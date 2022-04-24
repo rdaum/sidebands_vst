@@ -6,17 +6,33 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body id="sidebands_view">
-
 <div class="main-header">
     <span class="product-name">sidebands</span>
     <h2 class="company-name">daum audio works</h2>
 </div>
+<div class="global-section">
+    <div class="section-header">GLOBAL</div>
+    <div class="editor-row">
+        <div id="global-harmonics-viz" class="harmonics-viz editor-panel">
+            <div class="harmonics-viz-container" id="global-harmonics-visual">
+            </div>
+        </div>
+        <div id="global-spectrum-viz" class="harmonics-viz editor-panel">
+            <div class="harmonics-viz-container"  id="global-spectrum-visual">
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- generator tabs -->
 <div class="tabs" id="generator_selector">
 </div>
 <div class="generator-editor">
     <div class="section">
         <div class="section-header">AMPLITUDE</div>
+        <div class="actions">
+            <input type="Button">Copy to
+        </div>
         <div class="editor-row">
             <div id="a_ctrl" class="editor-panel ampl-editor">
                 <div class="parameter">

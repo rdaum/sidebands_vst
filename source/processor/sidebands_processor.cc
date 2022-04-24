@@ -164,12 +164,26 @@ tresult SidebandsProcessor::notify(Vst::IMessage *message) {
   attributes->getInt(kSampleRateAttr, sample_rate);
   attributes->getInt(kGennumAttr, gennum);
 
-  // Produce buffer by making a one-off generator
-  ModFMOscillator oscillator;
-  Generator analysis_generator;
   OscBuffer buffer(buffer_size);
-  analysis_generator.Synthesize(sample_rate, *patch_->generators_[gennum],
-                                buffer, frequency);
+
+  // Produce buffer by making a one-off generator. Unless the generator is
+  // -1, in which case do a bunch and mix them together.
+  if (gennum == -1) {
+    buffer = 0.0;
+    for (auto & generator : patch_->generators_) {
+      if (!generator->on()) continue;
+      OscBuffer mix_buffer(buffer_size);
+      Generator analysis_generator;
+      analysis_generator.Synthesize(sample_rate, *generator,
+                                    mix_buffer, frequency);
+      mix_buffer *= generator->a();
+      buffer += mix_buffer;
+    }
+  } else {
+    Generator analysis_generator;
+    analysis_generator.Synthesize(sample_rate, *patch_->generators_[gennum],
+                                  buffer, frequency);
+  }
 
   // Send a response with the buffer data.
   if (auto env_change_message = owned(allocateMessage())) {
@@ -183,7 +197,7 @@ tresult SidebandsProcessor::notify(Vst::IMessage *message) {
     auto *resp_attributes = env_change_message->getAttributes();
     resp_attributes->setInt(kSampleRateAttr, sample_rate);
     resp_attributes->setInt(kBufferSizeAttr, buffer.size());
-    resp_attributes->getInt(kGennumAttr, gennum);
+    resp_attributes->setInt(kGennumAttr, gennum);
     resp_attributes->setInt(kFreqAttr, frequency);
 
     resp_attributes->setBinary(kBufferDataAttr, &buffer[0],

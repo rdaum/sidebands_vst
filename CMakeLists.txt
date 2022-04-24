@@ -133,6 +133,9 @@ smtg_add_vst3plugin(sidebands
         source/processor/patch_processor.cc
         source/processor/events.h
 
+        source/processor/util/processor_param_value.h
+        source/processor/util/parameter.cc
+        source/processor/util/parameter.h
         source/processor/util/sample_accurate_value.h
         source/processor/util/sample_accurate_value.cc
         source/processor/util/parameter.cc

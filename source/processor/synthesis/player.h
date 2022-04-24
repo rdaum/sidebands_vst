@@ -31,7 +31,6 @@ class Player {
                  size_t frames_per_buffer);
   bool Perform64(Sample64 *in_buffer, Sample64 *out_buffer,
                  size_t frames_per_buffer);
-
   // Signal note-on to all voices and generators.
   void NoteOn(std::chrono::high_resolution_clock::time_point start_time,
               int32_t note_id, ParamValue velocity, int16_t pitch);

@@ -128,4 +128,5 @@ Voice *Player::NewVoice(int32_t note_id) {
   return &voices_[note_id];
 }
 
+
 } // namespace sidebands
