@@ -1,13 +1,11 @@
 #include <glog/logging.h>
-#include <link.h>
 
 #include <thread>
-#define GNU_SOURCE
 
 #include <JavaScriptCore/JavaScript.h>
 #include <X11/X.h>
+#define GNU_SOURCE
 #include <dlfcn.h>
-#include <gdk/gdkx.h>
 #include <gtk-3.0/gtk/gtk.h>
 #include <gtk-3.0/gtk/gtkx.h>
 #include <webkit2/webkit2.h>
