@@ -4,7 +4,6 @@
 
 #include "controller/webview/webview.h"
 #include "controller/webview/win32/webview_edge_chromium.h"
-
 #include "winrt/base.h"
 namespace winrt::impl {
 template <typename Async>
@@ -16,7 +15,7 @@ auto wait_for(Async const &async, Windows::Foundation::TimeSpan const &timeout);
 namespace webview {
 
 WebviewWin32::WebviewWin32(HWND parent_window, bool debug,
-                                       WebviewCreatedCallback created_cb)
+                           WebviewCreatedCallback created_cb)
     : debug_(debug), created_cb_(created_cb) {
   HINSTANCE hInstance = GetModuleHandle(nullptr);
   HICON icon = (HICON)LoadImage(hInstance, IDI_APPLICATION, IMAGE_ICON,
@@ -35,30 +34,30 @@ WebviewWin32::WebviewWin32(HWND parent_window, bool debug,
         auto *w = reinterpret_cast<WebviewWin32 *>(
             GetWindowLongPtr(hwnd, GWLP_USERDATA));
         switch (msg) {
-        case WM_SIZE:
-          w->Resize();
-          break;
-        case WM_CLOSE:
-          DestroyWindow(hwnd);
-          break;
-        case WM_DESTROY:
-          w->Terminate();
-          break;
-        case WM_GETMINMAXINFO: {
-          auto lpmmi = (LPMINMAXINFO)lp;
-          if (w == nullptr) {
-            return 0;
-          }
-          if (w->maxsz_.x > 0 && w->maxsz_.y > 0) {
-            lpmmi->ptMaxSize = w->maxsz_;
-            lpmmi->ptMaxTrackSize = w->maxsz_;
-          }
-          if (w->minsz_.x > 0 && w->minsz_.y > 0) {
-            lpmmi->ptMinTrackSize = w->minsz_;
-          }
-        } break;
-        default:
-          return DefWindowProcW(hwnd, msg, wp, lp);
+          case WM_SIZE:
+            w->Resize();
+            break;
+          case WM_CLOSE:
+            DestroyWindow(hwnd);
+            break;
+          case WM_DESTROY:
+            w->Terminate();
+            break;
+          case WM_GETMINMAXINFO: {
+            auto lpmmi = (LPMINMAXINFO)lp;
+            if (w == nullptr) {
+              return 0;
+            }
+            if (w->maxsz_.x > 0 && w->maxsz_.y > 0) {
+              lpmmi->ptMaxSize = w->maxsz_;
+              lpmmi->ptMaxTrackSize = w->maxsz_;
+            }
+            if (w->minsz_.x > 0 && w->minsz_.y > 0) {
+              lpmmi->ptMinTrackSize = w->minsz_;
+            }
+          } break;
+          default:
+            return DefWindowProcW(hwnd, msg, wp, lp);
         }
         return 0;
       });
@@ -155,4 +154,4 @@ std::unique_ptr<Webview> MakeWebview(bool debug,
   return nullptr;
 }
 
-} // namespace webview
+}  // namespace webview

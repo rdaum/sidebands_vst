@@ -15,9 +15,11 @@ using Steinberg::Vst::RangeParameter;
 // The controller side of patch management.
 // Declaration of all parameter objects.
 class PatchController {
-public:
+ public:
   void AppendParameters(ParameterContainer *container);
-  Steinberg::tresult LoadPatch(Steinberg::IBStream *stream, Steinberg::Vst::IEditController *edit_controller);
+  Steinberg::tresult LoadPatch(
+      Steinberg::IBStream *stream,
+      Steinberg::Vst::IEditController *edit_controller);
   Steinberg::tresult SavePatch(Steinberg::IBStream *stream);
 
 };  // namespace PatchController

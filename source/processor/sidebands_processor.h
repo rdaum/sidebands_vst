@@ -12,7 +12,7 @@ namespace sidebands {
 class Player;
 
 class SidebandsProcessor : public Steinberg::Vst::AudioEffect {
-public:
+ public:
   SidebandsProcessor();
   ~SidebandsProcessor() override;
 
@@ -50,12 +50,13 @@ public:
   Steinberg::tresult PLUGIN_API getState(Steinberg::IBStream *state) override;
   Steinberg::tresult notify(Steinberg::Vst::IMessage *message) override;
 
-private:
-  void SendEnvelopeStageChangedEvent(int note_id, int gennum, TargetTag target, off_t stage);
+ private:
+  void SendEnvelopeStageChangedEvent(int note_id, int gennum, TargetTag target,
+                                     off_t stage);
 
   std::unique_ptr<PatchProcessor> patch_;
   std::unique_ptr<Player> player_;
 };
 
 //------------------------------------------------------------------------
-} // namespace sidebands
+}  // namespace sidebands

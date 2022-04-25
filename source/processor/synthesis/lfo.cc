@@ -24,7 +24,6 @@ void LFO::Reset() {
   playing_ = false;
 }
 
-
 void LFO::Amplitudes(SampleRate sample_rate, OscBuffer &buffer,
                      ParamValue velocity,
                      const GeneratorPatch::ModParams *parameters) {
@@ -39,12 +38,12 @@ void LFO::Amplitudes(SampleRate sample_rate, OscBuffer &buffer,
   for (int i = 0; i < buffer_size; i++) {
     phase_ += phase_increment;
     phases[i] = phase_;
-    if (phase_ >= kTwoPi)
-      phase_ -= kTwoPi;
+    if (phase_ >= kTwoPi) phase_ -= kTwoPi;
   }
 
-  buffer = kLFOTypes[off_t(lfo_values.type.getValue())] == LFOType::SIN ? Vsin(phases)
-                                                             : Vcos(phases);
+  buffer = kLFOTypes[off_t(lfo_values.type.getValue())] == LFOType::SIN
+               ? Vsin(phases)
+               : Vcos(phases);
 
   last_level_ = buffer[0];
 
@@ -59,4 +58,4 @@ bool LFO::Playing() const { return playing_; }
 
 Modulation::Type LFO::mod_type() const { return Modulation::LFO; }
 
-} // namespace sidebands
+}  // namespace sidebands

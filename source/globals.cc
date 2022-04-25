@@ -1,7 +1,7 @@
 #include "globals.h"
 
-#include <numeric>
 #include <cmath>
+#include <numeric>
 
 namespace sidebands {
 
@@ -11,4 +11,4 @@ double EnvelopeRampCoefficient(double start_level, double end_level,
                    ((double)length_in_samples);
 }
 
-} // namespace sidebands
+}  // namespace sidebands

@@ -1,8 +1,7 @@
-#include "public.sdk/source/main/pluginfactory.h"
-
-#include "sidebands_cids.h"
 #include "controller/sidebands_controller.h"
 #include "processor/sidebands_processor.h"
+#include "public.sdk/source/main/pluginfactory.h"
+#include "sidebands_cids.h"
 #include "version.h"
 
 #define stringPluginName "Sidebands"
@@ -45,6 +44,5 @@ DEF_CLASS2(
                         // always this define)
     SidebandsController::Instantiate)  // function pointer called when this
                                        // component should be instantiated
-
 
 END_FACTORY

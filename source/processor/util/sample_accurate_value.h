@@ -3,9 +3,9 @@
 #include <pluginterfaces/vst/vsttypes.h>
 #include <public.sdk/source/vst/vstparameters.h>
 
-#include "processor/util/processor_param_value.h"
-
 #include <cassert>
+
+#include "processor/util/processor_param_value.h"
 
 namespace sidebands {
 
@@ -18,35 +18,38 @@ using Steinberg::Vst::ParamValue;
 // Fork of Steinberg::SampleAccurate::Parameter that supports parameter value
 // in ranges and whatever else I end up needing.
 class SampleAccurateValue : public ProcessorParameterValue {
-public:
+ public:
   SampleAccurateValue(ParamID pid, ParamValue initValue, ParamValue min,
-                      ParamValue max) ;
+                      ParamValue max);
 
-  void setValue(ParamValue v) override ;
-  void setValueNormalized(ParamValue v) override ;
-  ParamValue getValue() const override ;
-  ParamValue getValueNormalized() const override ;
+  void setValue(ParamValue v) override;
+  void setValueNormalized(ParamValue v) override;
+  ParamValue getValue() const override;
+  ParamValue getValueNormalized() const override;
   ParamValue Min() const override { return min_plain_; }
   ParamValue Max() const override { return max_plain_; }
-  ParamID getParamID() const override  ;
+  ParamID getParamID() const override;
 
-  bool hasChanges() const override ;
-  void beginChanges(IParamValueQueue *valueQueue) override ;
-  ParamValue advance(int32 numSamples) override ;
-  ParamValue flushChanges() override ;
-  ParamValue endChanges() override ;
+  bool hasChanges() const override;
+  void beginChanges(IParamValueQueue *valueQueue) override;
+  ParamValue advance(int32 numSamples) override;
+  ParamValue flushChanges() override;
+  ParamValue endChanges() override;
 
-  template <typename Proc> void advance(int32 numSamples, Proc p) ;
-  template <typename Proc> void flushChanges(Proc p) ;
-  template <typename Proc> void endChanges(Proc p) ;
+  template <typename Proc>
+  void advance(int32 numSamples, Proc p);
+  template <typename Proc>
+  void flushChanges(Proc p);
+  template <typename Proc>
+  void endChanges(Proc p);
 
-private:
+ private:
   struct ValuePoint {
     ParamValue value = 0.;
     double rampPerSample = 0.;
     int32 sampleOffset = -1;
   };
-  ValuePoint processNextValuePoint() ;
+  ValuePoint processNextValuePoint();
 
   const ParamID paramID_;
   const ParamValue min_plain_;
@@ -61,4 +64,4 @@ private:
   IParamValueQueue *queue_ = nullptr;
 };
 
-} // namespace sidebands
+}  // namespace sidebands

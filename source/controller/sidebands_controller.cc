@@ -62,8 +62,7 @@ tresult PLUGIN_API SidebandsController::terminate() {
 
 tresult PLUGIN_API SidebandsController::setComponentState(IBStream *state) {
   // Here you get the state of the component (Processor part)
-  if (!state)
-    return kResultFalse;
+  if (!state) return kResultFalse;
 
   if (patch_controller_->LoadPatch(state, this) != kResultOk)
     return kResultFalse;
@@ -107,8 +106,7 @@ Steinberg::Vst::RangeParameter *SidebandsController::FindRangedParameter(
     uint16_t generator, const ParamTag &param, const TargetTag &sp) {
   Steinberg::Vst::ParamID tag = TagFor(generator, param, sp);
   auto *param_obj = getParameterObject(tag);
-  if (!param_obj)
-    return nullptr;
+  if (!param_obj) return nullptr;
   Steinberg::Vst::RangeParameter *ranged_parameter;
   auto result = param_obj->queryInterface(Steinberg::Vst::RangeParameter::iid,
                                           (void **)&ranged_parameter);
@@ -116,11 +114,10 @@ Steinberg::Vst::RangeParameter *SidebandsController::FindRangedParameter(
   return ranged_parameter;
 }
 
-Steinberg::Vst::ParamValue
-SidebandsController::GetParamValue(Steinberg::Vst::ParamID param_id) {
+Steinberg::Vst::ParamValue SidebandsController::GetParamValue(
+    Steinberg::Vst::ParamID param_id) {
   auto *param_obj = getParameterObject(param_id);
-  if (!param_obj)
-    return 0;
+  if (!param_obj) return 0;
   Steinberg::Vst::RangeParameter *ranged_parameter;
   auto result = param_obj->queryInterface(Steinberg::Vst::RangeParameter::iid,
                                           (void **)&ranged_parameter);
@@ -128,13 +125,13 @@ SidebandsController::GetParamValue(Steinberg::Vst::ParamID param_id) {
   return ranged_parameter->toPlain(ranged_parameter->getNormalized());
 }
 
-Steinberg::tresult
-SidebandsController::beginEditFromHost(Steinberg::Vst::ParamID paramID) {
+Steinberg::tresult SidebandsController::beginEditFromHost(
+    Steinberg::Vst::ParamID paramID) {
   return beginEdit(paramID);
 }
 
-Steinberg::tresult
-SidebandsController::endEditFromHost(Steinberg::Vst::ParamID paramID) {
+Steinberg::tresult SidebandsController::endEditFromHost(
+    Steinberg::Vst::ParamID paramID) {
   return endEdit(paramID);
 }
 
@@ -164,7 +161,7 @@ Steinberg::tresult SidebandsController::ProduceFFTResponseMessageFor(
   FFT(fft_buffer);
   size_t sbuffer_size = fft_buffer.size() / 2;
   std::valarray<double> sbuffer(sbuffer_size);
-  for (int i =0; i < sbuffer_size; i++) {
+  for (int i = 0; i < sbuffer_size; i++) {
     sbuffer[i] = std::abs(fft_buffer[i]);
   }
   sbuffer = sbuffer / (sbuffer.max() / 2);
@@ -177,11 +174,10 @@ Steinberg::tresult SidebandsController::ProduceFFTResponseMessageFor(
   return Steinberg::kResultTrue;
 }
 
-Steinberg::tresult
-SidebandsController::notify(Steinberg::Vst::IMessage *message) {
+Steinberg::tresult SidebandsController::notify(
+    Steinberg::Vst::IMessage *message) {
   auto *ml = webview_controller_bindings_->message_listener();
-  if (!ml)
-    return ComponentBase::notify(message);
+  if (!ml) return ComponentBase::notify(message);
 
   tresult res;
 
@@ -193,9 +189,8 @@ SidebandsController::notify(Steinberg::Vst::IMessage *message) {
   }
 
   res = ml->Notify(message);
-  if (res != Steinberg::kResultOk)
-    return ComponentBase::notify(message);
+  if (res != Steinberg::kResultOk) return ComponentBase::notify(message);
   return res;
 }
 
-} // namespace sidebands
+}  // namespace sidebands

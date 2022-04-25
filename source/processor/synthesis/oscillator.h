@@ -5,10 +5,10 @@
 #include <cstdint>
 #include <valarray>
 
-#include "processor/patch_processor.h"
-#include "dsp/oscbuffer.h"
-#include "dsp/integrator.h"
 #include "dsp/dc_block.h"
+#include "dsp/integrator.h"
+#include "dsp/oscbuffer.h"
+#include "processor/patch_processor.h"
 
 namespace sidebands {
 
@@ -26,7 +26,7 @@ struct OscParams {
 };
 
 class IOscillator {
-public:
+ public:
   virtual ~IOscillator() = default;
   virtual void Perform(Steinberg::Vst::SampleRate sample_rate,
                        OscBuffer &buffer, OscParams &params) = 0;
@@ -37,32 +37,36 @@ public:
 std::unique_ptr<IOscillator> MakeOscillator(GeneratorPatch::OscType type);
 
 class ModFMOscillator : public IOscillator {
-public:
+ public:
   ~ModFMOscillator() override = default;
   void Perform(Steinberg::Vst::SampleRate sample_rate, OscBuffer &buffer,
                OscParams &params) override;
   void Reset() override { phase_ = 0.0f; }
-  GeneratorPatch::OscType osc_type() const override { return GeneratorPatch::OscType::MOD_FM; };
+  GeneratorPatch::OscType osc_type() const override {
+    return GeneratorPatch::OscType::MOD_FM;
+  };
 
-private:
+ private:
   double phase_ = 0.0f;
 };
 
 // A virtual "analog" oscillator based on the same ModFM algorithm.
 // Mod ratio of "2" == square.  "1" == saw.
 class AnalogOscillator : public IOscillator {
-public:
+ public:
   AnalogOscillator();
   ~AnalogOscillator() override = default;
   void Perform(Steinberg::Vst::SampleRate sample_rate, OscBuffer &buffer,
                OscParams &params) override;
   void Reset() override { phase_ = 0.0f; }
-  GeneratorPatch::OscType osc_type() const override { return GeneratorPatch::OscType::ANALOG; };
+  GeneratorPatch::OscType osc_type() const override {
+    return GeneratorPatch::OscType::ANALOG;
+  };
 
-private:
+ private:
   DCBlock2 dc_;
   Integrator int_;
   double phase_ = 0.0f;
 };
 
-} // namespace sidebands
+}  // namespace sidebands

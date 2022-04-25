@@ -5,9 +5,9 @@
 #include <cmath>
 
 #include "dsp/oscbuffer.h"
+#include "processor/events.h"
 #include "processor/patch_processor.h"
 #include "processor/synthesis/modulation_source.h"
-#include "processor/events.h"
 
 namespace sidebands {
 
@@ -16,12 +16,14 @@ using Steinberg::Vst::SampleRate;
 
 namespace ui {
 class GraphicalEnvelopeEditorView;
-} // namespace ui
+}  // namespace ui
 
 class EnvelopeGenerator : public IModulationSource {
-public:
+ public:
   explicit EnvelopeGenerator()
-      : minimum_level_(0.0001), current_stage_(0), current_level_(minimum_level_),
+      : minimum_level_(0.0001),
+        current_stage_(0),
+        current_level_(minimum_level_),
         current_sample_index_(0) {}
 
   // IModulationSource overrides
@@ -38,7 +40,7 @@ public:
 
   EnvelopeEvents events;
 
-private:
+ private:
   ParamValue NextSample(SampleRate sample_rate,
                         const GeneratorPatch::EnvelopeValues &ev);
 
@@ -64,4 +66,4 @@ private:
   off_t current_sample_index_;
 };
 
-} // namespace sidebands
+}  // namespace sidebands

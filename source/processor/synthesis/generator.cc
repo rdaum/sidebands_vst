@@ -116,8 +116,7 @@ void Generator::Reset() {
   for (const auto &target : kModulationTargets) {
     for (int i = 0; i < Modulation::NumModulators; i++) {
       auto &mod = modulators_[target][i];
-      if (mod)
-        mod->Reset();
+      if (mod) mod->Reset();
     }
   }
 }
@@ -144,4 +143,4 @@ void Generator::ConfigureModulators(const GeneratorPatch &patch) {
   }
 }
 
-} // namespace sidebands
+}  // namespace sidebands

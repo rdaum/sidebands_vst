@@ -2,12 +2,12 @@
 
 #include <pluginterfaces/vst/vsttypes.h>
 
+#include <bitset>
 #include <chrono>
 #include <complex>
 #include <mutex>
 #include <valarray>
 #include <vector>
-#include <bitset>
 
 #include "constants.h"
 #include "globals.h"

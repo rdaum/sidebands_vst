@@ -14,7 +14,7 @@ ParamValue NoteToFreq(ParamValue note) {
   return kNoteConversionMultiplier * std::pow(2.0f, ((note - 9.0f) / 12.0f));
 }
 
-} // namespace
+}  // namespace
 
 Voice::Voice() : note_frequency_(0), note_(0), velocity_(0) {
   for (int x = 0; x < kNumGenerators; x++) {
@@ -68,8 +68,7 @@ void Voice::NoteRelease(SampleRate sample_rate, PatchProcessor *patch,
   std::lock_guard<std::mutex> generators_lock(generators_mutex_);
   for (int g_num = 0; g_num < kNumGenerators; g_num++) {
     auto &g = generators_[g_num];
-    if (!active_generators_[g_num])
-      continue;
+    if (!active_generators_[g_num]) continue;
     auto &gp = g_patches[g_num];
     g->NoteRelease(sample_rate, *gp, note);
   }
@@ -78,8 +77,7 @@ void Voice::NoteRelease(SampleRate sample_rate, PatchProcessor *patch,
 
 MixBuffers Voice::Perform(SampleRate sample_rate, size_t frames_per_buffer,
                           PatchProcessor *patch) {
-  if (!Playing())
-    return {};
+  if (!Playing()) return {};
   auto g_patches = patch->generators_;
 
   // Copy references to the generators that we need to use, and create a mix
@@ -89,8 +87,7 @@ MixBuffers Voice::Perform(SampleRate sample_rate, size_t frames_per_buffer,
     std::lock_guard<std::mutex> generators_lock(generators_mutex_);
     for (int g_num = 0; g_num < kNumGenerators; g_num++) {
       auto &g = generators_[g_num];
-      if (!active_generators_[g_num] || !g_patches[g_num]->on())
-        continue;
+      if (!active_generators_[g_num] || !g_patches[g_num]->on()) continue;
       generators.emplace_back(std::make_pair(g_patches[g_num].get(), g.get()));
     }
   }
@@ -119,4 +116,4 @@ void Voice::Reset() {
   active_generators_.reset();
 }
 
-} // namespace sidebands
+}  // namespace sidebands

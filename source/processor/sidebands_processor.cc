@@ -79,22 +79,22 @@ tresult PLUGIN_API SidebandsProcessor::process(Vst::ProcessData &data) {
       Vst::Event event;
       input_events->getEvent(i, event);
       switch (event.type) {
-      case Vst::Event::kNoteOnEvent:
-        player_->NoteOn(std::chrono::high_resolution_clock::now(),
-                        event.noteOn.noteId, event.noteOn.velocity,
-                        event.noteOn.pitch);
-        break;
-      case Vst::Event::kNoteOffEvent:
-        player_->NoteOff(event.noteOff.noteId, event.noteOff.pitch);
-        break;
-      case Vst::Event::kLegacyMIDICCOutEvent:
-        VLOG(1) << "Legacy CC control# " << std::hex
-                << (int)event.midiCCOut.controlNumber
-                << " value: " << (int)event.midiCCOut.value;
-        break;
-      default:
-        LOG(INFO) << "Other VST event type: " << event.type;
-        break;
+        case Vst::Event::kNoteOnEvent:
+          player_->NoteOn(std::chrono::high_resolution_clock::now(),
+                          event.noteOn.noteId, event.noteOn.velocity,
+                          event.noteOn.pitch);
+          break;
+        case Vst::Event::kNoteOffEvent:
+          player_->NoteOff(event.noteOff.noteId, event.noteOff.pitch);
+          break;
+        case Vst::Event::kLegacyMIDICCOutEvent:
+          VLOG(1) << "Legacy CC control# " << std::hex
+                  << (int)event.midiCCOut.controlNumber
+                  << " value: " << (int)event.midiCCOut.value;
+          break;
+        default:
+          LOG(INFO) << "Other VST event type: " << event.type;
+          break;
       }
     }
   }
@@ -187,7 +187,6 @@ tresult SidebandsProcessor::notify(Vst::IMessage *message) {
 
   // Send a response with the buffer data.
   if (auto env_change_message = owned(allocateMessage())) {
-
     if (FIDStringsEqual(message->getMessageID(),
                         kRequestAnalysisBufferMessageID))
       env_change_message->setMessageID(kResponseAnalysisBufferMessageID);
@@ -226,27 +225,23 @@ SidebandsProcessor::setupProcessing(Vst::ProcessSetup &newSetup) {
 
 tresult PLUGIN_API
 SidebandsProcessor::canProcessSampleSize(int32 symbolicSampleSize) {
-  if (symbolicSampleSize == Vst::kSample32)
-    return kResultTrue;
+  if (symbolicSampleSize == Vst::kSample32) return kResultTrue;
 
-  if (symbolicSampleSize == Vst::kSample64)
-    return kResultTrue;
+  if (symbolicSampleSize == Vst::kSample64) return kResultTrue;
 
   return kResultFalse;
 }
 
 tresult PLUGIN_API SidebandsProcessor::setState(IBStream *state) {
   // Here you set the state of the component (Processor part)
-  if (!state)
-    return kResultFalse;
+  if (!state) return kResultFalse;
 
   return patch_->LoadPatch(state);
 }
 
 tresult PLUGIN_API SidebandsProcessor::getState(IBStream *state) {
   // Here you get the state of the component (Processor part)
-  if (!state)
-    return kResultFalse;
+  if (!state) return kResultFalse;
 
   return patch_->SavePatch(state);
 }
@@ -265,4 +260,4 @@ void SidebandsProcessor::SendEnvelopeStageChangedEvent(int note_id, int gennum,
   }
 }
 
-} // namespace sidebands
+}  // namespace sidebands

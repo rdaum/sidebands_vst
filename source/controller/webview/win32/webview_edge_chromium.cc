@@ -22,16 +22,18 @@ EdgeChromiumBrowser::EdgeChromiumBrowser(HWND parent_window, bool debug,
                                          WebviewCreatedCallback created_cb)
     : WebviewWin32(parent_window, debug, created_cb) {
   SetFilePaths();
-  controller_completed_handler_ =
-      Microsoft::WRL::Callback<ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(
-          this, &EdgeChromiumBrowser::OnControllerCreated);
+  controller_completed_handler_ = Microsoft::WRL::Callback<
+      ICoreWebView2CreateCoreWebView2ControllerCompletedHandler>(
+      this, &EdgeChromiumBrowser::OnControllerCreated);
   environment_completed_handler_ =
       Callback<ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>(
           this, &EdgeChromiumBrowser::OnEnvironmentCreated);
   message_received_handler_ =
-    Callback<ICoreWebView2WebMessageReceivedEventHandler>(this, &EdgeChromiumBrowser::OnWebMessageReceived);
+      Callback<ICoreWebView2WebMessageReceivedEventHandler>(
+          this, &EdgeChromiumBrowser::OnWebMessageReceived);
   permission_requested_handler_ =
-      Callback<ICoreWebView2PermissionRequestedEventHandler>(this, &EdgeChromiumBrowser::OnPermissionRequested);
+      Callback<ICoreWebView2PermissionRequestedEventHandler>(
+          this, &EdgeChromiumBrowser::OnPermissionRequested);
 }
 
 EdgeChromiumBrowser::~EdgeChromiumBrowser() {
@@ -42,8 +44,7 @@ EdgeChromiumBrowser::~EdgeChromiumBrowser() {
 }
 
 HRESULT EdgeChromiumBrowser::OnWebMessageReceived(
-    ICoreWebView2 *sender,
-    ICoreWebView2WebMessageReceivedEventArgs *args) {
+    ICoreWebView2 *sender, ICoreWebView2WebMessageReceivedEventArgs *args) {
   LPWSTR message;
   args->TryGetWebMessageAsString(&message);
   OnBrowserMessage(winrt::to_string(message));
@@ -69,7 +70,8 @@ HRESULT EdgeChromiumBrowser::OnEnvironmentCreated(
     LOG(INFO) << "Unable to create WebView2 environment: " << result;
     return E_FAIL;
   }
-  environment->CreateCoreWebView2Controller(window_, controller_completed_handler_.Get());
+  environment->CreateCoreWebView2Controller(
+      window_, controller_completed_handler_.Get());
   return S_OK;
 }
 
@@ -107,20 +109,23 @@ HRESULT EdgeChromiumBrowser::OnControllerCreated(
   }
 
   ::EventRegistrationToken token;
-  if (webview2_->add_WebMessageReceived(message_received_handler_.Get(), &token) != S_OK) {
+  if (webview2_->add_WebMessageReceived(message_received_handler_.Get(),
+                                        &token) != S_OK) {
     LOG(ERROR) << "Unable to register message received callback";
     return E_FAIL;
   };
-  if (webview2_->add_PermissionRequested(permission_requested_handler_.Get(), &token) != S_OK) {
+  if (webview2_->add_PermissionRequested(permission_requested_handler_.Get(),
+                                         &token) != S_OK) {
     LOG(ERROR) << "Unable to register permission handler";
     return E_FAIL;
   }
 
   webview2_->AddRef();
 
-  OnDocumentCreate("window.external={invoke:s=>window.chrome.webview."
-                   "postMessage("
-                   "s)}");
+  OnDocumentCreate(
+      "window.external={invoke:s=>window.chrome.webview."
+      "postMessage("
+      "s)}");
   created_cb_(this);
   return S_OK;
 }
@@ -160,17 +165,21 @@ void EdgeChromiumBrowser::OnDocumentCreate(const std::string &js) {
 void EdgeChromiumBrowser::EvalJS(const std::string &js, ResultCallback rs) {
   auto wjs = winrt::to_hstring(js);
 
-  auto complete_handler = [rs](HRESULT errorCode, LPCWSTR resultObjectAsJson) -> HRESULT {
+  auto complete_handler = [rs](HRESULT errorCode,
+                               LPCWSTR resultObjectAsJson) -> HRESULT {
     if (!SUCCEEDED(errorCode)) {
       return E_FAIL;
     }
-    std::wstring ws( resultObjectAsJson );
-    std::string json_str( ws.begin(), ws.end() );
+    std::wstring ws(resultObjectAsJson);
+    std::string json_str(ws.begin(), ws.end());
     auto j = nlohmann::json::parse(json_str);
     rs(j);
   };
 
-  webview2_->ExecuteScript(wjs.c_str(), Callback<ICoreWebView2ExecuteScriptCompletedHandler>(complete_handler).Get());
+  webview2_->ExecuteScript(
+      wjs.c_str(),
+      Callback<ICoreWebView2ExecuteScriptCompletedHandler>(complete_handler)
+          .Get());
 }
 
 bool EdgeChromiumBrowser::SetFilePaths() {
@@ -182,8 +191,6 @@ bool EdgeChromiumBrowser::SetFilePaths() {
   return true;
 }
 
-void EdgeChromiumBrowser::DispatchIn(DispatchFunction f) {
-  f();
-}
+void EdgeChromiumBrowser::DispatchIn(DispatchFunction f) { f(); }
 
 }  // namespace webview

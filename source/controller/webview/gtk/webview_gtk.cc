@@ -1,8 +1,7 @@
-#include <thread>
-
 #include <glog/logging.h>
-
 #include <link.h>
+
+#include <thread>
 #define GNU_SOURCE
 
 #include <JavaScriptCore/JavaScript.h>
@@ -13,15 +12,17 @@
 #include <gtk-3.0/gtk/gtkx.h>
 #include <webkit2/webkit2.h>
 
-#include "controller/webview/webview.h"
 #include "base/source/fobject.h"
+#include "controller/webview/webview.h"
 
 static unsigned int kAddressMarker = 0xcafebabe;
 
 namespace webview {
 
-class WebviewWebkitGTK : public Webview, public Steinberg::Linux::ITimerHandler, public Steinberg::FObject {
-public:
+class WebviewWebkitGTK : public Webview,
+                         public Steinberg::Linux::ITimerHandler,
+                         public Steinberg::FObject {
+ public:
   WebviewWebkitGTK(bool debug, Steinberg::IPlugFrame *plug_frame,
                    Window x11Parent, WebviewCreatedCallback created_db) {
     // On linux the IPlugFrame is also a "run loop" we can use to schedule
@@ -35,9 +36,7 @@ public:
     // This never seems to ever get invoked.
     g_signal_connect(
         G_OBJECT(window_), "embedded",
-        G_CALLBACK(+[](GtkPlug *, gpointer arg) {
-          LOG(INFO) << "Embedded";
-        }),
+        G_CALLBACK(+[](GtkPlug *, gpointer arg) { LOG(INFO) << "Embedded"; }),
         window_);
     g_signal_connect(G_OBJECT(window_), "destroy",
                      G_CALLBACK(+[](GtkWidget *, gpointer arg) {
@@ -65,7 +64,8 @@ public:
     Dl_info info;
 
     if (dladdr(&kAddressMarker, &info) != 0) {
-      auto path = std::filesystem::absolute(std::filesystem::path(info.dli_fname));
+      auto path =
+          std::filesystem::absolute(std::filesystem::path(info.dli_fname));
       auto content_path = path.relative_path().parent_path().parent_path();
       return "file:///" + content_path.generic_string() + "/Resources/";
     }
@@ -115,18 +115,17 @@ public:
   void *PlatformWindow() const override { return window_; }
   void Terminate() override { gtk_main_quit(); }
 
-  DELEGATE_REFCOUNT (Steinberg::FObject)
+  DELEGATE_REFCOUNT(Steinberg::FObject)
   DEFINE_INTERFACES
-  DEF_INTERFACE (Steinberg::Linux::ITimerHandler)
-  END_DEFINE_INTERFACES (Steinberg::FObject)
+  DEF_INTERFACE(Steinberg::Linux::ITimerHandler)
+  END_DEFINE_INTERFACES(Steinberg::FObject)
 
-protected:
+ protected:
   void DispatchIn(DispatchFunction f) override { f(); }
 
-private:
+ private:
   void onTimer() override {
-    while (gtk_events_pending())
-      gtk_main_iteration();
+    while (gtk_events_pending()) gtk_main_iteration();
   }
 
   void MakeWebView(bool debug) {
@@ -179,4 +178,4 @@ std::unique_ptr<Webview> MakeWebview(bool debug,
   return std::move(webview);
 }
 
-} // namespace webview
+}  // namespace webview

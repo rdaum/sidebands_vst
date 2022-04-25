@@ -1,9 +1,9 @@
 #include "controller/webview_controller_bindings.h"
 
-#include <locale>
-#include <codecvt>
-
 #include <public.sdk/source/vst/utility/stringconvert.h>
+
+#include <codecvt>
+#include <locale>
 
 #include "globals.h"
 #include "pluginterfaces/base/ustring.h"
@@ -42,31 +42,29 @@ json SerializeParameter(Steinberg::Vst::Parameter *param) {
 
 // Proxy IDependent through the webview for parameter object changes.
 class ParameterDependenciesProxy : public Steinberg::FObject {
-public:
+ public:
   explicit ParameterDependenciesProxy(webview::Webview *webview)
       : webview_(webview) {}
 
   void update(FUnknown *changedUnknown, Steinberg::int32 message) override {
-    if (!webview_ || message != IDependent::kChanged)
-      return;
+    if (!webview_ || message != IDependent::kChanged) return;
 
     Steinberg::Vst::Parameter *changed_param;
     auto query_result = changedUnknown->queryInterface(
         Steinberg::Vst::RangeParameter::iid, (void **)&changed_param);
 
-    if (query_result != Steinberg::kResultOk)
-      return;
+    if (query_result != Steinberg::kResultOk) return;
 
     webview_->EvalJS("notifyParameterChange(" +
                          SerializeParameter(changed_param).dump() + ");",
                      [](const json &r) {});
   }
 
-private:
+ private:
   webview::Webview *webview_;
 };
 
-} // namespace
+}  // namespace
 
 void WebviewMessageListener::Subscribe(
     const std::string &receiver, const std::string &message_id,
@@ -82,49 +80,49 @@ json WebviewMessageListener::SerializeMessage(
   json j = {{"messageId", message->getMessageID()}};
   for (const auto &attr : descriptor.attributes) {
     switch (attr.type) {
-    case MessageAttribute::Type::INT:
-      Steinberg::int64 i;
-      if (attributes->getInt(attr.name.c_str(), i) == Steinberg::kResultTrue) {
-        j[attr.name] = i;
-      }
-      break;
-    case MessageAttribute::Type::FLOAT:
-      double f;
-      if (attributes->getFloat(attr.name.c_str(), f) ==
-          Steinberg::kResultTrue) {
-        j[attr.name] = f;
-      }
-      break;
-    case MessageAttribute::Type::STRING:
-      Steinberg::Vst::TChar str[128];
-      if (attributes->getString(attr.name.c_str(), str,
-                                128 * sizeof(Steinberg::Vst::TChar)) ==
-          Steinberg::kResultTrue) {
-        j[attr.name] = str;
-      }
-      break;
-    case MessageAttribute::Type::BINARY:
-      const void *addr;
-      Steinberg::uint32 size;
-      if (attributes->getBinary(attr.name.c_str(), addr, size) ==
-          Steinberg::kResultTrue) {
-        std::vector<double> data(size / sizeof(double));
-        std::memcpy(data.data(), addr, size);
-        j[attr.name] = data;
-      }
-      break;
+      case MessageAttribute::Type::INT:
+        Steinberg::int64 i;
+        if (attributes->getInt(attr.name.c_str(), i) ==
+            Steinberg::kResultTrue) {
+          j[attr.name] = i;
+        }
+        break;
+      case MessageAttribute::Type::FLOAT:
+        double f;
+        if (attributes->getFloat(attr.name.c_str(), f) ==
+            Steinberg::kResultTrue) {
+          j[attr.name] = f;
+        }
+        break;
+      case MessageAttribute::Type::STRING:
+        Steinberg::Vst::TChar str[128];
+        if (attributes->getString(attr.name.c_str(), str,
+                                  128 * sizeof(Steinberg::Vst::TChar)) ==
+            Steinberg::kResultTrue) {
+          j[attr.name] = str;
+        }
+        break;
+      case MessageAttribute::Type::BINARY:
+        const void *addr;
+        Steinberg::uint32 size;
+        if (attributes->getBinary(attr.name.c_str(), addr, size) ==
+            Steinberg::kResultTrue) {
+          std::vector<double> data(size / sizeof(double));
+          std::memcpy(data.data(), addr, size);
+          j[attr.name] = data;
+        }
+        break;
     }
   }
   return j;
 }
 
-Steinberg::tresult
-WebviewMessageListener::Notify(Steinberg::Vst::IMessage *message) {
+Steinberg::tresult WebviewMessageListener::Notify(
+    Steinberg::Vst::IMessage *message) {
   auto *msg_id = message->getMessageID();
 
   const auto &it = subscriptions_.find(msg_id);
-  if (it == subscriptions_.end())
-    return Steinberg::kResultFalse;
+  if (it == subscriptions_.end()) return Steinberg::kResultFalse;
 
   auto json = SerializeMessage(message, it->second.descriptor);
   auto send_message_js = it->second.notify_function + "(" + json.dump() + ");";
@@ -195,7 +193,7 @@ void WebviewControllerBindings::Bind(webview::Webview *webview) {
               WebviewMessageListener::MessageAttribute::Type::INT,
           },
       });
-  const std::vector< WebviewMessageListener::MessageAttribute> buffer_attrs {
+  const std::vector<WebviewMessageListener::MessageAttribute> buffer_attrs{
       {
           kSampleRateAttr,
           WebviewMessageListener::MessageAttribute::Type::INT,
@@ -217,19 +215,18 @@ void WebviewControllerBindings::Bind(webview::Webview *webview) {
           WebviewMessageListener::MessageAttribute::Type::BINARY,
       },
   };
-  message_listener_->Subscribe(
-      "receiveMessage", sidebands::kResponseAnalysisBufferMessageID,
-      buffer_attrs);
+  message_listener_->Subscribe("receiveMessage",
+                               sidebands::kResponseAnalysisBufferMessageID,
+                               buffer_attrs);
 
-  message_listener_->Subscribe(
-      "receiveMessage", sidebands::kResponseSpectrumBufferMessageID,
-      buffer_attrs/**/
+  message_listener_->Subscribe("receiveMessage",
+                               sidebands::kResponseSpectrumBufferMessageID,
+                               buffer_attrs /**/
   );
-
 }
 
-webview::Webview::FunctionBinding
-WebviewControllerBindings::BindCallback(CallbackFn fn) {
+webview::Webview::FunctionBinding WebviewControllerBindings::BindCallback(
+    CallbackFn fn) {
   return std::bind(fn, this, std::placeholders::_1, std::placeholders::_4);
 }
 
@@ -240,8 +237,7 @@ json WebviewControllerBindings::GetParameterObject(webview::Webview *webview,
   thread_checker_->test();
   int id = in[0];
   auto *param = controller_->getParameterObject(id);
-  if (!param)
-    return json();
+  if (!param) return json();
   return SerializeParameter(param);
 }
 
@@ -337,8 +333,7 @@ json WebviewControllerBindings::SubscribeParameter(webview::Webview *webview,
   json out = controller_->getParameterCount();
   int tag = in[0];
   auto *param = controller_->getParameterObject(tag);
-  if (!param)
-    return json();
+  if (!param) return json();
   if (!param_dep_proxy_) {
     param_dep_proxy_ = std::make_unique<ParameterDependenciesProxy>(webview);
   }
@@ -347,7 +342,7 @@ json WebviewControllerBindings::SubscribeParameter(webview::Webview *webview,
 }
 
 json WebviewControllerBindings::DoSendMessage(webview::Webview *webview,
-                                            const json &in) {
+                                              const json &in) {
   thread_checker_->test();
   std::string messageId = in[0];
   json attributes = in[1];
@@ -384,4 +379,4 @@ void WebviewControllerBindings::DeclareJSBinding(
   bindings_.push_back({name, binding});
 }
 
-} // namespace sidebands
+}  // namespace sidebands

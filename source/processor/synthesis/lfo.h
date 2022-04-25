@@ -5,7 +5,7 @@
 namespace sidebands {
 
 class LFO : public IModulationSource {
-public:
+ public:
   // IModulationSource overrides
   void On(SampleRate sample_rate,
           const GeneratorPatch::ModParams *parameters) override;
@@ -19,10 +19,10 @@ public:
   bool Playing() const override;
   Modulation::Type mod_type() const override;
 
-private:
+ private:
   double phase_ = 0.0;
   double last_level_ = 0.0;
   bool playing_ = false;
 };
 
-} // namespace sidebands
+}  // namespace sidebands

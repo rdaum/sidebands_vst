@@ -26,7 +26,7 @@ enum ParamTag {
   TAG_ENV_DR1,
   TAG_ENV_DL1,
   TAG_ENV_DR2,
-  TAG_ENV_SL, // sustain
+  TAG_ENV_SL,  // sustain
   TAG_ENV_RR1,
   TAG_ENV_RL1,
   TAG_ENV_RR2,
@@ -40,8 +40,8 @@ enum ParamTag {
 };
 
 constexpr const char *kParamNames[]{
-    "SELECT",  "TOGGLE", "OSC",      "ENV_A",         "ENV_AL",
-    "ENV_D",   "ENV_S",  "ENV_R",    "ENV_VS",        "LFO_FREQ",
+    "SELECT",  "TOGGLE", "OSC",      "ENV_A",      "ENV_AL",
+    "ENV_D",   "ENV_S",  "ENV_R",    "ENV_VS",     "LFO_FREQ",
     "LFO_AMP", "LFO_VS", "LFO_TYPE", "MODULATIONS"};
 
 enum TargetTag {
@@ -57,13 +57,12 @@ enum TargetTag {
   NUM_TARGETS
 };
 
-constexpr const char *kTargetNames[]{"NONE", "C", "A", "M",
-                                     "K",    "R", "S", "PORTAMENTO",
-                                     "OSC_TYPE"};
+constexpr const char *kTargetNames[]{"NONE", "C", "A",          "M",       "K",
+                                     "R",    "S", "PORTAMENTO", "OSC_TYPE"};
 
 constexpr const char *kTargetLongNames[]{
-    "None", "Carrier ratio", "Amplitude", "FM ratio", "FM level", "R",
-    "S",    "Portamento", "Oscillar type"};
+    "None", "Carrier ratio", "Amplitude",    "FM ratio", "FM level", "R",
+    "S",    "Portamento",    "Oscillar type"};
 
 constexpr const TargetTag kModulationTargets[]{
     TARGET_C, TARGET_A, TARGET_M, TARGET_K, TARGET_R, TARGET_S,
@@ -80,7 +79,8 @@ struct ParamKey {
 
   struct Hash {
     size_t operator()(const ParamKey &k) const {
-      return std::hash<ParamTag>()(k.parameter) ^ std::hash<TargetTag>()(k.target);
+      return std::hash<ParamTag>()(k.parameter) ^
+             std::hash<TargetTag>()(k.target);
     }
   };
 };
@@ -91,7 +91,6 @@ ParamTag ParamFor(Steinberg::Vst::ParamID tag);
 
 ParamKey ParamKeyFor(Steinberg::Vst::ParamID tag);
 std::string TagStr(Steinberg::Vst::ParamID tag);
-Steinberg::Vst::ParamID TagFor(int generator, ParamTag param,
-                               TargetTag target);
+Steinberg::Vst::ParamID TagFor(int generator, ParamTag param, TargetTag target);
 
-} // namespace sidebands
+}  // namespace sidebands

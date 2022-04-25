@@ -4,8 +4,9 @@
 
 #pragma comment(lib, "windowsapp")
 
-#include "WebView2.h"
 #include <wrl.h>
+
+#include "WebView2.h"
 #pragma comment(lib, "shell32.lib")
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "oleaut32.lib")
@@ -16,7 +17,7 @@ namespace webview {
 // Edge/Chromium browser engine
 //
 class EdgeChromiumBrowser : public WebviewWin32 {
-public:
+ public:
   EdgeChromiumBrowser(HWND parent_window, bool debug,
                       WebviewCreatedCallback created_cb);
   ~EdgeChromiumBrowser() override;
@@ -28,20 +29,18 @@ public:
   void EvalJS(const std::string &js, ResultCallback rs) override;
   void DispatchIn(DispatchFunction f) override;
 
-
-protected:
+ protected:
   void Resize() override;
 
-private:
-  HRESULT OnControllerCreated(HRESULT result, ICoreWebView2Controller *controller);
+ private:
+  HRESULT OnControllerCreated(HRESULT result,
+                              ICoreWebView2Controller *controller);
   HRESULT OnEnvironmentCreated(HRESULT result,
-                            ICoreWebView2Environment *environment);
-  HRESULT OnWebMessageReceived(
-      ICoreWebView2 *sender,
-      ICoreWebView2WebMessageReceivedEventArgs *args);
+                               ICoreWebView2Environment *environment);
+  HRESULT OnWebMessageReceived(ICoreWebView2 *sender,
+                               ICoreWebView2WebMessageReceivedEventArgs *args);
   HRESULT OnPermissionRequested(
-      ICoreWebView2 *sender,
-      ICoreWebView2PermissionRequestedEventArgs  *args);
+      ICoreWebView2 *sender, ICoreWebView2PermissionRequestedEventArgs *args);
   bool SetFilePaths();
 
   wchar_t user_data_path_[MAX_PATH];
@@ -55,11 +54,9 @@ private:
   Microsoft::WRL::ComPtr<
       ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler>
       environment_completed_handler_;
-  Microsoft::WRL::ComPtr<
-      ICoreWebView2WebMessageReceivedEventHandler>
+  Microsoft::WRL::ComPtr<ICoreWebView2WebMessageReceivedEventHandler>
       message_received_handler_;
-  Microsoft::WRL::ComPtr<
-      ICoreWebView2PermissionRequestedEventHandler>
+  Microsoft::WRL::ComPtr<ICoreWebView2PermissionRequestedEventHandler>
       permission_requested_handler_;
   ICoreWebView2Settings *settings_;
 };

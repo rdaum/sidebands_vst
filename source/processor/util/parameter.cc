@@ -1,14 +1,15 @@
 #include "processor/util/parameter.h"
 
-#include <optional>
 #include <pluginterfaces/vst/ivstparameterchanges.h>
+
+#include <optional>
 
 namespace sidebands {
 
 namespace {
 
-std::optional<ParamValue>
-GetLastValue(Steinberg::Vst::IParamValueQueue *p_queue) {
+std::optional<ParamValue> GetLastValue(
+    Steinberg::Vst::IParamValueQueue *p_queue) {
   ParamValue value;
   int32_t numPoints = p_queue->getPointCount();
   Steinberg::int32 sample_offset;
@@ -21,19 +22,20 @@ GetLastValue(Steinberg::Vst::IParamValueQueue *p_queue) {
 
 }  // namespace
 
-Parameter::Parameter(ParamID param_id, ParamValue min, ParamValue max, ParamValue value)
-: param_id_(param_id), min_plain_(min), max_plain_(max), value_(value) {}
+Parameter::Parameter(ParamID param_id, ParamValue min, ParamValue max,
+                     ParamValue value)
+    : param_id_(param_id), min_plain_(min), max_plain_(max), value_(value) {}
 
 void Parameter::setValue(ParamValue v) {
   v = (v - min_plain_) / (max_plain_ - min_plain_);
   setValueNormalized(v);
 }
 
-void Parameter::setValueNormalized(ParamValue v) {
-  value_ = v;
-}
+void Parameter::setValueNormalized(ParamValue v) { value_ = v; }
 
-ParamValue Parameter::getValue() const { return min_plain_ + (value_ * (max_plain_ - min_plain_)); }
+ParamValue Parameter::getValue() const {
+  return min_plain_ + (value_ * (max_plain_ - min_plain_));
+}
 ParamValue Parameter::getValueNormalized() const { return value_; }
 ParamValue Parameter::Min() const { return min_plain_; }
 ParamValue Parameter::Max() const { return max_plain_; }
@@ -46,7 +48,6 @@ void Parameter::beginChanges(IParamValueQueue *p_queue) {
   }
 }
 
-
 void BitsetParameter::setValue(ParamValue v) {
   value_ = std::bitset<kBitsetWidth>(v);
 }
@@ -55,12 +56,10 @@ void BitsetParameter::setValueNormalized(ParamValue v) {
   value_ = std::bitset<kBitsetWidth>(v * double(kBitsetWidth));
 }
 
-ParamValue BitsetParameter::getValue() const {
-  return value_.to_ulong();
-}
+ParamValue BitsetParameter::getValue() const { return value_.to_ulong(); }
 
 ParamValue BitsetParameter::getValueNormalized() const {
-  return value_.to_ulong() /  double(kBitsetWidth);
+  return value_.to_ulong() / double(kBitsetWidth);
 }
 
 ParamValue BitsetParameter::Min() const { return 0; }
@@ -75,7 +74,9 @@ void BitsetParameter::beginChanges(IParamValueQueue *p_queue) {
   }
 }
 
-ParamValue BitsetParameter::advance(int32 numSamples) { return getValueNormalized(); }
+ParamValue BitsetParameter::advance(int32 numSamples) {
+  return getValueNormalized();
+}
 ParamValue BitsetParameter::flushChanges() { return getValueNormalized(); }
 ParamValue BitsetParameter::endChanges() { return getValueNormalized(); }
 

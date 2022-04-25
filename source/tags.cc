@@ -21,7 +21,8 @@ std::string TagStr(Steinberg::Vst::ParamID tag) {
   CHECK_LT(param_tag, TAG_NUM_TAGS);
   TargetTag sp(TargetFor(tag));
   CHECK_LT(sp, NUM_TARGETS);
-  return absl::StrFormat("%d/%s/%s", gennum, kParamNames[param_tag], kTargetNames[sp]);
+  return absl::StrFormat("%d/%s/%s", gennum, kParamNames[param_tag],
+                         kTargetNames[sp]);
 }
 
 uint8_t GeneratorFor(Steinberg::Vst::ParamID tag) {
@@ -46,6 +47,5 @@ Steinberg::Vst::ParamID TagFor(int generator, ParamTag param,
 ParamKey ParamKeyFor(Steinberg::Vst::ParamID tag) {
   return {ParamFor(tag), TargetFor(tag)};
 }
-
 
 }  // namespace sidebands

@@ -26,16 +26,15 @@
 #pragma once
 
 #include <atomic>
+#include <cstring>
 #include <functional>
 #include <future>
 #include <map>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <cstring>
-
-#include <nlohmann/json.hpp>
 #include "pluginterfaces/gui/iplugview.h"
 
 namespace webview {
@@ -44,7 +43,7 @@ using DispatchFunction = std::function<void()>;
 
 // Abstract webview parent.
 class Webview {
-public:
+ public:
   virtual ~Webview() = default;
 
   /**
@@ -69,10 +68,10 @@ public:
    * Adjust the size of the webview.
    */
   enum class SizeHint {
-    kNone, // Width and height are default size
-    kMin,  // Width and height are minimum bounds
-    kMax,  // Width and height are maximum bounds
-    kFixed // Window size can not be changed by a user
+    kNone,  // Width and height are default size
+    kMin,   // Width and height are minimum bounds
+    kMax,   // Width and height are maximum bounds
+    kFixed  // Window size can not be changed by a user
   };
   virtual void SetViewSize(int width, int height,
                            SizeHint hints = SizeHint::kNone) = 0;
@@ -105,11 +104,11 @@ public:
    */
   virtual void Terminate() = 0;
 
-protected:
+ protected:
   void OnBrowserMessage(const std::string &msg);
   virtual void DispatchIn(DispatchFunction f) = 0;
 
-private:
+ private:
   void ResolveFunctionDispatch(int seq, int status,
                                const nlohmann::json &result);
 
@@ -123,4 +122,4 @@ std::unique_ptr<Webview> MakeWebview(bool debug,
                                      void *window,
                                      WebviewCreatedCallback created_cb);
 
-} // namespace webview
+}  // namespace webview

@@ -24,7 +24,7 @@ void WriteParameter(Steinberg::IBStreamer &streamer, int gennum, ParamTag param,
   streamer.writeDouble(value);
 }
 
-} // namespace
+}  // namespace
 
 // static
 bool PatchProcessor::ValidParam(ParamID param_id) {
@@ -107,8 +107,7 @@ Steinberg::tresult GeneratorPatch::LoadPatch(Steinberg::IBStreamer &streamer) {
   }
   while (num_params--) {
     Steinberg::Vst::ParamID id;
-    if (!streamer.readInt32u(id))
-      break;
+    if (!streamer.readInt32u(id)) break;
     ParamValue v;
     CHECK(streamer.readDouble(v))
         << "Unable to read value for param id: " << TagStr(id);
@@ -124,7 +123,6 @@ Steinberg::tresult GeneratorPatch::LoadPatch(Steinberg::IBStreamer &streamer) {
 }
 
 Steinberg::tresult GeneratorPatch::SavePatch(Steinberg::IBStreamer &streamer) {
-
   // First write generator number, then the # of parameters.
   streamer.writeInt32u(gennum_);
   streamer.writeInt32u(parameters_.size());
@@ -159,7 +157,6 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
       portamento_(TagFor(gennum_, TAG_OSC, TARGET_PORTAMENTO), 0, 0, 1),
       osc_type_(TagFor(gennum_, TAG_OSC, TARGET_OSC_TYPE), 0, 1,
                 0 /* MODFM */) {
-
   DeclareParameter(&on_);
   DeclareParameter(&c_);
   DeclareParameter(&a_);
@@ -205,9 +202,8 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
   // Take pointers _after_ the vector is fully constructed, just in case things
   // get moved.
   for (auto &mt : mod_targets_) {
-    if (!mt)
-      continue;
-    DeclareParameter(&mt->modulations); // bitset
+    if (!mt) continue;
+    DeclareParameter(&mt->modulations);  // bitset
     DeclareParameter(&mt->envelope_parameters.HT);
     DeclareParameter(&mt->envelope_parameters.AL);
     DeclareParameter(&mt->envelope_parameters.AR);
@@ -227,17 +223,14 @@ GeneratorPatch::GeneratorPatch(uint32_t gen, Steinberg::Vst::UnitID unit_id)
 
 void GeneratorPatch::BeginParameterChange(
     ParamID param_id, Steinberg::Vst::IParamValueQueue *p_queue) {
-  if (!p_queue->getPointCount())
-    return;
+  if (!p_queue->getPointCount()) return;
 
   std::lock_guard<std::mutex> params_lock(patch_mutex_);
-  if (GeneratorFor(param_id) != gennum_)
-    return;
+  if (GeneratorFor(param_id) != gennum_) return;
 
   auto key = ParamKeyFor(param_id);
   const auto &param_it = parameters_.find(key);
-  if (param_it == parameters_.end())
-    return;
+  if (param_it == parameters_.end()) return;
   auto param = param_it->second;
   param->beginChanges(p_queue);
   sa_changed_params_.push_back(param_id);
@@ -306,39 +299,38 @@ GeneratorPatch::OscType GeneratorPatch::osc_type() const {
   return static_cast<OscType>(int(osc_type_.getValue()));
 }
 
-GeneratorPatch::ModParams *
-GeneratorPatch::ModulationParams(TargetTag destination) const {
+GeneratorPatch::ModParams *GeneratorPatch::ModulationParams(
+    TargetTag destination) const {
   return mod_targets_[destination].get();
 }
 
-std::bitset<Modulation::NumModulators>
-GeneratorPatch::ModTypesFor(TargetTag destination) const {
+std::bitset<Modulation::NumModulators> GeneratorPatch::ModTypesFor(
+    TargetTag destination) const {
   auto &mod_target = mod_targets_[destination];
-  if (!mod_target)
-    return {};
+  if (!mod_target) return {};
   return mod_target->modulations.bitset<Modulation::NumModulators>();
 }
 
-std::function<double()>
-GeneratorPatch::ParameterGetterFor(TargetTag dest) const {
+std::function<double()> GeneratorPatch::ParameterGetterFor(
+    TargetTag dest) const {
   switch (dest) {
-  case TARGET_A:
-    return std::bind(&GeneratorPatch::a, this);
-  case TARGET_K:
-    return std::bind(&GeneratorPatch::k, this);
-  case TARGET_C:
-    return std::bind(&GeneratorPatch::c, this);
-  case TARGET_M:
-    return std::bind(&GeneratorPatch::m, this);
-  case TARGET_R:
-    return std::bind(&GeneratorPatch::r, this);
-  case TARGET_S:
-    return std::bind(&GeneratorPatch::s, this);
-  default:
-    LOG(ERROR) << "Unknown parameter: " << dest;
-    assert(0);
-    return std::bind(&GeneratorPatch::a, this);
+    case TARGET_A:
+      return std::bind(&GeneratorPatch::a, this);
+    case TARGET_K:
+      return std::bind(&GeneratorPatch::k, this);
+    case TARGET_C:
+      return std::bind(&GeneratorPatch::c, this);
+    case TARGET_M:
+      return std::bind(&GeneratorPatch::m, this);
+    case TARGET_R:
+      return std::bind(&GeneratorPatch::r, this);
+    case TARGET_S:
+      return std::bind(&GeneratorPatch::s, this);
+    default:
+      LOG(ERROR) << "Unknown parameter: " << dest;
+      assert(0);
+      return std::bind(&GeneratorPatch::a, this);
   }
 }
 
-} // namespace sidebands
+}  // namespace sidebands

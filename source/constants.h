@@ -17,11 +17,7 @@ constexpr LFOType kLFOTypes[]{LFOType::SIN, LFOType::COS};
 constexpr int kNumLFOTypes = sizeof(kLFOTypes) / sizeof(LFOType);
 
 namespace Modulation {
-  enum Type {
-    Envelope,
-    LFO,
-    NumModulators
-  };
-}  //  Modulation
+enum Type { Envelope, LFO, NumModulators };
+}  // namespace Modulation
 
-} // namespace sidebands
+}  // namespace sidebands

@@ -38,13 +38,11 @@ void SampleAccurateValue::beginChanges(IParamValueQueue *valueQueue) {
   point_count_ = queue_->getPointCount();
   point_index_ = 0;
   sample_counter_ = 0;
-  if (point_count_)
-    valuePoint_ = processNextValuePoint();
+  if (point_count_) valuePoint_ = processNextValuePoint();
 }
 
 ParamValue SampleAccurateValue::advance(int32 numSamples) {
-  if (point_count_ < 0)
-    return current_value_;
+  if (point_count_ < 0) return current_value_;
   while (valuePoint_.sampleOffset >= 0 &&
          valuePoint_.sampleOffset < numSamples) {
     sample_counter_ += valuePoint_.sampleOffset;
@@ -82,21 +80,22 @@ void SampleAccurateValue::advance(int32 numSamples, Proc p) {
   }
 }
 
-template <typename Proc> void SampleAccurateValue::flushChanges(Proc p) {
+template <typename Proc>
+void SampleAccurateValue::flushChanges(Proc p) {
   auto originalValue = current_value_;
-  if (flushChanges() != originalValue)
-    p(current_value_);
+  if (flushChanges() != originalValue) p(current_value_);
 }
 
-template <typename Proc> void SampleAccurateValue::endChanges(Proc p) {
+template <typename Proc>
+void SampleAccurateValue::endChanges(Proc p) {
   auto originalValue = current_value_;
-  if (endChanges() != originalValue)
-    p(current_value_);
+  if (endChanges() != originalValue) p(current_value_);
 }
 
 auto SampleAccurateValue::processNextValuePoint() -> ValuePoint {
   ValuePoint nv;
-  if (point_count_ == 0 || queue_->getPoint(point_index_, nv.sampleOffset, nv.value) != kResultTrue) {
+  if (point_count_ == 0 || queue_->getPoint(point_index_, nv.sampleOffset,
+                                            nv.value) != kResultTrue) {
     point_count_ = -1;
     return {current_value_, 0., -1};
   }
@@ -111,4 +110,4 @@ auto SampleAccurateValue::processNextValuePoint() -> ValuePoint {
   return nv;
 }
 
-} // namespace sidebands
+}  // namespace sidebands

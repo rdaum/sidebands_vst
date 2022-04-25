@@ -4,6 +4,7 @@
 #include <base/source/fstreamer.h>
 #include <pluginterfaces/base/ustring.h>
 #include <pluginterfaces/vst/vsttypes.h>
+
 #include <string>
 
 #include "constants.h"
@@ -49,8 +50,8 @@ IPtr<RangeParameter> GenericParameter(Steinberg::Vst::UnitID unit_id,
 
 IPtr<RangeParameter> ModTypeParameter(Steinberg::Vst::UnitID unit_id,
                                       TargetTag target, uint32_t gen_num) {
-  std::string full_name =
-      absl::StrFormat("Gen %d Mod Types %s (bitset)", gen_num, kTargetNames[target]);
+  std::string full_name = absl::StrFormat("Gen %d Mod Types %s (bitset)",
+                                          gen_num, kTargetNames[target]);
 
   auto info = ParameterInfo{
       .id = TagFor(gen_num, TAG_MODULATIONS, target),
@@ -120,7 +121,6 @@ IPtr<RangeParameter> EnvelopeParameter(Steinberg::Vst::UnitID unit_id,
 }
 
 void PatchController::AppendParameters(ParameterContainer *container) {
-
   for (int generator = 0; generator < kNumGenerators; generator++) {
     auto unit_id = MakeUnitID(UNIT_GENERATOR, generator);
     container->addParameter(BooleanParameter(
@@ -189,9 +189,9 @@ void PatchController::AppendParameters(ParameterContainer *container) {
   }
 }
 
-Steinberg::tresult
-PatchController::LoadPatch(Steinberg::IBStream *stream,
-                           Steinberg::Vst::IEditController *edit_controller) {
+Steinberg::tresult PatchController::LoadPatch(
+    Steinberg::IBStream *stream,
+    Steinberg::Vst::IEditController *edit_controller) {
   Steinberg::IBStreamer streamer(stream);
 
   LOG(INFO) << "Loading from stream...";
@@ -219,8 +219,7 @@ PatchController::LoadPatch(Steinberg::IBStream *stream,
     }
     while (num_params--) {
       Steinberg::Vst::ParamID id;
-      if (!streamer.readInt32u(id))
-        break;
+      if (!streamer.readInt32u(id)) break;
       ParamValue v;
       CHECK(streamer.readDouble(v))
           << "Unable to read value for param id: " << id;
@@ -231,8 +230,7 @@ PatchController::LoadPatch(Steinberg::IBStream *stream,
 }
 
 Steinberg::tresult PatchController::SavePatch(Steinberg::IBStream *stream) {
-
   return Steinberg::kResultOk;
 }
 
-} // namespace sidebands
+}  // namespace sidebands

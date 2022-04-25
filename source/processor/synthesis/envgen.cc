@@ -1,8 +1,8 @@
 #include "envgen.h"
 
-#include <algorithm>
-
 #include <glog/logging.h>
+
+#include <algorithm>
 
 #include "globals.h"
 
@@ -26,15 +26,13 @@ void EnvelopeGenerator::Amplitudes(
 void EnvelopeGenerator::SetStage(off_t stage_number) {
   current_stage_ = stage_number;
   current_sample_index_ = 0;
-  if (current_stage_ >= stages_.size())
-    current_stage_ = 0;
+  if (current_stage_ >= stages_.size()) current_stage_ = 0;
 
   events.StageChange(current_stage_);
 }
 
-ParamValue
-EnvelopeGenerator::NextSample(SampleRate sample_rate,
-                              const GeneratorPatch::EnvelopeValues &ev) {
+ParamValue EnvelopeGenerator::NextSample(
+    SampleRate sample_rate, const GeneratorPatch::EnvelopeValues &ev) {
   // Off or sustain...
   if (current_stage_ == 0 || current_stage_ == sustain_stage_)
     return current_level_;
@@ -45,8 +43,7 @@ EnvelopeGenerator::NextSample(SampleRate sample_rate,
     SetStage(current_stage_ + 1);
   }
 
-  if (c)
-    current_level_ *= c;
+  if (c) current_level_ *= c;
   current_sample_index_++;
   return current_level_;
 }
@@ -114,11 +111,13 @@ void EnvelopeGenerator::Reset() {
   current_stage_ = 0;
 }
 
-Modulation::Type EnvelopeGenerator::mod_type() const { return Modulation::Envelope; }
+Modulation::Type EnvelopeGenerator::mod_type() const {
+  return Modulation::Envelope;
+}
 
 bool EnvelopeGenerator::Playing() const {
   std::lock_guard<std::mutex> stages_lock(stages_mutex_);
   return current_stage_ != 0;
 }
 
-} // namespace sidebands
+}  // namespace sidebands

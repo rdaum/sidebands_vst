@@ -1,8 +1,9 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
 #include <public.sdk/source/common/threadchecker.h>
 #include <public.sdk/source/vst/vsteditcontroller.h>
+
+#include <nlohmann/json.hpp>
 
 #include "controller/webview/webview.h"
 
@@ -12,7 +13,7 @@ namespace sidebands {
 
 class WebviewMessageListener;
 class WebviewControllerBindings {
-public:
+ public:
   explicit WebviewControllerBindings(
       Steinberg::Vst::EditControllerEx1 *controller);
 
@@ -22,7 +23,7 @@ public:
     return message_listener_.get();
   }
 
-private:
+ private:
   void DeclareJSBinding(const std::string &name,
                         webview::Webview::FunctionBinding binding);
 
@@ -55,7 +56,7 @@ private:
 };
 
 class WebviewMessageListener {
-public:
+ public:
   struct MessageAttribute {
     std::string name;
     enum class Type { INT, FLOAT, STRING, BINARY };
@@ -70,7 +71,7 @@ public:
 
   Steinberg::tresult Notify(Steinberg::Vst::IMessage *message);
 
-private:
+ private:
   struct MessageDescriptor {
     std::string message_id;
     std::vector<MessageAttribute> attributes;
@@ -88,4 +89,4 @@ private:
   webview::Webview *webview_;
 };
 
-} // namespace sidebands
+}  // namespace sidebands

@@ -2,10 +2,10 @@
 
 #include <pluginterfaces/vst/vsttypes.h>
 
+#include <bitset>
 #include <chrono>
 #include <mutex>
 #include <vector>
-#include <bitset>
 
 #include "globals.h"
 #include "processor/events.h"
@@ -25,7 +25,7 @@ class Generator {
 
   // Just synthesize, no modulation. For analysis.
   void Synthesize(SampleRate sample_rate, GeneratorPatch &patch,
-                    OscBuffer &out_buffer, Steinberg::Vst::ParamValue base_freq);
+                  OscBuffer &out_buffer, Steinberg::Vst::ParamValue base_freq);
 
   // Synthesize and apply modulation and envelope.
   void Perform(SampleRate sample_rate, GeneratorPatch &patch,
@@ -36,17 +36,19 @@ class Generator {
               ParamValue velocity, uint8_t note);
 
   void NoteRelease(SampleRate sample_rate, const GeneratorPatch &patch,
-               uint8_t note);
+                   uint8_t note);
 
   void Reset();
 
   GeneratorEvents events;
 
  private:
-  void Produce(SampleRate sample_rate, GeneratorPatch &patch, OscParam &buffer, TargetTag target);
+  void Produce(SampleRate sample_rate, GeneratorPatch &patch, OscParam &buffer,
+               TargetTag target);
   void ConfigureModulators(const GeneratorPatch &patch);
 
-  std::unique_ptr<IModulationSource> modulators_[NUM_TARGETS][Modulation::NumModulators];
+  std::unique_ptr<IModulationSource> modulators_[NUM_TARGETS]
+                                                [Modulation::NumModulators];
   ParamValue velocity_ = 0;
   std::unique_ptr<IOscillator> o_;
 };

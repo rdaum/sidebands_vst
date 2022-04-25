@@ -4,15 +4,15 @@
 
 #include "processor/util/processor_param_value.h"
 
-using Steinberg::Vst::ParamValue;
-using Steinberg::Vst::ParamID;
-using Steinberg::Vst::IParamValueQueue;
 using Steinberg::int32;
+using Steinberg::Vst::IParamValueQueue;
+using Steinberg::Vst::ParamID;
+using Steinberg::Vst::ParamValue;
 
 namespace sidebands {
 
 class Parameter : public ProcessorParameterValue {
-public:
+ public:
   Parameter(ParamID param_id, ParamValue min, ParamValue max, ParamValue value);
 
   // ProcessorParameterValue overrides
@@ -25,12 +25,12 @@ public:
   ParamID getParamID() const override;
 
   bool hasChanges() const override { return false; };
-  void beginChanges(IParamValueQueue *valueQueue) override ;
+  void beginChanges(IParamValueQueue *valueQueue) override;
   ParamValue advance(int32 numSamples) override { return value_; };
   ParamValue flushChanges() override { return value_; };
   ParamValue endChanges() override { return value_; };
 
-private:
+ private:
   ParamID param_id_;
   ParamValue min_plain_;
   ParamValue max_plain_;
@@ -39,10 +39,11 @@ private:
 
 constexpr uint8_t kBitsetWidth = 255;
 class BitsetParameter : public ProcessorParameterValue {
-public:
-  BitsetParameter(ParamID param_id, std::bitset<kBitsetWidth> value) : param_id_(param_id), value_(value) {}
+ public:
+  BitsetParameter(ParamID param_id, std::bitset<kBitsetWidth> value)
+      : param_id_(param_id), value_(value) {}
 
-  template<size_t SIZE>
+  template <size_t SIZE>
   std::bitset<SIZE> bitset() const {
     static_assert(SIZE <= kBitsetWidth);
     return std::bitset<SIZE>(value_.to_ulong());
@@ -62,7 +63,7 @@ public:
   ParamValue flushChanges() override;
   ParamValue endChanges() override;
 
-private:
+ private:
   ParamID param_id_;
   std::bitset<kBitsetWidth> value_;
 };

@@ -8,11 +8,15 @@ namespace {
 
 constexpr double kPi2 = std::numbers::pi * 2.0;
 
-} // namespace
+}  // namespace
 
 OscParams::OscParams(size_t buffer_size)
-    : note_freq(buffer_size), C(buffer_size), M(buffer_size), R(buffer_size),
-      S(buffer_size), K(buffer_size) {}
+    : note_freq(buffer_size),
+      C(buffer_size),
+      M(buffer_size),
+      R(buffer_size),
+      S(buffer_size),
+      K(buffer_size) {}
 
 void ModFMOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
                               OscBuffer &buffer, OscParams &params) {
@@ -31,9 +35,9 @@ void ModFMOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
   VmulInplace(omega_c, T);
   VmulInplace(omega_m, T);
 
-  buffer = Vmul(
-      Vexp(Vmul(Vmul(params.R, params.K), Vcos(omega_m))),
-      Vcos(Vadd(omega_c, Vmul(Vmul(params.S, params.K), Vsin(omega_m)))));
+  buffer =
+      Vmul(Vexp(Vmul(Vmul(params.R, params.K), Vcos(omega_m))),
+           Vcos(Vadd(omega_c, Vmul(Vmul(params.S, params.K), Vsin(omega_m)))));
 
   // normalize for K by dividing out exp of K
   VdivInplace(buffer, Vexp(params.K));
@@ -48,7 +52,7 @@ void ModFMOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
 AnalogOscillator::AnalogOscillator() {}
 
 void AnalogOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
-                              OscBuffer &buffer, OscParams &params) {
+                               OscBuffer &buffer, OscParams &params) {
   auto buffer_size = buffer.size();
 
   // Accumulate the time multiplier based on current phase.
@@ -64,11 +68,11 @@ void AnalogOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
   VmulInplace(omega_c, T);
   VmulInplace(omega_m, T);
 
-  params.K *= 20;
+  params.K *= 10;
 
   // We start by producing a pulse train using a variant of ModFM.
   // Modulation index controls width of pulse.
-  buffer = exp(params.K * cos(omega_m) -params.K) * cos(omega_c);
+  buffer = exp(params.K * cos(omega_m) - params.K) * cos(omega_c);
 
   // To go to saw from pulse, we need to integrate and then dc block as per the
   // paper.
@@ -76,15 +80,14 @@ void AnalogOscillator::Perform(Steinberg::Vst::SampleRate sample_rate,
   dc_.Filter(buffer);
 }
 
-
 std::unique_ptr<IOscillator> MakeOscillator(GeneratorPatch::OscType type) {
   switch (type) {
-  case GeneratorPatch::OscType::ANALOG:
-    return std::make_unique<AnalogOscillator>();
-  case GeneratorPatch::OscType::MOD_FM:
-  default:
-    return std::make_unique<ModFMOscillator>();
+    case GeneratorPatch::OscType::ANALOG:
+      return std::make_unique<AnalogOscillator>();
+    case GeneratorPatch::OscType::MOD_FM:
+    default:
+      return std::make_unique<ModFMOscillator>();
   }
 }
 
-} // namespace sidebands
+}  // namespace sidebands
