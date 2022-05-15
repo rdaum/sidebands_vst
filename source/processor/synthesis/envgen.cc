@@ -1,8 +1,4 @@
-#include "envgen.h"
-
-#include <glog/logging.h>
-
-#include <algorithm>
+#include "processor/synthesis/envgen.h"
 
 #include "globals.h"
 
