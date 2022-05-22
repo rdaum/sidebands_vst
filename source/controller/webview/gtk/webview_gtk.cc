@@ -20,9 +20,9 @@ namespace webview {
 class WebviewWebkitGTK : public Webview,
                          public Steinberg::Linux::ITimerHandler,
                          public Steinberg::FObject {
- public:
+public:
   WebviewWebkitGTK(bool debug, Steinberg::IPlugFrame *plug_frame,
-                   Window x11Parent, WebviewCreatedCallback created_db) {
+                   Window x11Parent, WebviewCreatedCallback created_callback) {
     // On linux the IPlugFrame is also a "run loop" we can use to schedule
     // timers and file-descriptor triggered events.
     run_loop_ = plug_frame;
@@ -51,7 +51,7 @@ class WebviewWebkitGTK : public Webview,
     gtk_widget_grab_focus(webview_);
     gtk_widget_show_all(window_);
 
-    created_db(this);
+    created_callback(this);
 
     // Call into GTK main loop check 60 times a second.
     run_loop_->registerTimer(this, 16);
@@ -102,6 +102,7 @@ class WebviewWebkitGTK : public Webview,
   }
 
   void Navigate(const std::string &url) override {
+    LOG(INFO) << "Navigating to " << url;
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview_), url.c_str());
   }
 
@@ -118,12 +119,13 @@ class WebviewWebkitGTK : public Webview,
   DEF_INTERFACE(Steinberg::Linux::ITimerHandler)
   END_DEFINE_INTERFACES(Steinberg::FObject)
 
- protected:
+protected:
   void DispatchIn(DispatchFunction f) override { f(); }
 
- private:
+private:
   void onTimer() override {
-    while (gtk_events_pending()) gtk_main_iteration();
+    while (gtk_events_pending())
+      gtk_main_iteration();
   }
 
   void MakeWebView(bool debug) {
@@ -145,17 +147,19 @@ class WebviewWebkitGTK : public Webview,
     webkit_user_content_manager_register_script_message_handler(manager,
                                                                 "external");
 
-    WebKitSettings *settings =
-        webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview_));
+    WebKitSettings *settings = webkit_settings_new();
+
     webkit_settings_set_allow_file_access_from_file_urls(settings, true);
     webkit_settings_set_allow_universal_access_from_file_urls(settings, true);
     webkit_settings_set_javascript_can_access_clipboard(settings, true);
+    webkit_settings_set_allow_modal_dialogs(settings, true);
 
     if (debug) {
       webkit_settings_set_enable_write_console_messages_to_stdout(settings,
                                                                   true);
       webkit_settings_set_enable_developer_extras(settings, true);
     }
+    webkit_web_view_set_settings(WEBKIT_WEB_VIEW(webview_), settings);
   }
 
   Steinberg::FUnknownPtr<Steinberg::Linux::IRunLoop> run_loop_;
@@ -176,4 +180,4 @@ std::unique_ptr<Webview> MakeWebview(bool debug,
   return std::move(webview);
 }
 
-}  // namespace webview
+} // namespace webview
