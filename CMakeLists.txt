@@ -41,6 +41,8 @@ set(BUILD_SHARED_LIBS FALSE)
 # Abseil link on Linux will fail without this.
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+set(SMTG_CREATE_MODULE_INFO OFF)
+
 if (NOT vst3sdk_SOURCE_DIR)
     message(FATAL_ERROR "Path to VST3 SDK is empty!")
 endif ()
@@ -113,7 +115,7 @@ if(UNIX AND NOT APPLE)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
     pkg_check_modules(GTKMM3 REQUIRED gtkmm-3.0)
-    pkg_check_modules(WEBKIT2GTK REQUIRED webkit2gtk-4.0 )
+    pkg_check_modules(WEBKIT2GTK REQUIRED webkit2gtk-4.1)
 endif()
 
 smtg_enable_vst3_sdk()
