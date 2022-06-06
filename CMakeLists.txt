@@ -82,10 +82,6 @@ set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-# json
-FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.10.5/json.tar.xz)
-FetchContent_MakeAvailable(json)
-
 # sigslot
 FetchContent_Declare(
         sigslot
@@ -117,6 +113,8 @@ if(UNIX AND NOT APPLE)
     pkg_check_modules(GTKMM3 REQUIRED gtkmm-3.0)
     pkg_check_modules(WEBKIT2GTK REQUIRED webkit2gtk-4.1)
 endif()
+
+add_subdirectory(vstwebview)
 
 smtg_enable_vst3_sdk()
 smtg_add_vst3plugin(sidebands
@@ -172,15 +170,6 @@ smtg_add_vst3plugin(sidebands
         source/controller/patch_controller.h
         source/controller/patch_controller.cc
 
-        source/controller/webview/webview.h
-        source/controller/webview/webview.cc
-        "${WEBVIEW_PLATFORM_SOURCES}"
-
-        source/controller/webview_pluginview.h
-        source/controller/webview_pluginview.cc
-        source/controller/webview_controller_bindings.cc
-        source/controller/webview_controller_bindings.h
-
         source/controller/webui/index.ts
         source/controller/webui/view/pureknob.ts
         source/controller/webui/view/templates.tsx
@@ -195,34 +184,6 @@ smtg_add_vst3plugin(sidebands
         source/controller/webui/index.html
         )
 
-
-# Needed for webview2.h & friends on Win32.
-if (WIN32)
-    option(WIL_BUILD_PACKAGING "" OFF)
-    option(WIL_BUILD_TESTS  "" OFF)
-    FetchContent_Declare(wil GIT_REPOSITORY "https://github.com/microsoft/wil")
-    FetchContent_MakeAvailable(wil)
-
-    nuget_add(WebView2 "Microsoft.Web.WebView2" 1.0.1150.38)
-    nuget_add(CppWinRT "Microsoft.Windows.CppWinRT" 2.0.220315.1)
-
-    target_compile_definitions(sidebands PRIVATE UNICODE=1 _UNICODE=1)
-    target_include_directories(sidebands PRIVATE ${WebView2_PATH}/build/native/include)
-
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        target_link_libraries(sidebands PRIVATE ${WebView2_PATH}/build/native/x64/WebView2LoaderStatic.lib)
-    else()
-        target_link_libraries(sidebands PRIVATE ${WebView2_PATH}/build/native/x86/WebView2LoaderStatic.lib)
-    endif()
-
-    target_link_libraries(sidebands PRIVATE WIL::WIL Dwmapi Shlwapi)
-endif()
-
-if(UNIX AND NOT APPLE)
-    target_include_directories(sidebands PRIVATE ${GTK3_INCLUDE_DIRS} ${WEBKIT2GTK_INCLUDE_DIRS} ${GTKMM3_INCLUDE_DIRS})
-    target_link_libraries(sidebands PRIVATE ${GTK3_LIBRARIES} ${WEBKIT2GTK_LIBRARIES} ${GTKMM3_LIBRARIES})
-endif()
-
 add_custom_target(npm-dependencies-install
         COMMAND npm install -D
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui)
@@ -231,6 +192,7 @@ add_custom_target(perform-webpack
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui)
 add_dependencies(perform-webpack npm-dependencies-install)
 add_dependencies(sidebands perform-webpack)
+add_dependencies(sidebands vstwebview)
 
 smtg_target_add_plugin_resource(sidebands source/controller/webui/index.html)
 smtg_target_add_plugin_resource(sidebands source/controller/webui/style.css)
@@ -246,6 +208,7 @@ smtg_target_add_plugin_snapshots(sidebands
 
 target_link_libraries(sidebands
         PRIVATE
+        vstwebview
         sdk
         glog
         absl::strings
@@ -278,3 +241,4 @@ elseif (SMTG_WIN)
                 )
     endif ()
 endif (SMTG_MAC)
+

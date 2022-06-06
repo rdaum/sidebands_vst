@@ -17,8 +17,14 @@ void DCBlock::Filter(OscBuffer &buf) {
 }
 
 DCBlock2::DCBlock2(int order)
-    : delay1_(order), iirdelay1_(order), iirdelay2_(order), iirdelay3_(order),
-      iirdelay4_(order), ydels_{0, 0, 0, 0}, dp1_(0), dp2_(0),
+    : delay1_(order),
+      iirdelay1_(order),
+      iirdelay2_(order),
+      iirdelay3_(order),
+      iirdelay4_(order),
+      ydels_{0, 0, 0, 0},
+      dp1_(0),
+      dp2_(0),
       scaler_(1.0 / order) {}
 
 void DCBlock2::Filter(OscBuffer &in) {
@@ -55,4 +61,4 @@ void DCBlock2::Filter(OscBuffer &in) {
   }
 }
 
-} // namespace sidebands
+}  // namespace sidebands

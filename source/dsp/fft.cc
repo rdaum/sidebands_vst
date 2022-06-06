@@ -96,4 +96,4 @@ void BlackingWindow(ComplexBuffer &buf) {
     buf[i] *= multiplier;
   }
 }
-} // namespace
+}  // namespace sidebands

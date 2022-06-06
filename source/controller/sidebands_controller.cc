@@ -6,16 +6,73 @@
 #include <pluginterfaces/base/ustring.h>
 
 #include "controller/patch_controller.h"
-#include "controller/webview_controller_bindings.h"
-#include "controller/webview_pluginview.h"
 #include "dsp/fft.h"
 #include "globals.h"
 #include "sidebands_cids.h"
 #include "tags.h"
+#include "vstwebview/webview_controller_bindings.h"
+#include "vstwebview/webview_pluginview.h"
 
 using namespace Steinberg;
 
 namespace sidebands {
+
+void SidebandsControllerBindings::Bind(vstwebview::Webview *webview) {
+  message_listener_ =
+      std::make_unique<vstwebview::WebviewMessageListener>(webview);
+  message_listener_->Subscribe(
+      "receiveMessage", sidebands::kEnvelopeStageMessageID,
+      {
+          {
+              kEnvelopeStageAttr,
+              vstwebview::WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kGennumAttr,
+              vstwebview::WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kTargetAttr,
+              vstwebview::WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kEnvelopeStageAttr,
+              vstwebview::WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+      });
+  const std::vector<vstwebview::WebviewMessageListener::MessageAttribute>
+      buffer_attrs{
+          {
+              kSampleRateAttr,
+              vstwebview::WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kBufferSizeAttr,
+              vstwebview::WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kFreqAttr,
+              vstwebview::WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kGennumAttr,
+              vstwebview::WebviewMessageListener::MessageAttribute::Type::INT,
+          },
+          {
+              kBufferDataAttr,
+              vstwebview::WebviewMessageListener::MessageAttribute::Type::
+                  BINARY,
+          },
+      };
+  message_listener_->Subscribe("receiveMessage",
+                               sidebands::kResponseAnalysisBufferMessageID,
+                               buffer_attrs);
+
+  message_listener_->Subscribe("receiveMessage",
+                               sidebands::kResponseSpectrumBufferMessageID,
+                               buffer_attrs /**/
+  );
+}
 
 // static
 Steinberg::FUnknown *SidebandsController::Instantiate(void *) {
@@ -88,9 +145,15 @@ tresult PLUGIN_API SidebandsController::getState(IBStream *state) {
 
 IPlugView *PLUGIN_API SidebandsController::createView(FIDString name) {
   webview_controller_bindings_ =
-      std::make_unique<WebviewControllerBindings>(this);
-  webview_pluginview_ = new ui::WebviewPluginView(
-      this, webview_controller_bindings_.get(), &view_rect_);
+      std::make_unique<vstwebview::WebviewControllerBindings>(this);
+  sidebands_controller_bindings_ =
+      std::make_unique<SidebandsControllerBindings>();
+
+  webview_pluginview_ =
+      new vstwebview::WebviewPluginView(this,
+                                        {webview_controller_bindings_.get(),
+                                         sidebands_controller_bindings_.get()},
+                                        &view_rect_);
   return webview_pluginview_;
 }
 
@@ -176,7 +239,7 @@ Steinberg::tresult SidebandsController::ProduceFFTResponseMessageFor(
 
 Steinberg::tresult SidebandsController::notify(
     Steinberg::Vst::IMessage *message) {
-  auto *ml = webview_controller_bindings_->message_listener();
+  auto *ml = sidebands_controller_bindings_->message_listener();
   if (!ml) return ComponentBase::notify(message);
 
   tresult res;

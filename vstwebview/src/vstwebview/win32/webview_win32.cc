@@ -1,9 +1,9 @@
-#include "controller/webview/win32/webview_win32.h"
+#include "win32/webview_win32.h"
 
 #include <glog/logging.h>
 
-#include "controller/webview/webview.h"
-#include "controller/webview/win32/webview_edge_chromium.h"
+#include "webview.h"
+#include "win32/webview_edge_chromium.h"
 #include "winrt/base.h"
 namespace winrt::impl {
 template <typename Async>
@@ -12,7 +12,7 @@ auto wait_for(Async const &async, Windows::Foundation::TimeSpan const &timeout);
 #include <objbase.h>
 #include <winrt/Windows.Foundation.h>
 
-namespace webview {
+namespace vstwebview {
 
 WebviewWin32::WebviewWin32(HWND parent_window, bool debug,
                            WebviewCreatedCallback created_cb)
@@ -154,4 +154,4 @@ std::unique_ptr<Webview> MakeWebview(bool debug,
   return nullptr;
 }
 
-}  // namespace webview
+}  // namespace vstwebview

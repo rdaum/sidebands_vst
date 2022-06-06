@@ -1,6 +1,6 @@
 #pragma once
 
-#include "controller/webview/win32/webview_win32.h"
+#include "win32/webview_win32.h"
 
 #pragma comment(lib, "windowsapp")
 
@@ -11,7 +11,7 @@
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "oleaut32.lib")
 
-namespace webview {
+namespace vstwebview {
 
 //
 // Edge/Chromium browser engine
@@ -61,4 +61,4 @@ class EdgeChromiumBrowser : public WebviewWin32 {
   ICoreWebView2Settings *settings_;
 };
 
-}  // namespace webview
+}  // namespace vstwebview

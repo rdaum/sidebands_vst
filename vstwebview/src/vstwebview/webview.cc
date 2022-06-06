@@ -1,8 +1,8 @@
-#include "controller/webview/webview.h"
+#include "vstwebview/webview.h"
 
 #include <utility>
 
-namespace webview {
+namespace vstwebview {
 
 void Webview::BindFunction(const std::string &name,
                            Webview::FunctionBinding f) {
@@ -67,4 +67,4 @@ void Webview::OnBrowserMessage(const std::string &msg) {
   ResolveFunctionDispatch(seq, 0, result);
 }
 
-}  // namespace webview
+}  // namespace vstwebview

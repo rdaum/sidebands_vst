@@ -1,4 +1,4 @@
-#include "controller/webview/win32/webview_edge_chromium.h"
+#include "win32/webview_edge_chromium.h"
 
 #include <glog/logging.h>
 
@@ -16,7 +16,7 @@ extern "C" {
 static int SignatureFunctionForDLL = 0;
 }
 
-namespace webview {
+namespace vstwebview {
 
 EdgeChromiumBrowser::EdgeChromiumBrowser(HWND parent_window, bool debug,
                                          WebviewCreatedCallback created_cb)
@@ -193,4 +193,4 @@ bool EdgeChromiumBrowser::SetFilePaths() {
 
 void EdgeChromiumBrowser::DispatchIn(DispatchFunction f) { f(); }
 
-}  // namespace webview
+}  // namespace vstwebview

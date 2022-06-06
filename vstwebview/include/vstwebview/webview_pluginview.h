@@ -7,18 +7,17 @@
 #include <mutex>
 #include <thread>
 
-#include "controller/webview/webview.h"
+#include "vstwebview/bindings.h"
+#include "vstwebview/webview.h"
 
-namespace sidebands {
+namespace vstwebview {
 
 class WebviewControllerBindings;
-
-namespace ui {
 
 class WebviewPluginView : public Steinberg::Vst::EditorView {
  public:
   WebviewPluginView(Steinberg::Vst::EditController *controller,
-                    WebviewControllerBindings *controller_bindings,
+                    const std::vector<vstwebview::Bindings *> &bindings,
                     Steinberg::ViewRect *size = nullptr);
 
   // EditorView overrides
@@ -35,9 +34,8 @@ class WebviewPluginView : public Steinberg::Vst::EditorView {
 
  private:
   std::mutex webview_mutex_;
-  std::unique_ptr<webview::Webview> webview_handle_;
-  WebviewControllerBindings *controller_bindings_;
+  std::unique_ptr<vstwebview::Webview> webview_handle_;
+  std::vector<vstwebview::Bindings *> bindings_;
 };
 
-}  // namespace ui
-}  // namespace sidebands
+}  // namespace vstwebview

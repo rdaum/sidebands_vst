@@ -3,13 +3,23 @@
 #include <public.sdk/source/vst/vsteditcontroller.h>
 
 #include "constants.h"
-#include "controller/webview_pluginview.h"
 #include "globals.h"
 #include "tags.h"
+#include "vstwebview/webview_controller_bindings.h"
+#include "vstwebview/webview_pluginview.h"
 
 namespace sidebands {
 
-class WebviewControllerBindings;
+class SidebandsControllerBindings : public vstwebview::Bindings {
+ public:
+  void Bind(vstwebview::Webview *webview) override;
+  vstwebview::WebviewMessageListener *message_listener() const {
+    return message_listener_.get();
+  }
+
+ private:
+  std::unique_ptr<vstwebview::WebviewMessageListener> message_listener_;
+};
 
 class PatchController;
 class SidebandsController : public Steinberg::Vst::EditControllerEx1,
@@ -69,8 +79,11 @@ class SidebandsController : public Steinberg::Vst::EditControllerEx1,
 
   std::unique_ptr<PatchController> patch_controller_;
   Steinberg::ViewRect view_rect_{0, 0, 1024, 1200};
-  std::unique_ptr<WebviewControllerBindings> webview_controller_bindings_;
-  sidebands::ui::WebviewPluginView *webview_pluginview_;
+  std::unique_ptr<vstwebview::WebviewControllerBindings>
+      webview_controller_bindings_;
+  std::unique_ptr<SidebandsControllerBindings> sidebands_controller_bindings_;
+
+  vstwebview::WebviewPluginView *webview_pluginview_;
 };
 
 //------------------------------------------------------------------------

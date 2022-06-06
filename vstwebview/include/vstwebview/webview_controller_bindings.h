@@ -5,54 +5,50 @@
 
 #include <nlohmann/json.hpp>
 
-#include "controller/webview/webview.h"
+#include "vstwebview/bindings.h"
+#include "vstwebview/webview.h"
 
 using nlohmann::json;
 
-namespace sidebands {
+namespace vstwebview {
 
 class WebviewMessageListener;
-class WebviewControllerBindings {
+class WebviewControllerBindings : public vstwebview::Bindings {
  public:
   explicit WebviewControllerBindings(
       Steinberg::Vst::EditControllerEx1 *controller);
 
-  void Bind(webview::Webview *webview);
-
-  WebviewMessageListener *message_listener() const {
-    return message_listener_.get();
-  }
+  void Bind(vstwebview::Webview *webview) override;
 
  private:
   void DeclareJSBinding(const std::string &name,
-                        webview::Webview::FunctionBinding binding);
+                        vstwebview::Webview::FunctionBinding binding);
 
   using CallbackFn = json (WebviewControllerBindings::*)(
-      webview::Webview *webview, const json &);
-  std::function<const json(webview::Webview *webview, int seq,
+      vstwebview::Webview *webview, const json &);
+  std::function<const json(vstwebview::Webview *webview, int seq,
                            const std::string &, const json &)>
   BindCallback(CallbackFn fn);
 
-  json GetParameterObject(webview::Webview *webview, const json &in);
-  json GetParameterObjects(webview::Webview *webview, const json &in);
-  json SetParameterNormalized(webview::Webview *webview, const json &in);
-  json NormalizedParamToPlain(webview::Webview *webview, const json &in);
-  json GetParamNormalized(webview::Webview *webview, const json &in);
-  json BeginEdit(webview::Webview *webview, const json &in);
-  json PerformEdit(webview::Webview *webview, const json &in);
-  json EndEdit(webview::Webview *webview, const json &in);
-  json GetParameterCount(webview::Webview *webview, const json &in);
-  json GetSelectedUnit(webview::Webview *webview, const json &in);
-  json SelectUnit(webview::Webview *webview, const json &in);
-  json SubscribeParameter(webview::Webview *webview, const json &in);
-  json DoSendMessage(webview::Webview *webview, const json &in);
+  json GetParameterObject(vstwebview::Webview *webview, const json &in);
+  json GetParameterObjects(vstwebview::Webview *webview, const json &in);
+  json SetParameterNormalized(vstwebview::Webview *webview, const json &in);
+  json NormalizedParamToPlain(vstwebview::Webview *webview, const json &in);
+  json GetParamNormalized(vstwebview::Webview *webview, const json &in);
+  json BeginEdit(vstwebview::Webview *webview, const json &in);
+  json PerformEdit(vstwebview::Webview *webview, const json &in);
+  json EndEdit(vstwebview::Webview *webview, const json &in);
+  json GetParameterCount(vstwebview::Webview *webview, const json &in);
+  json GetSelectedUnit(vstwebview::Webview *webview, const json &in);
+  json SelectUnit(vstwebview::Webview *webview, const json &in);
+  json SubscribeParameter(vstwebview::Webview *webview, const json &in);
+  json DoSendMessage(vstwebview::Webview *webview, const json &in);
 
   std::unique_ptr<Steinberg::Vst::ThreadChecker> thread_checker_;
-  std::vector<std::pair<std::string, webview::Webview::FunctionBinding>>
+  std::vector<std::pair<std::string, vstwebview::Webview::FunctionBinding>>
       bindings_;
   std::unique_ptr<Steinberg::IDependent> param_dep_proxy_;
   Steinberg::Vst::EditControllerEx1 *controller_;
-  std::unique_ptr<WebviewMessageListener> message_listener_;
 };
 
 class WebviewMessageListener {
@@ -63,7 +59,7 @@ class WebviewMessageListener {
     Type type;
   };
 
-  explicit WebviewMessageListener(webview::Webview *webview)
+  explicit WebviewMessageListener(vstwebview::Webview *webview)
       : webview_(webview) {}
 
   void Subscribe(const std::string &receiver, const std::string &message_id,
@@ -86,7 +82,7 @@ class WebviewMessageListener {
                         const MessageDescriptor &descriptor);
 
   std::unordered_map<std::string, MessageSubscription> subscriptions_;
-  webview::Webview *webview_;
+  vstwebview::Webview *webview_;
 };
 
-}  // namespace sidebands
+}  // namespace vstwebview

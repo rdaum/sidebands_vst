@@ -1,23 +1,17 @@
-#include "controller/webview_pluginview.h"
+#include "vstwebview/webview_pluginview.h"
 
-#include <absl/strings/str_format.h>
-#include <glog/logging.h>
+#include "vstwebview/webview_controller_bindings.h"
 
-#include "controller/webview_controller_bindings.h"
-#include "tags.h"
-
-
-namespace sidebands {
-namespace ui {
+namespace vstwebview {
 
 WebviewPluginView::WebviewPluginView(
     Steinberg::Vst::EditController *controller,
-    WebviewControllerBindings *controller_bindings, Steinberg::ViewRect *size)
-    : Steinberg::Vst::EditorView(controller, size),
-      controller_bindings_(controller_bindings) {}
+    const std::vector<vstwebview::Bindings *> &bindings,
+    Steinberg::ViewRect *size)
+    : Steinberg::Vst::EditorView(controller, size), bindings_(bindings) {}
 
-Steinberg::tresult
-WebviewPluginView::isPlatformTypeSupported(Steinberg::FIDString type) {
+Steinberg::tresult WebviewPluginView::isPlatformTypeSupported(
+    Steinberg::FIDString type) {
   return Steinberg::kResultTrue;
 }
 
@@ -26,7 +20,7 @@ Steinberg::tresult WebviewPluginView::onSize(Steinberg::ViewRect *newSize) {
     std::lock_guard<std::mutex> webview_lock(webview_mutex_);
     if (webview_handle_) {
       webview_handle_->SetViewSize(newSize->getWidth(), newSize->getHeight(),
-                                   webview::Webview::SizeHint::kNone);
+                                   vstwebview::Webview::SizeHint::kNone);
     }
   }
   return Steinberg::Vst::EditorView::onSize(newSize);
@@ -34,16 +28,19 @@ Steinberg::tresult WebviewPluginView::onSize(Steinberg::ViewRect *newSize) {
 
 void WebviewPluginView::attachedToParent() {
   if (!webview_handle_) {
-    auto init_function = [this](webview::Webview *webview) {
-      controller_bindings_->Bind(webview);
+    auto init_function = [this](vstwebview::Webview *webview) {
+      for (auto binding : bindings_) {
+        binding->Bind(webview);
+      }
       webview->SetTitle("Sidebands VST Webview");
       webview->SetViewSize(rect.getWidth(), rect.getHeight(),
-                           webview::Webview::SizeHint::kFixed);
+                           vstwebview::Webview::SizeHint::kFixed);
 
       webview->Navigate(webview->ContentRootURI() + "/index.html");
     };
 
-    webview_handle_ = webview::MakeWebview(true,  plugFrame, systemWindow, init_function);
+    webview_handle_ =
+        vstwebview::MakeWebview(true, plugFrame, systemWindow, init_function);
   }
 
   EditorView::attachedToParent();
@@ -69,5 +66,4 @@ Steinberg::tresult WebviewPluginView::canResize() {
   return Steinberg::kResultFalse;
 }
 
-} // namespace ui
-} // namespace sidebands
+}  // namespace vstwebview

@@ -37,7 +37,7 @@
 
 #include "pluginterfaces/gui/iplugview.h"
 
-namespace webview {
+namespace vstwebview {
 
 using DispatchFunction = std::function<void()>;
 
@@ -122,4 +122,4 @@ std::unique_ptr<Webview> MakeWebview(bool debug,
                                      void *window,
                                      WebviewCreatedCallback created_cb);
 
-}  // namespace webview
+}  // namespace vstwebview

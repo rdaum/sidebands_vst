@@ -8,7 +8,7 @@ using ComplexBuffer = std::valarray<Complex>;
 
 namespace sidebands {
 
-ComplexBuffer ScalarToComplex(const double *scalar_buffer, size_t buffer_size) ;
+ComplexBuffer ScalarToComplex(const double *scalar_buffer, size_t buffer_size);
 std::valarray<double> ComplexToScalar(const ComplexBuffer &b);
 
 void FFT(ComplexBuffer &x);

@@ -1,9 +1,7 @@
-#include <glog/logging.h>
-
-#include <thread>
-
 #include <JavaScriptCore/JavaScript.h>
 #include <X11/X.h>
+
+#include <thread>
 #define GNU_SOURCE
 #include <dlfcn.h>
 #include <gtk-3.0/gtk/gtk.h>
@@ -11,31 +9,26 @@
 #include <webkit2/webkit2.h>
 
 #include "base/source/fobject.h"
-#include "controller/webview/webview.h"
+#include "vstwebview/webview.h"
 
 static unsigned int kAddressMarker = 0xcafebabe;
 
-namespace webview {
+namespace vstwebview {
 
 class WebviewWebkitGTK : public Webview,
                          public Steinberg::Linux::ITimerHandler,
                          public Steinberg::FObject {
-public:
+ public:
   WebviewWebkitGTK(bool debug, Steinberg::IPlugFrame *plug_frame,
                    Window x11Parent, WebviewCreatedCallback created_callback) {
     // On linux the IPlugFrame is also a "run loop" we can use to schedule
     // timers and file-descriptor triggered events.
     run_loop_ = plug_frame;
 
-    CHECK(gtk_init_check(nullptr, nullptr));
+    gtk_init_check(nullptr, nullptr);
 
     window_ = gtk_plug_new(x11Parent);
 
-    // This never seems to ever get invoked.
-    g_signal_connect(
-        G_OBJECT(window_), "embedded",
-        G_CALLBACK(+[](GtkPlug *, gpointer arg) { LOG(INFO) << "Embedded"; }),
-        window_);
     g_signal_connect(G_OBJECT(window_), "destroy",
                      G_CALLBACK(+[](GtkWidget *, gpointer arg) {
                        static_cast<WebviewWebkitGTK *>(arg)->Terminate();
@@ -102,7 +95,6 @@ public:
   }
 
   void Navigate(const std::string &url) override {
-    LOG(INFO) << "Navigating to " << url;
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview_), url.c_str());
   }
 
@@ -119,13 +111,12 @@ public:
   DEF_INTERFACE(Steinberg::Linux::ITimerHandler)
   END_DEFINE_INTERFACES(Steinberg::FObject)
 
-protected:
+ protected:
   void DispatchIn(DispatchFunction f) override { f(); }
 
-private:
+ private:
   void onTimer() override {
-    while (gtk_events_pending())
-      gtk_main_iteration();
+    while (gtk_events_pending()) gtk_main_iteration();
   }
 
   void MakeWebView(bool debug) {
@@ -180,4 +171,4 @@ std::unique_ptr<Webview> MakeWebview(bool debug,
   return std::move(webview);
 }
 
-} // namespace webview
+}  // namespace vstwebview

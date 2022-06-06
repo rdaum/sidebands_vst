@@ -47,9 +47,9 @@ void VapplyBinaryInplace(OscBuffer &l, double r,
   }
 }
 
-OscBuffer
-VapplyBinary(const OscBuffer &l, const OscBuffer &r,
-             const std::function<Vec8d(const Vec8d &, const Vec8d &)> &f) {
+OscBuffer VapplyBinary(
+    const OscBuffer &l, const OscBuffer &r,
+    const std::function<Vec8d(const Vec8d &, const Vec8d &)> &f) {
   size_t size(l.size());
   OscBuffer dest(size);
   Vec8d l_vec, r_vec, dst_vec;
@@ -74,7 +74,7 @@ OscBuffer VapplyBinary(const OscBuffer &l, double r,
   }
   return dest;
 }
-} // namespace
+}  // namespace
 
 OscBuffer Vsin(const OscBuffer &src) {
   return VapplyUnary(src, [](const Vec8d &v) { return sin(v); });
@@ -190,4 +190,4 @@ OscBuffer weighted_exp(size_t N, double start, double end, double weight) {
   return E;
 }
 
-} // namespace sidebands
+}  // namespace sidebands

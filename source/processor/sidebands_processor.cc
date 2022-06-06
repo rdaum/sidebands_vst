@@ -170,12 +170,12 @@ tresult SidebandsProcessor::notify(Vst::IMessage *message) {
   // -1, in which case do a bunch and mix them together.
   if (gennum == -1) {
     buffer = 0.0;
-    for (auto & generator : patch_->generators_) {
+    for (auto &generator : patch_->generators_) {
       if (!generator->on()) continue;
       OscBuffer mix_buffer(buffer_size);
       Generator analysis_generator;
-      analysis_generator.Synthesize(sample_rate, *generator,
-                                    mix_buffer, frequency);
+      analysis_generator.Synthesize(sample_rate, *generator, mix_buffer,
+                                    frequency);
       mix_buffer *= generator->a();
       buffer += mix_buffer;
     }

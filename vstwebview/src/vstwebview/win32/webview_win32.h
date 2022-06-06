@@ -1,6 +1,6 @@
 #pragma once
 
-#include "controller/webview/webview.h"
+#include "webview.h"
 
 //
 // ====================================================================
@@ -22,7 +22,7 @@
 #pragma comment(lib, "user32.lib")
 #pragma comment(lib, "Shlwapi.lib")
 
-namespace webview {
+namespace vstwebview {
 
 // Abstract parent for both edge-chromium and edge variants.
 class WebviewWin32 : public Webview {
@@ -53,4 +53,4 @@ class WebviewWin32 : public Webview {
   POINT maxsz_ = POINT{0, 0};
 };
 
-}  // namespace webview
+}  // namespace vstwebview

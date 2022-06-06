@@ -1,14 +1,13 @@
-#include "controller/webview_controller_bindings.h"
+#include "vstwebview/webview_controller_bindings.h"
 
 #include <public.sdk/source/vst/utility/stringconvert.h>
 
 #include <codecvt>
 #include <locale>
 
-#include "globals.h"
 #include "pluginterfaces/base/ustring.h"
 
-namespace sidebands {
+namespace vstwebview {
 
 namespace {
 
@@ -43,7 +42,7 @@ json SerializeParameter(Steinberg::Vst::Parameter *param) {
 // Proxy IDependent through the webview for parameter object changes.
 class ParameterDependenciesProxy : public Steinberg::FObject {
  public:
-  explicit ParameterDependenciesProxy(webview::Webview *webview)
+  explicit ParameterDependenciesProxy(vstwebview::Webview *webview)
       : webview_(webview) {}
 
   void update(FUnknown *changedUnknown, Steinberg::int32 message) override {
@@ -61,7 +60,7 @@ class ParameterDependenciesProxy : public Steinberg::FObject {
   }
 
  private:
-  webview::Webview *webview_;
+  vstwebview::Webview *webview_;
 };
 
 }  // namespace
@@ -168,71 +167,20 @@ WebviewControllerBindings::WebviewControllerBindings(
                    BindCallback(&WebviewControllerBindings::DoSendMessage));
 }
 
-void WebviewControllerBindings::Bind(webview::Webview *webview) {
-  message_listener_ = std::make_unique<WebviewMessageListener>(webview);
+void WebviewControllerBindings::Bind(vstwebview::Webview *webview) {
   for (auto &binding : bindings_) {
     webview->BindFunction(binding.first, binding.second);
   }
-  message_listener_->Subscribe(
-      "receiveMessage", sidebands::kEnvelopeStageMessageID,
-      {
-          {
-              kEnvelopeStageAttr,
-              WebviewMessageListener::MessageAttribute::Type::INT,
-          },
-          {
-              kGennumAttr,
-              WebviewMessageListener::MessageAttribute::Type::INT,
-          },
-          {
-              kTargetAttr,
-              WebviewMessageListener::MessageAttribute::Type::INT,
-          },
-          {
-              kEnvelopeStageAttr,
-              WebviewMessageListener::MessageAttribute::Type::INT,
-          },
-      });
-  const std::vector<WebviewMessageListener::MessageAttribute> buffer_attrs{
-      {
-          kSampleRateAttr,
-          WebviewMessageListener::MessageAttribute::Type::INT,
-      },
-      {
-          kBufferSizeAttr,
-          WebviewMessageListener::MessageAttribute::Type::INT,
-      },
-      {
-          kFreqAttr,
-          WebviewMessageListener::MessageAttribute::Type::INT,
-      },
-      {
-          kGennumAttr,
-          WebviewMessageListener::MessageAttribute::Type::INT,
-      },
-      {
-          kBufferDataAttr,
-          WebviewMessageListener::MessageAttribute::Type::BINARY,
-      },
-  };
-  message_listener_->Subscribe("receiveMessage",
-                               sidebands::kResponseAnalysisBufferMessageID,
-                               buffer_attrs);
-
-  message_listener_->Subscribe("receiveMessage",
-                               sidebands::kResponseSpectrumBufferMessageID,
-                               buffer_attrs /**/
-  );
 }
 
-webview::Webview::FunctionBinding WebviewControllerBindings::BindCallback(
+vstwebview::Webview::FunctionBinding WebviewControllerBindings::BindCallback(
     CallbackFn fn) {
   return std::bind(fn, this, std::placeholders::_1, std::placeholders::_4);
 }
 
 // TODO parameter validation on all these JSON argument retrievals. Or crash.
 
-json WebviewControllerBindings::GetParameterObject(webview::Webview *webview,
+json WebviewControllerBindings::GetParameterObject(vstwebview::Webview *webview,
                                                    const json &in) {
   thread_checker_->test();
   int id = in[0];
@@ -241,8 +189,8 @@ json WebviewControllerBindings::GetParameterObject(webview::Webview *webview,
   return SerializeParameter(param);
 }
 
-json WebviewControllerBindings::GetParameterObjects(webview::Webview *webview,
-                                                    const json &in) {
+json WebviewControllerBindings::GetParameterObjects(
+    vstwebview::Webview *webview, const json &in) {
   thread_checker_->test();
   json out;
   for (int id : in[0]) {
@@ -255,7 +203,7 @@ json WebviewControllerBindings::GetParameterObjects(webview::Webview *webview,
 }
 
 json WebviewControllerBindings::SetParameterNormalized(
-    webview::Webview *webview, const json &in) {
+    vstwebview::Webview *webview, const json &in) {
   thread_checker_->test();
   int tag = in[0];
   double value = in[1];
@@ -265,7 +213,7 @@ json WebviewControllerBindings::SetParameterNormalized(
 }
 
 json WebviewControllerBindings::NormalizedParamToPlain(
-    webview::Webview *webview, const json &in) {
+    vstwebview::Webview *webview, const json &in) {
   thread_checker_->test();
   int tag = in[0];
   double value = in[1];
@@ -273,7 +221,7 @@ json WebviewControllerBindings::NormalizedParamToPlain(
   return out;
 }
 
-json WebviewControllerBindings::GetParamNormalized(webview::Webview *webview,
+json WebviewControllerBindings::GetParamNormalized(vstwebview::Webview *webview,
                                                    const json &in) {
   thread_checker_->test();
   int tag = in[0];
@@ -281,7 +229,7 @@ json WebviewControllerBindings::GetParamNormalized(webview::Webview *webview,
   return out;
 }
 
-json WebviewControllerBindings::BeginEdit(webview::Webview *webview,
+json WebviewControllerBindings::BeginEdit(vstwebview::Webview *webview,
                                           const json &in) {
   thread_checker_->test();
   int tag = in[0];
@@ -289,7 +237,7 @@ json WebviewControllerBindings::BeginEdit(webview::Webview *webview,
   return out;
 }
 
-json WebviewControllerBindings::PerformEdit(webview::Webview *webview,
+json WebviewControllerBindings::PerformEdit(vstwebview::Webview *webview,
                                             const json &in) {
   thread_checker_->test();
   int tag = in[0];
@@ -298,7 +246,7 @@ json WebviewControllerBindings::PerformEdit(webview::Webview *webview,
   return out;
 }
 
-json WebviewControllerBindings::EndEdit(webview::Webview *webview,
+json WebviewControllerBindings::EndEdit(vstwebview::Webview *webview,
                                         const json &in) {
   thread_checker_->test();
   int tag = in[0];
@@ -306,28 +254,28 @@ json WebviewControllerBindings::EndEdit(webview::Webview *webview,
   return out;
 }
 
-json WebviewControllerBindings::GetParameterCount(webview::Webview *webview,
+json WebviewControllerBindings::GetParameterCount(vstwebview::Webview *webview,
                                                   const json &in) {
   thread_checker_->test();
   json out = controller_->getParameterCount();
   return out;
 }
 
-json WebviewControllerBindings::GetSelectedUnit(webview::Webview *webview,
+json WebviewControllerBindings::GetSelectedUnit(vstwebview::Webview *webview,
                                                 const json &in) {
   thread_checker_->test();
   json out = controller_->getSelectedUnit();
   return out;
 }
 
-json WebviewControllerBindings::SelectUnit(webview::Webview *webview,
+json WebviewControllerBindings::SelectUnit(vstwebview::Webview *webview,
                                            const json &in) {
   thread_checker_->test();
   json out = controller_->selectUnit(in[0]);
   return out;
 }
 
-json WebviewControllerBindings::SubscribeParameter(webview::Webview *webview,
+json WebviewControllerBindings::SubscribeParameter(vstwebview::Webview *webview,
                                                    const json &in) {
   thread_checker_->test();
   json out = controller_->getParameterCount();
@@ -341,7 +289,7 @@ json WebviewControllerBindings::SubscribeParameter(webview::Webview *webview,
   return true;
 }
 
-json WebviewControllerBindings::DoSendMessage(webview::Webview *webview,
+json WebviewControllerBindings::DoSendMessage(vstwebview::Webview *webview,
                                               const json &in) {
   thread_checker_->test();
   std::string messageId = in[0];
@@ -375,8 +323,8 @@ json WebviewControllerBindings::DoSendMessage(webview::Webview *webview,
 }
 
 void WebviewControllerBindings::DeclareJSBinding(
-    const std::string &name, webview::Webview::FunctionBinding binding) {
+    const std::string &name, vstwebview::Webview::FunctionBinding binding) {
   bindings_.push_back({name, binding});
 }
 
-}  // namespace sidebands
+}  // namespace vstwebview
