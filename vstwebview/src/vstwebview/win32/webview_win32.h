@@ -1,6 +1,6 @@
 #pragma once
 
-#include "webview.h"
+#include "vstwebview/webview.h"
 
 //
 // ====================================================================

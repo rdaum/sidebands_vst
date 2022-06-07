@@ -1,8 +1,6 @@
-#include "win32/webview_edge_chromium.h"
+#include "vstwebview/win32/webview_edge_chromium.h"
 
-#include <glog/logging.h>
-
-#include "winrt/base.h"
+#include <winrt/base.h>
 namespace winrt::impl {
 template <typename Async>
 auto wait_for(Async const &async, Windows::Foundation::TimeSpan const &timeout);
@@ -40,7 +38,6 @@ EdgeChromiumBrowser::~EdgeChromiumBrowser() {
   wv2_controller_->Release();
   webview2_->Release();
   settings_->Release();
-  LOG(INFO) << "Destroying EdgeChromiumBrowser: " << this;
 }
 
 HRESULT EdgeChromiumBrowser::OnWebMessageReceived(
@@ -67,7 +64,6 @@ HRESULT EdgeChromiumBrowser::OnPermissionRequested(
 HRESULT EdgeChromiumBrowser::OnEnvironmentCreated(
     HRESULT result, ICoreWebView2Environment *environment) {
   if (!SUCCEEDED(result)) {
-    LOG(INFO) << "Unable to create WebView2 environment: " << result;
     return E_FAIL;
   }
   environment->CreateCoreWebView2Controller(
@@ -78,32 +74,26 @@ HRESULT EdgeChromiumBrowser::OnEnvironmentCreated(
 HRESULT EdgeChromiumBrowser::OnControllerCreated(
     HRESULT result, ICoreWebView2Controller *controller) {
   if (!SUCCEEDED(result) || !controller) {
-    LOG(ERROR) << "Unable to create WebView2 controller: " << result;
     return E_FAIL;
   }
 
-  LOG(INFO) << "Created Webview2 controller: " << controller;
   wv2_controller_ = controller;
   wv2_controller_->AddRef();
   if (wv2_controller_->get_CoreWebView2(&webview2_) != S_OK) {
-    LOG(ERROR) << "Failure to retrieve WebView";
     return E_FAIL;
   }
 
   ICoreWebView2_10 *webview_2_10;
   if (webview2_->QueryInterface(IID_PPV_ARGS(&webview_2_10)) != S_OK) {
-    LOG(ERROR) << "Unable to get 2.10 interface for webview";
     return E_FAIL;
   }
 
   if (webview2_->get_Settings(&settings_) != S_OK) {
-    LOG(ERROR) << "Failure to retrieve settings";
     return E_FAIL;
   }
 
   if (debug_) {
     if (webview2_->OpenDevToolsWindow() != S_OK) {
-      LOG(ERROR) << "unable to open debug dev tools window";
       return E_FAIL;
     }
   }
@@ -111,12 +101,10 @@ HRESULT EdgeChromiumBrowser::OnControllerCreated(
   ::EventRegistrationToken token;
   if (webview2_->add_WebMessageReceived(message_received_handler_.Get(),
                                         &token) != S_OK) {
-    LOG(ERROR) << "Unable to register message received callback";
     return E_FAIL;
   };
   if (webview2_->add_PermissionRequested(permission_requested_handler_.Get(),
                                          &token) != S_OK) {
-    LOG(ERROR) << "Unable to register permission handler";
     return E_FAIL;
   }
 
@@ -135,7 +123,6 @@ bool EdgeChromiumBrowser::Embed() {
   HRESULT res = CreateCoreWebView2EnvironmentWithOptions(
       nullptr, user_data_path_, nullptr, environment_completed_handler_.Get());
   if (!SUCCEEDED(res)) {
-    LOG(INFO) << "Could not instantiate Edge: " << res;
 
     return false;
   }

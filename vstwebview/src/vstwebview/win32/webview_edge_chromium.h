@@ -1,12 +1,12 @@
 #pragma once
 
-#include "win32/webview_win32.h"
+#include "vstwebview/win32/webview_win32.h"
 
 #pragma comment(lib, "windowsapp")
 
 #include <wrl.h>
 
-#include "WebView2.h"
+#include <WebView2.h>
 #pragma comment(lib, "shell32.lib")
 #pragma comment(lib, "ole32.lib")
 #pragma comment(lib, "oleaut32.lib")

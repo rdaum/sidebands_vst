@@ -48,7 +48,7 @@ add_library(vstwebview
 
 target_compile_options(vstwebview PUBLIC "$<$<CONFIG:DEBUG>:-DDEVELOPMENT>")
 target_compile_options(vstwebview PUBLIC "$<$<CONFIG:RELEASE>:-DRELEASE>")
-target_include_directories(vstwebview PRIVATE ./include ${vstsdk_SOURCE_DIR} ${json_SOURCE_DIR}/include)
+target_include_directories(vstwebview PRIVATE ./src ${vstsdk_SOURCE_DIR} ${json_SOURCE_DIR}/include)
 target_include_directories(vstwebview PUBLIC ./include)
 add_dependencies(vstwebview nlohmann_json::nlohmann_json)
 

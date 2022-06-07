@@ -1,10 +1,9 @@
-#include "win32/webview_win32.h"
+#include "vstwebview/win32/webview_win32.h"
 
-#include <glog/logging.h>
+#include "vstwebview/webview.h"
+#include "vstwebview/win32/webview_edge_chromium.h"
 
-#include "webview.h"
-#include "win32/webview_edge_chromium.h"
-#include "winrt/base.h"
+#include <winrt/base.h>
 namespace winrt::impl {
 template <typename Async>
 auto wait_for(Async const &async, Windows::Foundation::TimeSpan const &timeout);
