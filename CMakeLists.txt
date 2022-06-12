@@ -82,6 +82,14 @@ set(BUILD_GMOCK OFF CACHE BOOL "" FORCE)
 set(BUILD_GTEST ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+# vstwebview
+FetchContent_Declare(
+        vstwebview
+        GIT_REPOSITORY https://github.com/rdaum/vstwebview.git
+        GIT_TAG main
+)
+FetchContent_MakeAvailable(vstwebview)
+
 # sigslot
 FetchContent_Declare(
         sigslot
@@ -95,26 +103,6 @@ ELSE()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -ffast-math -mavx2 -fabi-version=0")
     set(PLATFORM_LIBRARIES tbb)
 ENDIF()
-
-IF (WIN32)
-    set(WEBVIEW_PLATFORM_SOURCES
-            source/controller/webview/win32/webview_win32.h
-            source/controller/webview/win32/webview_win32.cc
-            source/controller/webview/win32/webview_edge_chromium.h
-            source/controller/webview/win32/webview_edge_chromium.cc)
-ENDIF()
-
-if(UNIX AND NOT APPLE)
-    set(WEBVIEW_PLATFORM_SOURCES
-            source/controller/webview/gtk/webview_gtk.cc
-            )
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
-    pkg_check_modules(GTKMM3 REQUIRED gtkmm-3.0)
-    pkg_check_modules(WEBKIT2GTK REQUIRED webkit2gtk-4.1)
-endif()
-
-add_subdirectory(vstwebview)
 
 smtg_enable_vst3_sdk()
 smtg_add_vst3plugin(sidebands
