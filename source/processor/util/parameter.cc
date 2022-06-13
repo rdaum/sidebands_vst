@@ -44,7 +44,7 @@ ParamID Parameter::getParamID() const { return param_id_; }
 void Parameter::beginChanges(IParamValueQueue *p_queue) {
   const auto &last_v_opt = GetLastValue(p_queue);
   if (last_v_opt) {
-    setValueNormalized(last_v_opt.value());
+    setValueNormalized(last_v_opt.value_or(0.0));
   }
 }
 
@@ -70,7 +70,7 @@ bool BitsetParameter::hasChanges() const { return false; }
 void BitsetParameter::beginChanges(IParamValueQueue *p_queue) {
   const auto &last_v_opt = GetLastValue(p_queue);
   if (last_v_opt) {
-    setValueNormalized(last_v_opt.value());
+    setValueNormalized(last_v_opt.value_or(0.0));
   }
 }
 
