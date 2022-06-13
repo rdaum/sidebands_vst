@@ -108,6 +108,14 @@ ELSE()
     set(PLATFORM_LIBRARIES tbb)
 ENDIF()
 
+add_custom_target(npm-dependencies-install
+        COMMAND npm install -D
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui)
+add_custom_target(perform-webpack
+        COMMAND npx webpack --config ${CMAKE_SOURCE_DIR}/source/controller/webui/webpack.config.js --env outdir=${CMAKE_BINARY_DIR}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui)
+add_dependencies(perform-webpack npm-dependencies-install)
+
 smtg_enable_vst3_sdk()
 smtg_add_vst3plugin(sidebands
         source/constants.h
@@ -176,13 +184,6 @@ smtg_add_vst3plugin(sidebands
         source/controller/webui/index.html
         )
 
-add_custom_target(npm-dependencies-install
-        COMMAND npm install -D
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui)
-add_custom_target(perform-webpack
-        COMMAND npx webpack --config ${CMAKE_SOURCE_DIR}/source/controller/webui/webpack.config.js --env outdir=${CMAKE_BINARY_DIR}
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui)
-add_dependencies(perform-webpack npm-dependencies-install)
 add_dependencies(sidebands perform-webpack)
 add_dependencies(sidebands vstwebview)
 
