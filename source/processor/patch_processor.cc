@@ -333,4 +333,12 @@ std::function<double()> GeneratorPatch::ParameterGetterFor(
   }
 }
 
+GeneratorPatch::ModParams::ModParams(
+    TargetTag target, const BitsetParameter &modulations,
+    const GeneratorPatch::EnvelopeValues &envelope_parameters,
+    const GeneratorPatch::LFOValues &lfo_parameters)
+    : target(target), modulations(modulations),
+      envelope_parameters(envelope_parameters), lfo_parameters(lfo_parameters) {
+}
+
 }  // namespace sidebands

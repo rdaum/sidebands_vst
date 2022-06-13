@@ -60,6 +60,10 @@ class GeneratorPatch {
     SampleAccurateValue velocity_sensivity;
   };
   struct ModParams {
+    // clang++ on Mac seems to need explicit constrctor here
+    ModParams(TargetTag target, const BitsetParameter &modulations,
+              const EnvelopeValues &envelope_parameters,
+              const LFOValues &lfo_parameters);
     TargetTag target;
     BitsetParameter modulations;  // bitset
     EnvelopeValues envelope_parameters;
