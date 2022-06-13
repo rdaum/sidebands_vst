@@ -6,6 +6,7 @@
 #include "globals.h"
 #include "tags.h"
 #include "vstwebview/webview_controller_bindings.h"
+#include "vstwebview/webview_message_listener.h"
 #include "vstwebview/webview_pluginview.h"
 
 namespace sidebands {

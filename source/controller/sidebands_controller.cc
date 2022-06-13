@@ -150,7 +150,7 @@ IPlugView *PLUGIN_API SidebandsController::createView(FIDString name) {
       std::make_unique<SidebandsControllerBindings>();
 
   webview_pluginview_ =
-      new vstwebview::WebviewPluginView(this,
+      new vstwebview::WebviewPluginView(this, "Sidebands",
                                         {webview_controller_bindings_.get(),
                                          sidebands_controller_bindings_.get()},
                                         &view_rect_);

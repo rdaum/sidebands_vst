@@ -63,6 +63,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(abseil)
 
+# json
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.10.5/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
 # vectorclass
 FetchContent_Declare(
         vectorclass
