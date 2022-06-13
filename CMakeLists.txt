@@ -103,10 +103,13 @@ FetchContent_MakeAvailable(sigslot)
 
 IF (WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  /fp:fast /arch:AVX2 /DINSTRSET=7 /await")
-ELSEIF(UNIX AND NOT APPLE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -ffast-math -mavx2 -fabi-version=0")
-    set(PLATFORM_LIBRARIES tbb)
-ENDIF()
+elseif(UNIX)
+    if(NOT APPLE)
+        add_compile_options(-ffast-math -mavx2 -fabi-version=0)
+    else()
+        add_compile_options(--std=c++17)
+    endif()
+endif()
 
 add_custom_target(npm-dependencies-install
         COMMAND npm install -D
