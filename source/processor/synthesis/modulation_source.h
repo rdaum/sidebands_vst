@@ -13,6 +13,8 @@ using Steinberg::Vst::SampleRate;
 
 class IModulationSource {
  public:
+  virtual ~IModulationSource() = default;
+
   virtual void On(SampleRate sample_rate,
                   const GeneratorPatch::ModParams *parameters) = 0;
   virtual void Release(SampleRate sample_rate,
