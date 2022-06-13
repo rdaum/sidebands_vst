@@ -103,7 +103,7 @@ FetchContent_MakeAvailable(sigslot)
 
 IF (WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  /fp:fast /arch:AVX2 /DINSTRSET=7 /await")
-ELSE()
+ELSEIF(UNIX AND NOT APPLE)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  -ffast-math -mavx2 -fabi-version=0")
     set(PLATFORM_LIBRARIES tbb)
 ENDIF()
@@ -113,7 +113,9 @@ add_custom_target(npm-dependencies-install
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui)
 add_custom_target(perform-webpack
         COMMAND npx webpack --config ${CMAKE_SOURCE_DIR}/source/controller/webui/webpack.config.js --env outdir=${CMAKE_BINARY_DIR}
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui)
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/source/controller/webui
+        BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/dist/main.js
+        )
 add_dependencies(perform-webpack npm-dependencies-install)
 
 smtg_enable_vst3_sdk()
