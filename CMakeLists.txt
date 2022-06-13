@@ -191,6 +191,8 @@ smtg_target_add_plugin_resource(sidebands source/controller/webui/index.html)
 smtg_target_add_plugin_resource(sidebands source/controller/webui/style.css)
 smtg_target_add_plugin_resource(sidebands resource/MetalSwitchOff.png)
 smtg_target_add_plugin_resource(sidebands resource/MetalSwitchOn.png)
+
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/dist/main.js PROPERTIES GENERATED TRUE)
 smtg_target_add_plugin_resource(sidebands ${CMAKE_CURRENT_BINARY_DIR}/dist/main.js)
 
 smtg_target_add_plugin_snapshots(sidebands
